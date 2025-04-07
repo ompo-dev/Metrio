@@ -3,17 +3,53 @@
 import { cn } from "@/lib/utils"
 
 import { useState, useEffect } from "react"
-import { Plus, Save, RotateCcw, LayoutGrid } from "lucide-react"
+import { 
+  Plus, 
+  Save, 
+  RotateCcw, 
+  LayoutGrid, 
+  Download, 
+  Filter, 
+  Share2, 
+  Settings, 
+  RefreshCw,
+  BarChart,
+  PieChart,
+  LineChart
+} from "lucide-react"
 
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
 import { DashboardWidget } from "@/components/dashboard/dashboard-widget"
-import { StatsCard } from "@/components/stats-card"
-import { ChartCard } from "@/components/chart-card"
-import { TableCard } from "@/components/table-card"
+import { StatsCard } from "@/components/dashboard/cards/stats-card"
+import { ChartCard } from "@/components/dashboard/cards/chart-card"
+import { TableCard } from "@/components/dashboard/cards/table-card"
+import { AreaCard } from "@/components/dashboard/cards/area-card"
+import { PieCard } from "@/components/dashboard/cards/pie-card"
+import { InteractiveBarCard } from "@/components/dashboard/cards/interactive-bar-card"
+import { ABTestCard } from "@/components/dashboard/cards/ab-test-card"
+import { WebhookMetricsCard } from "@/components/dashboard/cards/webhook-metrics-card"
+import { DeviceMetricsCard } from "@/components/dashboard/cards/device-metrics-card"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/components/ui/use-toast"
+import { Badge } from "@/components/ui/badge"
+import { CalendarDateRangePicker } from "@/components/date-range-picker"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // Unique ID generator
 const generateId = () => `widget_${Math.random().toString(36).substr(2, 9)}`
@@ -22,11 +58,12 @@ export default function Dashboard() {
   const [widgets, setWidgets] = useState([
     { id: "stats1", type: "stats", colSpan: 1, rowSpan: 1, position: 0 },
     { id: "stats2", type: "stats", colSpan: 1, rowSpan: 1, position: 1 },
-    { id: "stats3", type: "stats", colSpan: 1, rowSpan: 1, position: 2 },
-    { id: "stats4", type: "stats", colSpan: 1, rowSpan: 1, position: 3 },
-    { id: "chart1", type: "chart", colSpan: 2, rowSpan: 2, position: 4 },
-    { id: "chart2", type: "chart", colSpan: 2, rowSpan: 2, position: 6 },
-    { id: "table1", type: "table", colSpan: 4, rowSpan: 2, position: 8 },
+    { id: "area1", type: "area", colSpan: 2, rowSpan: 1, position: 2 },
+    { id: "device1", type: "device", colSpan: 2, rowSpan: 2, position: 4 },
+    { id: "pie1", type: "pie", colSpan: 2, rowSpan: 2, position: 6 },
+    { id: "interactive1", type: "interactive", colSpan: 2, rowSpan: 2, position: 8 },
+    { id: "abtest1", type: "abtest", colSpan: 2, rowSpan: 2, position: 10 },
+    { id: "webhook1", type: "webhook", colSpan: 4, rowSpan: 2, position: 12 },
   ])
 
   const [draggedWidget, setDraggedWidget] = useState<string | null>(null)
@@ -36,6 +73,8 @@ export default function Dashboard() {
   })
   const [currentLayout, setCurrentLayout] = useState("Layout Padrão")
   const [showGridLines, setShowGridLines] = useState(false)
+  const [refreshingData, setRefreshingData] = useState(false)
+  const [activeView, setActiveView] = useState("all")
 
   const handleResize = (id: string, colSpan: number, rowSpan: number) => {
     console.log(`Resizing widget ${id} to ${colSpan}x${rowSpan}`)
@@ -138,112 +177,268 @@ export default function Dashboard() {
     }
   }
 
+  const handleRefresh = () => {
+    setRefreshingData(true)
+    // Simulando uma atualização de dados
+    setTimeout(() => {
+      setRefreshingData(false)
+      toast({
+        title: "Dashboard atualizado",
+        description: "Os dados foram atualizados com sucesso.",
+      })
+    }, 1500)
+  }
+
   return (
     <div className="container mx-auto p-4">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold">Modular Dashboard</h1>
-        <p className="text-muted-foreground">Dashboard com componentes modulares e personalizáveis</p>
-      </header>
+      <div className="flex flex-col space-y-5 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight">Modular Dashboard</h1>
+              <Badge className="bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 h-7">
+                Personalizado
+              </Badge>
+              <Badge variant="outline" className="text-muted-foreground">
+                Última atualização: {new Date().toLocaleString('pt-BR', { 
+                  day: '2-digit', 
+                  month: '2-digit',
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground mt-1">
+              Dashboard com componentes modulares e personalizáveis para visualização de métricas variadas.
+            </p>
+          </div>
 
-      <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
-        <h2 className="font-medium text-amber-800">Instruções:</h2>
-        <ul className="text-amber-700 list-disc pl-5 space-y-1">
-          <li>
-            <strong>Redimensionar:</strong> Clique no ícone de grade
-            <span className="inline-flex items-center justify-center mx-1 bg-amber-100 rounded p-0.5">
-              <LayoutGrid className="h-3 w-3 text-amber-700" />
-            </span>
-            e selecione o tamanho desejado
-          </li>
-          <li>
-            <strong>Mover:</strong> Clique e arraste a alça "Mover" no topo para reposicionar
-          </li>
-          <li>
-            <strong>Adicionar:</strong> Use o botão "+" para adicionar novos componentes
-          </li>
-          <li>
-            <strong>Remover:</strong> Clique no "X" no canto superior direito para remover
-          </li>
-          <li>
-            <strong>Minimizar:</strong> Use o botão ao lado do "X" para colapsar/expandir
-          </li>
-        </ul>
+          <div className="flex items-center gap-2 flex-wrap sm:justify-end">
+            <CalendarDateRangePicker />
+            
+            <DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Filtrar dados</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Filtros de Visualização</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <LineChart className="mr-2 h-4 w-4" />
+                  Gráficos Lineares
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <PieChart className="mr-2 h-4 w-4" />
+                  Gráficos de Pizza
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <BarChart className="mr-2 h-4 w-4" />
+                  Gráficos de Barra
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Exportar dashboard</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Exportar Dashboard</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  Exportar como PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Exportar como Imagem
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Exportar Dados (CSV)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Compartilhar</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Compartilhar Dashboard</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  Gerar link compartilhável
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Enviar por e-mail
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  Agendar relatório
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Configurações</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <Button disabled={refreshingData} onClick={handleRefresh}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${refreshingData ? "animate-spin" : ""}`} />
+              {refreshingData ? "Atualizando..." : "Atualizar"}
+            </Button>
+          </div>
+        </div>
+        
+        <div className="bg-muted/30 rounded-lg p-4 flex flex-col sm:flex-row justify-between gap-4">
+          <div className="flex gap-3">
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Total Widgets</span>
+              <span className="text-2xl font-semibold">{widgets.length}</span>
+            </div>
+            <div className="h-full w-px bg-border"></div>
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Webhooks Ativos</span>
+              <span className="text-2xl font-semibold">5</span>
+            </div>
+            <div className="h-full w-px bg-border"></div>
+            <div className="flex flex-col">
+              <span className="text-sm text-muted-foreground">Layouts Salvos</span>
+              <span className="text-2xl font-semibold">{Object.keys(layouts).length}</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <Tabs defaultValue={activeView} onValueChange={setActiveView}>
+              <TabsList className="h-9">
+                <TabsTrigger value="all" className="text-xs px-3">
+                  Todos
+                </TabsTrigger>
+                <TabsTrigger value="metrics" className="text-xs px-3">
+                  Métricas
+                </TabsTrigger>
+                <TabsTrigger value="charts" className="text-xs px-3">
+                  Gráficos
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            <Select value={currentLayout} onValueChange={handleLoadLayout}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="Selecione um layout" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.keys(layouts).map((layout) => (
+                  <SelectItem key={layout} value={layout}>
+                    {layout}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Button variant="outline" size="sm" onClick={handleSaveLayout} className="h-9">
+              <Save className="h-4 w-4 mr-2" />
+              Salvar Layout
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" />
-                Adicionar Widget
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar Novo Widget</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <label className="block text-sm font-medium mb-2">Tipo de Widget</label>
-                <Select value={newWidgetType} onValueChange={setNewWidgetType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="stats">Estatísticas</SelectItem>
-                    <SelectItem value="chart">Gráfico</SelectItem>
-                    <SelectItem value="table">Tabela</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleAddWidget}>Adicionar</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+      <div className="flex items-center gap-2 mb-6">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-1" />
+              Adicionar Widget
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Adicionar Novo Widget</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <label className="block text-sm font-medium mb-2">Tipo de Widget</label>
+              <Select value={newWidgetType} onValueChange={setNewWidgetType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="stats">Estatísticas</SelectItem>
+                  <SelectItem value="chart">Gráfico Linear</SelectItem>
+                  <SelectItem value="table">Tabela</SelectItem>
+                  <SelectItem value="area">Gráfico de Área</SelectItem>
+                  <SelectItem value="pie">Gráfico de Pizza</SelectItem>
+                  <SelectItem value="interactive">Gráfico de Barras Interativo</SelectItem>
+                  <SelectItem value="abtest">Teste A/B</SelectItem>
+                  <SelectItem value="webhook">Métricas de Webhook</SelectItem>
+                  <SelectItem value="device">Métricas de Dispositivos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleAddWidget}>Adicionar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-          <Button variant="outline" size="sm" onClick={handleSaveLayout}>
-            <Save className="h-4 w-4 mr-1" />
-            Salvar Layout
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowGridLines(!showGridLines)}
-            className={showGridLines ? "bg-muted" : ""}
-          >
-            <LayoutGrid className="h-4 w-4 mr-1" />
-            {showGridLines ? "Ocultar Grid" : "Mostrar Grid"}
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Select value={currentLayout} onValueChange={handleLoadLayout}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Selecione um layout" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(layouts).map((layout) => (
-                <SelectItem key={layout} value={layout}>
-                  {layout}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              if (confirm("Restaurar o layout padrão?")) {
-                handleLoadLayout("Layout Padrão")
-              }
-            }}
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant={showGridLines ? "default" : "outline"}
+          onClick={() => setShowGridLines(!showGridLines)}
+        >
+          <LayoutGrid className="h-4 w-4 mr-1" />
+          {showGridLines ? "Ocultar Grid" : "Mostrar Grid"}
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={() => {
+            if (confirm("Restaurar o layout padrão?")) {
+              handleLoadLayout("Layout Padrão")
+            }
+          }}
+        >
+          <RotateCcw className="h-4 w-4 mr-1" />
+          Restaurar Padrão
+        </Button>
       </div>
 
       <div
@@ -272,6 +467,12 @@ export default function Dashboard() {
                 {widget.type === "stats" && <StatsCard />}
                 {widget.type === "chart" && <ChartCard />}
                 {widget.type === "table" && <TableCard />}
+                {widget.type === "area" && <AreaCard />}
+                {widget.type === "pie" && <PieCard />}
+                {widget.type === "interactive" && <InteractiveBarCard />}
+                {widget.type === "abtest" && <ABTestCard />}
+                {widget.type === "webhook" && <WebhookMetricsCard />}
+                {widget.type === "device" && <DeviceMetricsCard />}
               </DashboardWidget>
             ))}
         </DashboardGrid>

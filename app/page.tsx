@@ -1,6 +1,7 @@
 import Link from "next/link"
 import {
   ArrowRight,
+  SquareGanttChart,
   BarChart3,
   Bot,
   CheckCircle2,
@@ -19,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Logo } from "@/components/logo"
 
 export default function LandingPage() {
   return (
@@ -27,8 +27,8 @@ export default function LandingPage() {
       <header className="flex justify-center items-center sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <Logo className="h-8 w-8" />
-            <span className="text-xl font-bold">Métricas SaaS</span>
+            <SquareGanttChart className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold">Metrio</span>
           </div>
           <nav className="hidden md:flex items-center gap-6">
             <Link href="#funcionalidades" className="text-sm font-medium text-muted-foreground hover:text-foreground">
@@ -43,8 +43,8 @@ export default function LandingPage() {
             <Link href="#planos" className="text-sm font-medium text-muted-foreground hover:text-foreground">
               Planos
             </Link>
-            <Link href="#depoimentos" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-              Depoimentos
+            <Link href="#visao" className="text-sm font-medium text-muted-foreground hover:text-foreground">
+              Nossa Visão
             </Link>
           </nav>
           <div className="flex items-center gap-4">
@@ -52,7 +52,7 @@ export default function LandingPage() {
               <Button variant="ghost">Entrar</Button>
             </Link>
             <Link href="/register">
-              <Button>Começar Grátis</Button>
+              <Button>Pré-cadastro</Button>
             </Link>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default function LandingPage() {
             <div className="flex flex-col items-center text-center mb-12">
               <Badge className="mb-4 text-sm px-6 py-1.5" variant="outline">
                 <span className="bg-gradient-to-r from-primary to-primary/60 text-transparent bg-clip-text font-medium">
-                  +5.000 empresas já utilizam nossos webhooks
+                  Em breve - Faça seu pré-cadastro
                 </span>
               </Badge>
             </div>
@@ -86,7 +86,7 @@ export default function LandingPage() {
                 <div className="flex flex-col gap-3 min-[400px]:flex-row justify-center lg:justify-start">
                   <Link href="/register">
                     <Button size="lg" className="gap-2 px-8 h-12 shadow-lg shadow-primary/20">
-                      Começar agora
+                      Pré-cadastro
                       <ArrowRight className="h-4 w-4" />
                     </Button>
                   </Link>
@@ -100,7 +100,7 @@ export default function LandingPage() {
                 <div className="flex flex-wrap justify-center lg:justify-start items-center gap-4 text-sm mt-4">
                   <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/5">
                     <CheckCircle2 className="h-4 w-4 text-primary" />
-                    <span>14 dias grátis</span>
+                    <span>Acesso antecipado</span>
                   </div>
                   <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/5">
                     <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -108,21 +108,21 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/5">
                     <CheckCircle2 className="h-4 w-4 text-primary" />
-                    <span>Suporte 24/7</span>
+                    <span>Suporte personalizado</span>
                   </div>
                 </div>
                 <div className="mt-8 grid grid-cols-3 gap-4 py-5 border-t border-b border-border">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">+2.5M</div>
-                    <div className="text-xs text-muted-foreground mt-1">Eventos coletados</div>
+                    <div className="text-2xl font-bold text-foreground">Simples</div>
+                    <div className="text-xs text-muted-foreground mt-1">Integração rápida</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">+5K</div>
-                    <div className="text-xs text-muted-foreground mt-1">Clientes ativos</div>
+                    <div className="text-2xl font-bold text-foreground">Flexível</div>
+                    <div className="text-xs text-muted-foreground mt-1">Para seu negócio</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground">99.99%</div>
-                    <div className="text-xs text-muted-foreground mt-1">Uptime garantido</div>
+                    <div className="text-2xl font-bold text-foreground">Intuitivo</div>
+                    <div className="text-xs text-muted-foreground mt-1">Fácil de usar</div>
                   </div>
                 </div>
               </div>
@@ -140,11 +140,11 @@ export default function LandingPage() {
                     <div className="absolute bottom-4 right-4 flex gap-2">
                       <div className="flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/40 px-3 py-1.5 rounded-lg shadow-lg">
                         <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-medium">+27% no mês</span>
+                        <span className="text-xs font-medium">Análise em tempo real</span>
                       </div>
                       <div className="flex items-center gap-1.5 bg-background/90 backdrop-blur-sm border border-border/40 px-3 py-1.5 rounded-lg shadow-lg">
                         <Activity className="h-4 w-4 text-green-500" />
-                        <span className="text-xs font-medium">Ativo agora</span>
+                        <span className="text-xs font-medium">Insights inteligentes</span>
                       </div>
                     </div>
                   </div>
@@ -152,9 +152,9 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="mt-24 flex flex-col items-center">
-              <div className="text-sm text-muted-foreground mb-6">Empresas que confiam em nós</div>
+              <div className="text-sm text-muted-foreground mb-6">Em desenvolvimento para</div>
               <div className="flex flex-wrap justify-center gap-8 opacity-70">
-                {/* Logos de empresas simuladas */}
+                {/* Logos de mercados-alvo */}
                 <div className="h-6 w-20 bg-gradient-to-r from-foreground/80 to-foreground/60 rounded"></div>
                 <div className="h-6 w-24 bg-gradient-to-r from-foreground/80 to-foreground/60 rounded"></div>
                 <div className="h-6 w-16 bg-gradient-to-r from-foreground/80 to-foreground/60 rounded"></div>
@@ -793,57 +793,53 @@ export default function LandingPage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <Badge className="inline-block">Planos</Badge>
+                <Badge className="inline-block">Planos Futuros</Badge>
                 <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">
-                  Escolha o plano ideal para seu negócio
+                  Planos pensados para o seu negócio
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Oferecemos planos flexíveis que crescem com sua empresa, desde startups até grandes corporações.
+                  Quando o Metrio for lançado, ofereceremos planos flexíveis para empresas de todos os tamanhos.
                 </p>
               </div>
             </div>
             <div className="grid gap-6 py-12 lg:grid-cols-3 lg:gap-8">
               <Card className="flex flex-col">
                 <CardHeader>
-                  <CardTitle>Starter</CardTitle>
-                  <CardDescription>Ideal para pequenas empresas e startups</CardDescription>
+                  <CardTitle>Beta</CardTitle>
+                  <CardDescription>Para os primeiros entusiastas</CardDescription>
                   <div className="mt-4 flex items-baseline text-5xl font-bold">
-                    R$99<span className="text-lg font-normal text-muted-foreground">/mês</span>
+                    Grátis<span className="text-lg font-normal text-muted-foreground">/3 meses</span>
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1">
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>5 webhooks personalizáveis</span>
+                      <span>Acesso antecipado a todas as funcionalidades</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>10 eventos diferentes</span>
+                      <span>Suporte preferencial da equipe</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>100.000 eventos/mês</span>
+                      <span>Influencie o desenvolvimento do produto</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Dashboard básico</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Suporte por email</span>
+                      <span>50% de desconto após o período beta</span>
                     </li>
                   </ul>
                 </CardContent>
                 <CardFooter>
                   <Link href="/register" className="w-full">
-                    <Button className="w-full">Começar grátis</Button>
+                    <Button className="w-full">Fazer pré-cadastro</Button>
                   </Link>
                 </CardFooter>
               </Card>
               <Card className="flex flex-col border-primary relative">
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                  Mais popular
+                  Recomendado
                 </div>
                 <CardHeader>
                   <CardTitle>Pro</CardTitle>
@@ -874,24 +870,20 @@ export default function LandingPage() {
                       <CheckCircle2 className="h-4 w-4 text-primary" />
                       <span>Insights de IA básicos</span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Suporte prioritário</span>
-                    </li>
                   </ul>
                 </CardContent>
                 <CardFooter>
                   <Link href="/register" className="w-full">
-                    <Button className="w-full">Começar grátis</Button>
+                    <Button className="w-full">Reservar acesso</Button>
                   </Link>
                 </CardFooter>
               </Card>
               <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle>Enterprise</CardTitle>
-                  <CardDescription>Para grandes empresas e corporações</CardDescription>
+                  <CardDescription>Para grandes empresas</CardDescription>
                   <div className="mt-4 flex items-baseline text-5xl font-bold">
-                    R$499<span className="text-lg font-normal text-muted-foreground">/mês</span>
+                    Sob consulta
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1">
@@ -914,11 +906,7 @@ export default function LandingPage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Insights de IA avançados</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Gerente de conta dedicado</span>
+                      <span>Integrações customizadas</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -927,8 +915,8 @@ export default function LandingPage() {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Link href="/register" className="w-full">
-                    <Button className="w-full">Começar grátis</Button>
+                  <Link href="/contact" className="w-full">
+                    <Button variant="outline" className="w-full">Entre em contato</Button>
                   </Link>
                 </CardFooter>
               </Card>
@@ -936,17 +924,17 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Depoimentos */}
-        <section className="w-full py-12 md:py-24 lg:py-32 flex justify-center items-center" id="depoimentos">
+        {/* Nossa Visão - substituindo Depoimentos */}
+        <section className="w-full py-12 md:py-24 lg:py-32 flex justify-center items-center" id="visao">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <Badge className="inline-block" variant="secondary">
-                  Depoimentos
+                  Nossa Visão
                 </Badge>
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">O que nossos clientes dizem</h2>
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">O que nos inspira</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Empresas de todos os tamanhos estão transformando seus negócios com Métricas SaaS.
+                  Estamos construindo o Metrio para resolver problemas reais de empresas de todos os tamanhos.
                 </p>
               </div>
             </div>
@@ -954,63 +942,51 @@ export default function LandingPage() {
               <Card className="border-2 border-muted">
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <img
-                      src="/placeholder.svg?height=60&width=60"
-                      alt="Avatar"
-                      className="rounded-full h-12 w-12 object-cover"
-                    />
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <TrendingUp className="h-6 w-6 text-primary" />
+                    </div>
                     <div>
-                      <CardTitle className="text-base">Maria Silva</CardTitle>
-                      <CardDescription>CEO, TechStart</CardDescription>
+                      <CardTitle className="text-base">Um Futuro Data-Driven</CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    "Métricas SaaS transformou completamente nossa visibilidade de negócio. Agora tomamos decisões
-                    baseadas em dados reais, não em intuição."
+                    "Acreditamos que decisões baseadas em dados transformam negócios. Nossa missão é tornar isso acessível para todas as empresas, independente do porte."
                   </p>
                 </CardContent>
               </Card>
               <Card className="border-2 border-muted">
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <img
-                      src="/placeholder.svg?height=60&width=60"
-                      alt="Avatar"
-                      className="rounded-full h-12 w-12 object-cover"
-                    />
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Code className="h-6 w-6 text-primary" />
+                    </div>
                     <div>
-                      <CardTitle className="text-base">João Santos</CardTitle>
-                      <CardDescription>CTO, E-commerce Global</CardDescription>
+                      <CardTitle className="text-base">Simplicidade Técnica</CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    "A facilidade de integração com nossas plataformas existentes foi impressionante. Em menos de uma
-                    semana, já tínhamos insights valiosos."
+                    "Queremos eliminar a complexidade técnica das integrações. Mesmo as equipes sem profundo conhecimento técnico merecem ferramentas poderosas de análise."
                   </p>
                 </CardContent>
               </Card>
               <Card className="border-2 border-muted">
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <img
-                      src="/placeholder.svg?height=60&width=60"
-                      alt="Avatar"
-                      className="rounded-full h-12 w-12 object-cover"
-                    />
+                    <div className="rounded-full bg-primary/10 p-3">
+                      <Bot className="h-6 w-6 text-primary" />
+                    </div>
                     <div>
-                      <CardTitle className="text-base">Ana Oliveira</CardTitle>
-                      <CardDescription>CMO, Retail Solutions</CardDescription>
+                      <CardTitle className="text-base">IA ao seu Alcance</CardTitle>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    "Os insights de IA nos ajudaram a identificar padrões que nunca teríamos percebido. Aumentamos nossa
-                    conversão em 32% em apenas três meses."
+                    "Estamos desenvolvendo recursos de inteligência artificial que não apenas mostram dados, mas geram insights acionáveis para transformar seu negócio."
                   </p>
                 </CardContent>
               </Card>
@@ -1091,29 +1067,32 @@ export default function LandingPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter md:text-4xl/tight">
-                  Pronto para transformar seu negócio com dados?
+                  Seja um dos primeiros a experimentar o Metrio
                 </h2>
                 <p className="max-w-[900px] md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Comece hoje mesmo com 14 dias grátis. Sem compromisso, sem cartão de crédito.
+                  Estamos desenvolvendo algo especial. Faça seu pré-cadastro para acesso antecipado e bônus exclusivos.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
                 <Link href="/register">
                   <Button size="lg" variant="secondary" className="gap-1">
-                    Começar agora
+                    Fazer pré-cadastro
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="#demo">
+                <Link href="#visao">
                   <Button
                     size="lg"
                     variant="outline"
                     className="bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
                   >
-                    Agendar demonstração
+                    Conheça nossa visão
                   </Button>
                 </Link>
               </div>
+              <p className="mt-4 text-sm text-primary-foreground/80">
+                Os primeiros 100 usuários terão acesso vitalício ao plano Pro
+              </p>
             </div>
           </div>
         </section>
@@ -1124,10 +1103,10 @@ export default function LandingPage() {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Logo className="h-6 w-6" />
-                <span className="text-lg font-bold">Métricas SaaS</span>
+                <SquareGanttChart className="h-6 w-6 text-primary" />
+                <span className="text-lg font-bold">Metrio</span>
               </div>
-              <p className="text-sm text-muted-foreground">Transformando dados em decisões de negócio desde 2020.</p>
+              <p className="text-sm text-muted-foreground">Transformando dados em decisões de negócio.</p>
               <div className="flex gap-4">
                 <Link href="#" className="text-muted-foreground hover:text-foreground">
                   <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -1177,8 +1156,8 @@ export default function LandingPage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground">
-                    Integrações
+                  <Link href="#como-funciona" className="text-muted-foreground hover:text-foreground">
+                    Como funciona
                   </Link>
                 </li>
                 <li>
@@ -1198,32 +1177,27 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <Link href="#" className="text-muted-foreground hover:text-foreground">
-                    Documentação
+                    Futura documentação
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-muted-foreground hover:text-foreground">
-                    Guias
+                    Próximos webinars
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-muted-foreground hover:text-foreground">
-                    Webinars
+                    Inscreva-se na newsletter
                   </Link>
                 </li>
               </ul>
             </div>
             <div className="space-y-4">
-              <h3 className="text-base font-medium">Empresa</h3>
+              <h3 className="text-base font-medium">Contato</h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="#" className="text-muted-foreground hover:text-foreground">
                     Sobre nós
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="text-muted-foreground hover:text-foreground">
-                    Carreiras
                   </Link>
                 </li>
                 <li>
@@ -1236,11 +1210,16 @@ export default function LandingPage() {
                     Política de privacidade
                   </Link>
                 </li>
+                <li>
+                  <Link href="#" className="text-muted-foreground hover:text-foreground">
+                    Termos de uso
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
           <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2023 Métricas SaaS. Todos os direitos reservados.</p>
+            <p>© 2023 Metrio. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

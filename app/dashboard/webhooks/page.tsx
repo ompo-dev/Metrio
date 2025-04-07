@@ -6,7 +6,6 @@ import { WebhooksHeader } from "@/components/webhooks/webhooks-header"
 import { WebhooksList, Webhook as WebhookFromList } from "@/components/webhooks/webhooks-list"
 import { WebhooksMonitor } from "@/components/webhooks/webhooks-monitor"
 import { WebhooksLogs } from "@/components/webhooks/webhooks-logs"
-import { WebhooksDocumentation } from "@/components/webhooks/webhooks-documentation"
 import { WebhooksDetails } from "@/components/webhooks/webhooks-details"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
