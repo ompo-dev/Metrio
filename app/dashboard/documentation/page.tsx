@@ -1,5 +1,5 @@
-import { DocumentationHeader } from "@/components/documentation/documentation-header"
-import { DocumentationContent } from "@/components/documentation/documentation-content"
+import { DocumentationHeader } from "@/app/dashboard/documentation/components/documentation-header";
+import { DocumentationContent } from "@/app/dashboard/documentation/components/documentation-content";
 
 export default function DocumentationPage() {
   return (
@@ -7,6 +7,5 @@ export default function DocumentationPage() {
       <DocumentationHeader />
       <DocumentationContent />
     </>
-  )
+  );
 }
-

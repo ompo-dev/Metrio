@@ -1,12 +1,18 @@
-import { WebhooksCreate } from "@/components/webhooks/webhooks-create"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Zap, ArrowLeft, Code, Settings } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { WebhooksCreate } from "@/app/dashboard/webhooks/components/webhooks-create";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Zap, ArrowLeft, Code, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
 export default function CreateWebhookPage() {
   return (
@@ -20,18 +26,20 @@ export default function CreateWebhookPage() {
           </Link>
         </Button>
       </div>
-      
+
       <Alert className="bg-blue-50 border-blue-200">
         <AlertTitle className="text-blue-700 flex items-center">
           <Zap className="h-4 w-4 mr-2" />
           Novo Sistema de UUIDs
         </AlertTitle>
         <AlertDescription className="text-blue-700">
-          Nossos webhooks agora utilizam UUIDs únicos para cada endpoint. Use nomes técnicos em seu código para 
-          facilitar o uso e a manutenção. As variáveis de ambiente (WEBHOOK_ID_*) são recomendadas para gerenciar os IDs.
+          Nossos webhooks agora utilizam UUIDs únicos para cada endpoint. Use
+          nomes técnicos em seu código para facilitar o uso e a manutenção. As
+          variáveis de ambiente (WEBHOOK_ID_*) são recomendadas para gerenciar
+          os IDs.
         </AlertDescription>
       </Alert>
-      
+
       <Tabs defaultValue="config" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="config">
@@ -43,33 +51,44 @@ export default function CreateWebhookPage() {
             Implementação
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="config">
           <WebhooksCreate />
         </TabsContent>
-        
+
         <TabsContent value="implementation">
           <Card>
             <CardHeader>
               <CardTitle>Implementando seu Webhook</CardTitle>
               <CardDescription>
-                Exemplos práticos de como integrar webhooks em seu projeto usando diferentes abordagens
+                Exemplos práticos de como integrar webhooks em seu projeto
+                usando diferentes abordagens
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium mb-2">Arquivo Helper Webhook.ts</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  Arquivo Helper Webhook.ts
+                </h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Crie este arquivo em seu projeto para facilitar o uso dos webhooks com chamadas simples como <code className="bg-muted px-1 py-0.5 rounded">webhook.user.login(123, 'mobile')</code>
+                  Crie este arquivo em seu projeto para facilitar o uso dos
+                  webhooks com chamadas simples como{" "}
+                  <code className="bg-muted px-1 py-0.5 rounded">
+                    webhook.user.login(123, 'mobile')
+                  </code>
                 </p>
                 <div className="rounded-md overflow-hidden">
-                  <SyntaxHighlighter 
-                    language="typescript" 
+                  <SyntaxHighlighter
+                    language="typescript"
                     style={vscDarkPlus}
-                    customStyle={{ margin: 0, fontSize: '0.75rem', borderRadius: '0.375rem' }}
+                    customStyle={{
+                      margin: 0,
+                      fontSize: "0.75rem",
+                      borderRadius: "0.375rem",
+                    }}
                     showLineNumbers
                   >
-{`// webhooks.ts - Um arquivo helper para enviar seus webhooks
+                    {`// webhooks.ts - Um arquivo helper para enviar seus webhooks
 import axios from 'axios';
 
 // Configuração central do webhook
@@ -191,16 +210,30 @@ webhook.custom(123, "exemplo", "exemplo", 123);
                   </SyntaxHighlighter>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Salve este arquivo em <code className="bg-muted px-1 py-0.5 rounded">lib/webhooks.ts</code> ou <code className="bg-muted px-1 py-0.5 rounded">utils/webhooks.ts</code> e importe onde precisar.
+                  Salve este arquivo em{" "}
+                  <code className="bg-muted px-1 py-0.5 rounded">
+                    lib/webhooks.ts
+                  </code>{" "}
+                  ou{" "}
+                  <code className="bg-muted px-1 py-0.5 rounded">
+                    utils/webhooks.ts
+                  </code>{" "}
+                  e importe onde precisar.
                 </p>
-                <h4 className="text-sm font-medium mt-3 mb-2">Exemplos práticos de uso em seu projeto:</h4>
+                <h4 className="text-sm font-medium mt-3 mb-2">
+                  Exemplos práticos de uso em seu projeto:
+                </h4>
                 <div className="rounded-md overflow-hidden">
-                  <SyntaxHighlighter 
-                    language="typescript" 
+                  <SyntaxHighlighter
+                    language="typescript"
                     style={vscDarkPlus}
-                    customStyle={{ margin: 0, fontSize: '0.75rem', borderRadius: '0.375rem' }}
+                    customStyle={{
+                      margin: 0,
+                      fontSize: "0.75rem",
+                      borderRadius: "0.375rem",
+                    }}
                   >
-{`// Em um componente de login (pages/login.tsx ou app/login/page.tsx)
+                    {`// Em um componente de login (pages/login.tsx ou app/login/page.tsx)
 import { webhook } from '@/lib/webhooks';
 
 const handleLogin = async (email, password) => {
@@ -250,20 +283,27 @@ export default function ProductPage({ product, user }) {
                   </SyntaxHighlighter>
                 </div>
               </div>
-              
+
               <div>
-                <h3 className="text-lg font-medium mb-2">SDK com Variáveis de Ambiente</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  SDK com Variáveis de Ambiente
+                </h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Abordagem recomendada para projetos em produção, usando variáveis de ambiente para segurança.
+                  Abordagem recomendada para projetos em produção, usando
+                  variáveis de ambiente para segurança.
                 </p>
                 <div className="rounded-md overflow-hidden">
-                  <SyntaxHighlighter 
-                    language="typescript" 
+                  <SyntaxHighlighter
+                    language="typescript"
                     style={vscDarkPlus}
-                    customStyle={{ margin: 0, fontSize: '0.75rem', borderRadius: '0.375rem' }}
+                    customStyle={{
+                      margin: 0,
+                      fontSize: "0.75rem",
+                      borderRadius: "0.375rem",
+                    }}
                     showLineNumbers
                   >
-{`// webhooks.ts - Helper para enviar webhooks
+                    {`// webhooks.ts - Helper para enviar webhooks
 import axios from 'axios';
 
 // Mapeamento de nomes técnicos para UUIDs dos webhooks
@@ -325,11 +365,12 @@ async function sendWebhook(hookName: string, data: any) {
                   </SyntaxHighlighter>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Configure suas variáveis de ambiente no arquivo <code className="bg-muted px-1 py-0.5 rounded">.env</code>:
+                  Configure suas variáveis de ambiente no arquivo{" "}
+                  <code className="bg-muted px-1 py-0.5 rounded">.env</code>:
                 </p>
                 <div className="bg-muted p-2 mt-1 rounded">
                   <pre className="text-xs">
-{`# Configuração de Webhooks
+                    {`# Configuração de Webhooks
 WEBHOOK_BASE_URL=https://api.metrics-saas.com
 WEBHOOK_SECRET_KEY=whsec_sua_chave_secreta
 
@@ -342,20 +383,25 @@ WEBHOOK_ID_PRODUCT_STOCK=e5f6g7h8-i9j0-1234-abcd-ef1234567894`}
                   </pre>
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-medium mb-2">API com Namespaces</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  SDK organizado com namespaces (user, product, etc) para facilitar o uso em diferentes contextos.
+                  SDK organizado com namespaces (user, product, etc) para
+                  facilitar o uso em diferentes contextos.
                 </p>
                 <div className="rounded-md overflow-hidden">
-                  <SyntaxHighlighter 
-                    language="typescript" 
+                  <SyntaxHighlighter
+                    language="typescript"
                     style={vscDarkPlus}
-                    customStyle={{ margin: 0, fontSize: '0.75rem', borderRadius: '0.375rem' }}
+                    customStyle={{
+                      margin: 0,
+                      fontSize: "0.75rem",
+                      borderRadius: "0.375rem",
+                    }}
                     showLineNumbers
                   >
-{`// Namespace para webhooks de usuário
+                    {`// Namespace para webhooks de usuário
 export const webhook = {
   user: {
     // Usuário se logou
@@ -415,20 +461,26 @@ export const webhook = {
                   </SyntaxHighlighter>
                 </div>
               </div>
-              
+
               <div>
-                <h3 className="text-lg font-medium mb-2">Implementação em React/Next.js</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  Implementação em React/Next.js
+                </h3>
                 <p className="text-sm text-muted-foreground mb-3">
                   Exemplo prático de integração em uma página de checkout real.
                 </p>
                 <div className="rounded-md overflow-hidden">
-                  <SyntaxHighlighter 
-                    language="tsx" 
+                  <SyntaxHighlighter
+                    language="tsx"
                     style={vscDarkPlus}
-                    customStyle={{ margin: 0, fontSize: '0.75rem', borderRadius: '0.375rem' }}
+                    customStyle={{
+                      margin: 0,
+                      fontSize: "0.75rem",
+                      borderRadius: "0.375rem",
+                    }}
                     showLineNumbers
                   >
-{`// Em um componente React (exemplo: checkout)
+                    {`// Em um componente React (exemplo: checkout)
 import React from 'react';
 import { useSession } from 'next-auth/react';
 import { webhook } from '@/lib/webhooks';
@@ -485,5 +537,5 @@ export default function CheckoutButton({ cartItems, total }) {
         </TabsContent>
       </Tabs>
     </div>
-  )
-} 
+  );
+}

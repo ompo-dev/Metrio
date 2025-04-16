@@ -1,5 +1,5 @@
-import { RegisterForm } from "@/components/auth/register-form"
-import { Logo } from "@/components/logo"
+import { RegisterForm } from "@/app/auth/components/register-form";
+import { Logo } from "@/components/logo";
 
 export default function RegisterPage() {
   return (
@@ -8,11 +8,12 @@ export default function RegisterPage() {
         <div className="mb-8 flex flex-col items-center space-y-2 text-center">
           <Logo className="h-12 w-12" />
           <h1 className="text-3xl font-bold">Métricas SaaS</h1>
-          <p className="text-muted-foreground">Crie sua conta para começar a usar a plataforma</p>
+          <p className="text-muted-foreground">
+            Crie sua conta para começar a usar a plataforma
+          </p>
         </div>
         <RegisterForm />
       </div>
     </div>
-  )
+  );
 }
-

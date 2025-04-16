@@ -1,4 +1,4 @@
-import { TeamsManagement } from "@/components/teams/teams-management";
+import { TeamsManagement } from "./components/teams-management";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {

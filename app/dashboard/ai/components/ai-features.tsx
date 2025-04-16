@@ -1,41 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  Brain, 
-  Settings, 
-  ChevronRight, 
-  Clock, 
-  Filter, 
-  RefreshCw,
-  ShoppingCart,
-  TrendingUp,
-  Target,
-  Zap,
-  UserPlus,
-  UserCheck,
-  UserX,
-  UserCog,
-  AlertCircle,
-  Bookmark,
-  BookmarkCheck,
-  Users
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { AnomalyDetectionSection } from "./anomaly-detection"
-import { AutoInsightsSection } from "./auto-insights"
-import { SmartSegmentationSection } from "./smart-segmentation"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Brain, Settings, AlertCircle, Bookmark, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { AnomalyDetectionSection } from "./anomaly-detection";
+import { AutoInsightsSection } from "./auto-insights";
+import { SmartSegmentationSection } from "./smart-segmentation";
 
 export function AIFeatures() {
-  const [activeTab, setActiveTab] = useState("anomalies")
-  const [showConfig, setShowConfig] = useState(false)
+  const [activeTab, setActiveTab] = useState("anomalies");
+  const [showConfig, setShowConfig] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -47,15 +40,14 @@ export function AIFeatures() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowConfig(!showConfig)}
             className="transition-all duration-200"
           >
-            <Settings className={cn(
-              "h-4 w-4 mr-2",
-              showConfig && "animate-spin"
-            )} />
+            <Settings
+              className={cn("h-4 w-4 mr-2", showConfig && "animate-spin")}
+            />
             {showConfig ? "Fechar Configurações" : "Configurar IA"}
           </Button>
           <Button className="transition-all duration-200 hover:scale-105">
@@ -83,8 +75,12 @@ export function AIFeatures() {
                       <SelectValue placeholder="Selecione o modelo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gpt-4">GPT-4 (Mais preciso)</SelectItem>
-                      <SelectItem value="gpt-3.5">GPT-3.5 (Mais rápido)</SelectItem>
+                      <SelectItem value="gpt-4">
+                        GPT-4 (Mais preciso)
+                      </SelectItem>
+                      <SelectItem value="gpt-3.5">
+                        GPT-3.5 (Mais rápido)
+                      </SelectItem>
                       <SelectItem value="custom">Personalizado</SelectItem>
                     </SelectContent>
                   </Select>
@@ -92,7 +88,7 @@ export function AIFeatures() {
                     Modelo de IA usado para análise e geração
                   </p>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="language">Idioma</Label>
                   <Select defaultValue="pt-BR">
@@ -128,7 +124,7 @@ export function AIFeatures() {
                     Nível de confiança mínimo para resultados
                   </p>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="frequency">Frequência de Atualização</Label>
                   <Select defaultValue="daily">
@@ -152,19 +148,41 @@ export function AIFeatures() {
                 <h4 className="text-sm font-medium mb-2">Recursos Ativos</h4>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center p-2 rounded border hover:border-primary/50 transition-colors duration-200">
-                    <Switch id="feature-anomalies" checked={true} className="mr-2" />
-                    <Label htmlFor="feature-anomalies">Detecção de Anomalias</Label>
+                    <Switch
+                      id="feature-anomalies"
+                      checked={true}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="feature-anomalies">
+                      Detecção de Anomalias
+                    </Label>
                   </div>
                   <div className="flex items-center p-2 rounded border hover:border-primary/50 transition-colors duration-200">
-                    <Switch id="feature-insights" checked={true} className="mr-2" />
-                    <Label htmlFor="feature-insights">Insights Automáticos</Label>
+                    <Switch
+                      id="feature-insights"
+                      checked={true}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="feature-insights">
+                      Insights Automáticos
+                    </Label>
                   </div>
                   <div className="flex items-center p-2 rounded border hover:border-primary/50 transition-colors duration-200">
-                    <Switch id="feature-segments" checked={true} className="mr-2" />
-                    <Label htmlFor="feature-segments">Segmentação Inteligente</Label>
+                    <Switch
+                      id="feature-segments"
+                      checked={true}
+                      className="mr-2"
+                    />
+                    <Label htmlFor="feature-segments">
+                      Segmentação Inteligente
+                    </Label>
                   </div>
                   <div className="flex items-center p-2 rounded border hover:border-primary/50 transition-colors duration-200">
-                    <Switch id="feature-predictions" checked={true} className="mr-2" />
+                    <Switch
+                      id="feature-predictions"
+                      checked={true}
+                      className="mr-2"
+                    />
                     <Label htmlFor="feature-predictions">Previsões</Label>
                   </div>
                 </div>
@@ -172,7 +190,9 @@ export function AIFeatures() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label htmlFor="notifications" className="font-medium">Notificações</Label>
+                  <Label htmlFor="notifications" className="font-medium">
+                    Notificações
+                  </Label>
                   <p className="text-sm text-muted-foreground">
                     Receber alertas sobre descobertas importantes
                   </p>
@@ -189,24 +209,28 @@ export function AIFeatures() {
         </Card>
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger 
-            value="anomalies" 
+          <TabsTrigger
+            value="anomalies"
             className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           >
             <AlertCircle className="h-4 w-4 mr-2" />
             Detecção de Anomalias
           </TabsTrigger>
-          <TabsTrigger 
-            value="insights" 
+          <TabsTrigger
+            value="insights"
             className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           >
             <Bookmark className="h-4 w-4 mr-2" />
             Insights Automáticos
           </TabsTrigger>
-          <TabsTrigger 
-            value="segments" 
+          <TabsTrigger
+            value="segments"
             className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
           >
             <Users className="h-4 w-4 mr-2" />
@@ -225,5 +249,5 @@ export function AIFeatures() {
         </TabsContent>
       </Tabs>
     </div>
-  )
-} 
+  );
+}

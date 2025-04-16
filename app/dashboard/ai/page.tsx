@@ -1,8 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AiInsightsHeader } from "@/components/ai-insights/ai-insights-header";
-import { AiInsightsDashboard } from "@/components/ai-insights/ai-insights-dashboard";
-import { AIAssistant } from "@/components/ai-assistant/ai-assistant";
-import { AIFeatures } from "@/components/ai/ai-features";
+import { AiInsightsHeader } from "@/app/dashboard/ai/components/ai-insights-header";
+import { AiInsightsDashboard } from "@/app/dashboard/ai/components/ai-insights-dashboard";
+import { AIAssistant } from "@/app/dashboard/ai/components/ai-assistant";
+import { AIFeatures } from "@/app/dashboard/ai/components/ai-features";
 
 export default function AiInsightsPage() {
   return (

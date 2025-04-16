@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { CalendarDateRangePicker } from "@/components/date-range-picker"
-import { 
-  BarChart, 
-  RefreshCw, 
-  Download, 
-  Filter, 
-  Share2, 
-  Settings, 
-  PieChart, 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { CalendarDateRangePicker } from "@/components/date-range-picker";
+import {
+  BarChart,
+  RefreshCw,
+  Download,
+  Filter,
+  Share2,
+  Settings,
+  PieChart,
   LineChart,
-  Sliders, 
+  Sliders,
   Bell,
-  BellOff
-} from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+  BellOff,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,29 +25,29 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Switch } from "@/components/ui/switch"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/tooltip";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export function AiInsightsHeader() {
-  const [refreshingData, setRefreshingData] = useState(false)
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true)
-  const [viewType, setViewType] = useState("all")
-  
+  const [refreshingData, setRefreshingData] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [viewType, setViewType] = useState("all");
+
   const handleRefresh = () => {
-    setRefreshingData(true)
+    setRefreshingData(true);
     // Simulando uma atualização de dados
     setTimeout(() => {
-      setRefreshingData(false)
-    }, 1500)
-  }
-  
+      setRefreshingData(false);
+    }, 1500);
+  };
+
   return (
     <div className="flex flex-col space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
@@ -62,12 +62,13 @@ export function AiInsightsHeader() {
             </Badge>
           </div>
           <p className="text-muted-foreground mt-1">
-            Análises avançadas e insights gerados por inteligência artificial com base nos seus dados.
+            Análises avançadas e insights gerados por inteligência artificial
+            com base nos seus dados.
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap sm:justify-end">
           <CalendarDateRangePicker />
-          
+
           <DropdownMenu>
             <TooltipProvider>
               <Tooltip>
@@ -111,7 +112,7 @@ export function AiInsightsHeader() {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <DropdownMenu>
             <TooltipProvider>
               <Tooltip>
@@ -130,21 +131,13 @@ export function AiInsightsHeader() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Exportar Dados</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Exportar como PDF
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Exportar como Excel
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Exportar como CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Exportar gráficos (PNG)
-              </DropdownMenuItem>
+              <DropdownMenuItem>Exportar como PDF</DropdownMenuItem>
+              <DropdownMenuItem>Exportar como Excel</DropdownMenuItem>
+              <DropdownMenuItem>Exportar como CSV</DropdownMenuItem>
+              <DropdownMenuItem>Exportar gráficos (PNG)</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <DropdownMenu>
             <TooltipProvider>
               <Tooltip>
@@ -163,31 +156,37 @@ export function AiInsightsHeader() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Compartilhar Insights</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Compartilhar por e-mail
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Gerar link público
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Agendar relatório
-              </DropdownMenuItem>
+              <DropdownMenuItem>Compartilhar por e-mail</DropdownMenuItem>
+              <DropdownMenuItem>Gerar link público</DropdownMenuItem>
+              <DropdownMenuItem>Agendar relatório</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={() => setNotificationsEnabled(!notificationsEnabled)}>
-                  {notificationsEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setNotificationsEnabled(!notificationsEnabled)}
+                >
+                  {notificationsEnabled ? (
+                    <Bell className="h-4 w-4" />
+                  ) : (
+                    <BellOff className="h-4 w-4" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{notificationsEnabled ? "Desativar notificações" : "Ativar notificações"}</p>
+                <p>
+                  {notificationsEnabled
+                    ? "Desativar notificações"
+                    : "Ativar notificações"}
+                </p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -200,23 +199,29 @@ export function AiInsightsHeader() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          
+
           <Button disabled={refreshingData} onClick={handleRefresh}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${refreshingData ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${refreshingData ? "animate-spin" : ""}`}
+            />
             {refreshingData ? "Atualizando..." : "Atualizar"}
           </Button>
         </div>
       </div>
-      
+
       <div className="bg-muted/30 rounded-lg p-4 flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex gap-3">
           <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Insights gerados</span>
+            <span className="text-sm text-muted-foreground">
+              Insights gerados
+            </span>
             <span className="text-2xl font-semibold">237</span>
           </div>
           <div className="h-full w-px bg-border"></div>
           <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Anomalias detectadas</span>
+            <span className="text-sm text-muted-foreground">
+              Anomalias detectadas
+            </span>
             <span className="text-2xl font-semibold">14</span>
           </div>
           <div className="h-full w-px bg-border"></div>
@@ -225,7 +230,7 @@ export function AiInsightsHeader() {
             <span className="text-2xl font-semibold">42</span>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Tabs defaultValue={viewType} onValueChange={setViewType}>
             <TabsList className="h-9">
@@ -240,7 +245,7 @@ export function AiInsightsHeader() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          
+
           <Button variant="ghost" size="sm" className="h-9">
             <Sliders className="h-4 w-4 mr-2" />
             Personalizar visualização
@@ -248,6 +253,5 @@ export function AiInsightsHeader() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

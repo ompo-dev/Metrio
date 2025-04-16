@@ -1,5 +1,5 @@
-import { LoginForm } from "@/components/auth/login-form"
-import { Logo } from "@/components/logo"
+import { LoginForm } from "@/app/auth/components/login-form";
+import { Logo } from "@/components/logo";
 
 export default function LoginPage() {
   return (
@@ -8,11 +8,12 @@ export default function LoginPage() {
         <div className="mb-8 flex flex-col items-center space-y-2 text-center">
           <Logo className="h-12 w-12" />
           <h1 className="text-3xl font-bold">Métricas SaaS</h1>
-          <p className="text-muted-foreground">Entre na sua conta para acessar o dashboard</p>
+          <p className="text-muted-foreground">
+            Entre na sua conta para acessar o dashboard
+          </p>
         </div>
         <LoginForm />
       </div>
     </div>
-  )
+  );
 }
-
