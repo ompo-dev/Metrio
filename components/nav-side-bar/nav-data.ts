@@ -94,10 +94,6 @@ export const navData = {
           title: "Integrações",
           url: "/dashboard/webhooks/integrations",
         },
-        {
-          title: "Automatizações",
-          url: "/dashboard/webhooks/automations",
-        },
       ],
     },
     {
