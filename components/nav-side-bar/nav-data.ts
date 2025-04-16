@@ -103,11 +103,7 @@ export const navData = {
       items: [
         {
           title: "Recursos de IA",
-          url: "/dashboard/ai-insights",
-        },
-        {
-          title: "Recursos",
-          url: "/dashboard/ai-insights/resources",
+          url: "/dashboard/ai",
         },
       ],
     },
