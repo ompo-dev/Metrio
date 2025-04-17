@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { Users, UserPlus, Shield, Briefcase } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import { Button } from "@/components/ui/button";
 
 // Importações dos componentes internos
 import { TeamsList } from "./TeamsList";
@@ -19,6 +20,9 @@ import {
   permissionsData,
 } from "./data";
 
+// Definindo o tipo para as abas
+type TabType = "todas" | "membros" | "permissoes" | "funcoes";
+
 export function TeamsManagement({
   defaultTab = "todas",
 }: TeamsManagementProps) {
@@ -26,6 +30,25 @@ export function TeamsManagement({
   const [teams, setTeams] = React.useState(initialTeamsData);
   const [members, setMembers] = React.useState(initialMembersData);
   const [roles, setRoles] = React.useState(initialRolesData);
+  const [activeTab, setActiveTab] = React.useState<TabType>(
+    defaultTab as TabType
+  );
+
+  // Função para obter o ícone ativo com base na aba selecionada
+  const getActiveIcon = () => {
+    switch (activeTab) {
+      case "todas":
+        return <Users className="h-4 w-4" />;
+      case "membros":
+        return <UserPlus className="h-4 w-4" />;
+      case "permissoes":
+        return <Shield className="h-4 w-4" />;
+      case "funcoes":
+        return <Briefcase className="h-4 w-4" />;
+      default:
+        return <Users className="h-4 w-4" />;
+    }
+  };
 
   // Função para adicionar nova equipe
   const handleAddTeam = (name: string) => {
@@ -66,62 +89,101 @@ export function TeamsManagement({
     setRoles([...roles, newRole]);
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Gerenciamento de Equipes
-        </h2>
-      </div>
-
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="todas">
-            <Users className="h-4 w-4 mr-2" />
-            Equipes
-          </TabsTrigger>
-          <TabsTrigger value="membros">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Membros
-          </TabsTrigger>
-          <TabsTrigger value="permissoes">
-            <Shield className="h-4 w-4 mr-2" />
-            Permissões
-          </TabsTrigger>
-          <TabsTrigger value="funcoes">
-            <Briefcase className="h-4 w-4 mr-2" />
-            Funções
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Aba de Equipes */}
-        <TabsContent value="todas" className="space-y-4">
-          <TeamsList teams={teams} onAddTeam={handleAddTeam} />
-        </TabsContent>
-
-        {/* Aba de Membros */}
-        <TabsContent value="membros" className="space-y-4">
+  // Renderiza o conteúdo com base na tab ativa
+  const renderContent = () => {
+    switch (activeTab) {
+      case "todas":
+        return <TeamsList teams={teams} onAddTeam={handleAddTeam} />;
+      case "membros":
+        return (
           <MembersList
             members={members}
             roles={roles}
             onAddMember={handleAddMember}
           />
-        </TabsContent>
-
-        {/* Aba de Permissões */}
-        <TabsContent value="permissoes" className="space-y-4">
-          <PermissionsList permissions={permissionsData} />
-        </TabsContent>
-
-        {/* Aba de Funções */}
-        <TabsContent value="funcoes" className="space-y-4">
+        );
+      case "permissoes":
+        return <PermissionsList permissions={permissionsData} />;
+      case "funcoes":
+        return (
           <RolesList
             roles={roles}
             permissions={permissionsData}
             onAddRole={handleAddRole}
           />
-        </TabsContent>
-      </Tabs>
+        );
+      default:
+        return <TeamsList teams={teams} onAddTeam={handleAddTeam} />;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold">Gerenciamento de Equipes</h2>
+          <div className="ml-2">
+            <BreadcrumbSelect
+              items={[
+                {
+                  icon: getActiveIcon(),
+                  isSelect: true,
+                  label: "Visualização",
+                  selectProps: {
+                    defaultValue: activeTab,
+                    options: [
+                      { value: "todas", label: "Equipes" },
+                      { value: "membros", label: "Membros" },
+                      { value: "permissoes", label: "Permissões" },
+                      { value: "funcoes", label: "Funções" },
+                    ],
+                    onChange: (value) => {
+                      setActiveTab(value as TabType);
+                    },
+                  },
+                },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-2 md:hidden">
+        <Button
+          variant={activeTab === "todas" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("todas")}
+        >
+          <Users className="h-4 w-4 mr-2" />
+          Equipes
+        </Button>
+        <Button
+          variant={activeTab === "membros" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("membros")}
+        >
+          <UserPlus className="h-4 w-4 mr-2" />
+          Membros
+        </Button>
+        <Button
+          variant={activeTab === "permissoes" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("permissoes")}
+        >
+          <Shield className="h-4 w-4 mr-2" />
+          Permissões
+        </Button>
+        <Button
+          variant={activeTab === "funcoes" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("funcoes")}
+        >
+          <Briefcase className="h-4 w-4 mr-2" />
+          Funções
+        </Button>
+      </div>
+
+      <div className="space-y-4">{renderContent()}</div>
     </div>
   );
 }

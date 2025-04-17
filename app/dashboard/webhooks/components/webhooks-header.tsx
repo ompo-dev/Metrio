@@ -1,66 +1,113 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { 
-  Search, 
-  Plus, 
-  Filter, 
-  Download, 
-  Upload, 
-  RefreshCw, 
-  HelpCircle, 
-  PlusCircle
-} from "lucide-react"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Search,
+  Plus,
+  Filter,
+  Download,
+  Upload,
+  RefreshCw,
+  HelpCircle,
+  PlusCircle,
+  ListFilter,
+  BarChart,
+  ClipboardList,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-import Link from "next/link"
+} from "@/components/ui/tooltip";
+import Link from "next/link";
+import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
 
-export function WebhooksHeader() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [totalActiveWebhooks, setTotalActiveWebhooks] = useState(3)
-  const [totalWebhooks, setTotalWebhooks] = useState(5)
-  
+type WebhooksHeaderProps = {
+  activeView: string;
+  setActiveView: (view: string) => void;
+};
+
+export function WebhooksHeader({
+  activeView,
+  setActiveView,
+}: WebhooksHeaderProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [totalActiveWebhooks, setTotalActiveWebhooks] = useState(3);
+  const [totalWebhooks, setTotalWebhooks] = useState(5);
+
+  // Determina qual ícone mostrar com base na visualização ativa
+  const getActiveIcon = () => {
+    switch (activeView) {
+      case "manage":
+        return <ListFilter className="h-4 w-4" />;
+      case "monitor":
+        return <BarChart className="h-4 w-4" />;
+      case "logs":
+        return <ClipboardList className="h-4 w-4" />;
+      default:
+        return <ListFilter className="h-4 w-4" />;
+    }
+  };
+
   return (
     <div className="flex flex-col space-y-5">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-3xl font-bold tracking-tight">Webhooks</h2>
+            <div className="ml-2">
+              <BreadcrumbSelect
+                items={[
+                  {
+                    icon: getActiveIcon(),
+                    isSelect: true,
+                    label: "Visualização",
+                    selectProps: {
+                      defaultValue: activeView,
+                      options: [
+                        { value: "manage", label: "Gerenciar" },
+                        { value: "monitor", label: "Monitoramento" },
+                        { value: "logs", label: "Logs" },
+                      ],
+                      onChange: (value) => setActiveView(value),
+                    },
+                  },
+                ]}
+              />
+            </div>
             <Badge variant="outline" className="ml-2 px-2 py-1">
               {totalActiveWebhooks} ativos / {totalWebhooks} total
             </Badge>
           </div>
           <p className="text-muted-foreground mt-1">
-            Configure webhooks para receber notificações em tempo real quando eventos importantes ocorrerem.
+            Configure webhooks para receber notificações em tempo real quando
+            eventos importantes ocorrerem.
           </p>
         </div>
         <div className="flex items-center space-x-2 self-end">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              type="search" 
-              placeholder="Buscar webhooks..." 
-              className="w-[200px] pl-8 md:w-[240px]" 
+            <Input
+              type="search"
+              placeholder="Buscar webhooks..."
+              className="w-[200px] pl-8 md:w-[240px]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           <DropdownMenu>
             <TooltipProvider>
               <Tooltip>
@@ -88,7 +135,7 @@ export function WebhooksHeader() {
               <DropdownMenuItem>Produtos</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <DropdownMenu>
             <TooltipProvider>
               <Tooltip>
@@ -105,18 +152,12 @@ export function WebhooksHeader() {
               </Tooltip>
             </TooltipProvider>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                Exportar webhooks para JSON
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Exportar logs para CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                Exportar métricas para Excel
-              </DropdownMenuItem>
+              <DropdownMenuItem>Exportar webhooks para JSON</DropdownMenuItem>
+              <DropdownMenuItem>Exportar logs para CSV</DropdownMenuItem>
+              <DropdownMenuItem>Exportar métricas para Excel</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -129,7 +170,7 @@ export function WebhooksHeader() {
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -147,12 +188,15 @@ export function WebhooksHeader() {
           </TooltipProvider>
         </div>
       </div>
-      
+
       <div className="bg-muted/40 rounded-lg p-4 flex flex-col sm:flex-row justify-between gap-4">
         <div className="flex items-center gap-2 text-sm">
-          <Badge variant="secondary" className="px-1.5">Dica</Badge>
+          <Badge variant="secondary" className="px-1.5">
+            Dica
+          </Badge>
           <span>
-            Use webhooks para integrar em tempo real com seus sistemas e automatizar processos.
+            Use webhooks para integrar em tempo real com seus sistemas e
+            automatizar processos.
           </span>
         </div>
         <div className="flex gap-2">
@@ -167,6 +211,5 @@ export function WebhooksHeader() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

@@ -1,41 +1,60 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { ExternalLink } from "lucide-react"
+"use client";
 
-export function DocumentationContent() {
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
+
+interface DocumentationContentProps {
+  activeTab: "webhooks" | "examples";
+}
+
+export function DocumentationContent({ activeTab }: DocumentationContentProps) {
+  // Renderiza o conteúdo com base na seleção ativa
+  const renderContent = () => {
+    switch (activeTab) {
+      case "webhooks":
+        return <WebhooksContent />;
+      case "examples":
+        return <ExamplesContent />;
+      default:
+        return <WebhooksContent />;
+    }
+  };
+
   return (
-    <Tabs defaultValue="api" className="space-y-4">
-      <TabsList className="w-full justify-start">
-        <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
-        <TabsTrigger value="examples">Exemplos</TabsTrigger>
-      </TabsList>
-      <TabsContent value="webhooks" className="space-y-4">
-        <WebhooksContent />
-      </TabsContent>
-      <TabsContent value="examples" className="space-y-4">
-        <ExamplesContent />
-      </TabsContent>
-    </Tabs>
-  )
+    <div className="space-y-6">
+      <div className="space-y-4">{renderContent()}</div>
+    </div>
+  );
 }
 
 function ExamplesContent() {
   return (
     <Card>
-          <CardHeader>
-            <CardTitle>Exemplos de Integração</CardTitle>
-            <CardDescription>Exemplos práticos de como integrar com a plataforma</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border p-4">
-              <h3 className="font-medium">Rastreamento de Eventos em um E-commerce</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Exemplo de como rastrear eventos de visualização de produto, adição ao carrinho e compra.
-              </p>
-              <div className="mt-2 rounded-md bg-muted p-3">
-                <pre className="text-xs">
-                  {`// Visualização de produto
+      <CardHeader>
+        <CardTitle>Exemplos de Integração</CardTitle>
+        <CardDescription>
+          Exemplos práticos de como integrar com a plataforma
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-lg border p-4">
+          <h3 className="font-medium">
+            Rastreamento de Eventos em um E-commerce
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Exemplo de como rastrear eventos de visualização de produto, adição
+            ao carrinho e compra.
+          </p>
+          <div className="mt-2 rounded-md bg-muted p-3">
+            <pre className="text-xs">
+              {`// Visualização de produto
 client.metrics.create({
   event_type: 'product_view',
   source: 'website',
@@ -77,17 +96,20 @@ client.metrics.create({
     ]
   }
 });`}
-                </pre>
-              </div>
-            </div>
-            <div className="rounded-lg border p-4">
-              <h3 className="font-medium">Configuração de Webhook para Notificações</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Exemplo de como configurar um servidor para receber notificações via webhook.
-              </p>
-              <div className="mt-2 rounded-md bg-muted p-3">
-                <pre className="text-xs">
-                  {`// Exemplo de configuração de Webhook para Notificações
+            </pre>
+          </div>
+        </div>
+        <div className="rounded-lg border p-4">
+          <h3 className="font-medium">
+            Configuração de Webhook para Notificações
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Exemplo de como configurar um servidor para receber notificações via
+            webhook.
+          </p>
+          <div className="mt-2 rounded-md bg-muted p-3">
+            <pre className="text-xs">
+              {`// Exemplo de configuração de Webhook para Notificações
 // Função para verificar a assinatura do webhook
 function verificarAssinaturaWebhook(payload, signature, secret) {
   const crypto = require('crypto');
@@ -125,35 +147,35 @@ function processarWebhook(req) {
   }
 }
 `}
-                </pre>
-              </div>
-            </div>
-            <Button variant="link" className="px-0">
-              Ver Mais Exemplos <ExternalLink className="ml-1 h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-  )
+            </pre>
+          </div>
+        </div>
+        <Button variant="link" className="px-0">
+          Ver Mais Exemplos <ExternalLink className="ml-1 h-4 w-4" />
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
-
-
 
 function WebhooksContent() {
   return (
     <Card>
-          <CardHeader>
-            <CardTitle>Documentação de Webhooks</CardTitle>
-            <CardDescription>Como configurar e receber notificações via webhooks</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border p-4">
-              <h3 className="font-medium">Formato de Payload</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Todos os webhooks enviam dados no seguinte formato JSON:
-              </p>
-              <div className="mt-2 rounded-md bg-muted p-3">
-                <pre className="text-xs">
-                  {`{
+      <CardHeader>
+        <CardTitle>Documentação de Webhooks</CardTitle>
+        <CardDescription>
+          Como configurar e receber notificações via webhooks
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-lg border p-4">
+          <h3 className="font-medium">Formato de Payload</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Todos os webhooks enviam dados no seguinte formato JSON:
+          </p>
+          <div className="mt-2 rounded-md bg-muted p-3">
+            <pre className="text-xs">
+              {`{
   "id": "evt-123456",
   "type": "metric.created",
   "created_at": "2023-01-15T14:32:45Z",
@@ -168,25 +190,26 @@ function WebhooksContent() {
     }
   }
 }`}
-                </pre>
-              </div>
-            </div>
-            <div className="rounded-lg border p-4">
-              <h3 className="font-medium">Verificação de Assinatura</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Para garantir a autenticidade das notificações, cada webhook inclui um cabeçalho de assinatura:
-              </p>
-              <div className="mt-2 rounded-md bg-muted p-3">
-                <pre className="text-xs">
-                  {`X-Signature: sha256=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce7b91d6fad`}
-                </pre>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Você deve verificar esta assinatura usando sua chave secreta:
-              </p>
-              <div className="mt-2 rounded-md bg-muted p-3">
-                <pre className="text-xs">
-                  {`const crypto = require('crypto');
+            </pre>
+          </div>
+        </div>
+        <div className="rounded-lg border p-4">
+          <h3 className="font-medium">Verificação de Assinatura</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Para garantir a autenticidade das notificações, cada webhook inclui
+            um cabeçalho de assinatura:
+          </p>
+          <div className="mt-2 rounded-md bg-muted p-3">
+            <pre className="text-xs">
+              {`X-Signature: sha256=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce7b91d6fad`}
+            </pre>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Você deve verificar esta assinatura usando sua chave secreta:
+          </p>
+          <div className="mt-2 rounded-md bg-muted p-3">
+            <pre className="text-xs">
+              {`const crypto = require('crypto');
 
 function verifySignature(payload, signature, secret) {
   const hmac = crypto.createHmac('sha256', secret);
@@ -196,14 +219,13 @@ function verifySignature(payload, signature, secret) {
     Buffer.from(calculatedSignature)
   );
 }`}
-                </pre>
-              </div>
-            </div>
-            <Button variant="link" className="px-0">
-              Ver Documentação Completa <ExternalLink className="ml-1 h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-  )
+            </pre>
+          </div>
+        </div>
+        <Button variant="link" className="px-0">
+          Ver Documentação Completa <ExternalLink className="ml-1 h-4 w-4" />
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
-

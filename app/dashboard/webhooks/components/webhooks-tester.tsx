@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +27,7 @@ import {
   LoaderIcon,
   Check,
   Copy,
+  ArrowLeft,
   ArrowRight,
   GitCompareArrows,
   Play,
@@ -45,6 +45,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import Link from "next/link";
 
 // Tipos de dados
 type EventCategory = "users" | "payments" | "products" | "system";
@@ -186,6 +189,20 @@ export function WebhooksTester() {
     null
   );
   const [eventHistory, setEventHistory] = useState<DeliveryResult[]>([]);
+
+  // Função para obter o ícone ativo com base na visualização selecionada
+  const getActiveIcon = () => {
+    switch (activeTab) {
+      case "test":
+        return <Play className="h-4 w-4" />;
+      case "sandbox":
+        return <GitCompareArrows className="h-4 w-4" />;
+      case "implement":
+        return <Code2 className="h-4 w-4" />;
+      default:
+        return <Play className="h-4 w-4" />;
+    }
+  };
 
   // Função para selecionar um template de evento
   const handleTemplateChange = (templateId: string) => {
@@ -373,35 +390,11 @@ print(f'Resposta: {response.text}')`;
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">
-          Teste e Depuração de Webhooks
-        </h2>
-        <p className="text-muted-foreground">
-          Ferramentas para testar e validar seus webhooks antes da implementação
-          em produção
-        </p>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="test">
-            <Play className="h-4 w-4 mr-2" />
-            Test Runner
-          </TabsTrigger>
-          <TabsTrigger value="sandbox">
-            <GitCompareArrows className="h-4 w-4 mr-2" />
-            Sandbox
-          </TabsTrigger>
-          <TabsTrigger value="implement">
-            <Code2 className="h-4 w-4 mr-2" />
-            Implementação
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="test" className="space-y-6 pt-4">
+  // Renderiza o conteúdo com base na aba ativa
+  const renderContent = () => {
+    switch (activeTab) {
+      case "test":
+        return (
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
@@ -731,9 +724,9 @@ print(f'Resposta: {response.text}')`;
               )}
             </div>
           </div>
-        </TabsContent>
-
-        <TabsContent value="sandbox" className="space-y-6 pt-4">
+        );
+      case "sandbox":
+        return (
           <Card>
             <CardHeader>
               <CardTitle>Sandbox para Testes</CardTitle>
@@ -858,9 +851,9 @@ print(f'Resposta: {response.text}')`;
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="implement" className="space-y-6 pt-4">
+        );
+      case "implement":
+        return (
           <Card>
             <CardHeader>
               <CardTitle>Exemplos de Implementação</CardTitle>
@@ -980,8 +973,76 @@ print(f'Resposta: {response.text}')`;
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">Teste e Depuração de Webhooks</h1>
+          <div className="ml-2">
+            <BreadcrumbSelect
+              items={[
+                {
+                  icon: getActiveIcon(),
+                  isSelect: true,
+                  label: "Visualização",
+                  selectProps: {
+                    defaultValue: activeTab,
+                    options: [
+                      { value: "test", label: "Test Runner" },
+                      { value: "sandbox", label: "Sandbox" },
+                      { value: "implement", label: "Implementação" },
+                    ],
+                    onChange: (value) => {
+                      setActiveTab(value);
+                    },
+                  },
+                },
+              ]}
+            />
+          </div>
+        </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/dashboard/webhooks">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Link>
+        </Button>
+      </div>
+
+      <div className="flex justify-end gap-2 md:hidden">
+        <Button
+          variant={activeTab === "test" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("test")}
+        >
+          <Play className="h-4 w-4 mr-2" />
+          Test Runner
+        </Button>
+        <Button
+          variant={activeTab === "sandbox" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("sandbox")}
+        >
+          <GitCompareArrows className="h-4 w-4 mr-2" />
+          Sandbox
+        </Button>
+        <Button
+          variant={activeTab === "implement" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("implement")}
+        >
+          <Code2 className="h-4 w-4 mr-2" />
+          Implementação
+        </Button>
+      </div>
+
+      {renderContent()}
     </div>
   );
 }

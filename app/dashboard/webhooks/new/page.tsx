@@ -1,9 +1,10 @@
+"use client";
+
 import { WebhooksCreate } from "@/app/dashboard/webhooks/components/webhooks-create";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Zap, ArrowLeft, Code, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -13,50 +14,31 @@ import {
 } from "@/components/ui/card";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
+import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import { useState } from "react";
 
 export default function CreateWebhookPage() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Criar Novo Webhook</h1>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/webhooks">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Link>
-        </Button>
-      </div>
+  const [activeTab, setActiveTab] = useState("config");
 
-      <Alert className="bg-blue-50 border-blue-200">
-        <AlertTitle className="text-blue-700 flex items-center">
-          <Zap className="h-4 w-4 mr-2" />
-          Novo Sistema de UUIDs
-        </AlertTitle>
-        <AlertDescription className="text-blue-700">
-          Nossos webhooks agora utilizam UUIDs únicos para cada endpoint. Use
-          nomes técnicos em seu código para facilitar o uso e a manutenção. As
-          variáveis de ambiente (WEBHOOK_ID_*) são recomendadas para gerenciar
-          os IDs.
-        </AlertDescription>
-      </Alert>
+  // Função para obter o ícone ativo com base na aba selecionada
+  const getActiveIcon = () => {
+    switch (activeTab) {
+      case "config":
+        return <Settings className="h-4 w-4" />;
+      case "implementation":
+        return <Code className="h-4 w-4" />;
+      default:
+        return <Settings className="h-4 w-4" />;
+    }
+  };
 
-      <Tabs defaultValue="config" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="config">
-            <Settings className="h-4 w-4 mr-2" />
-            Configuração
-          </TabsTrigger>
-          <TabsTrigger value="implementation">
-            <Code className="h-4 w-4 mr-2" />
-            Implementação
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="config">
-          <WebhooksCreate />
-        </TabsContent>
-
-        <TabsContent value="implementation">
+  // Renderiza o conteúdo com base na seleção ativa
+  const renderContent = () => {
+    switch (activeTab) {
+      case "config":
+        return <WebhooksCreate />;
+      case "implementation":
+        return (
           <Card>
             <CardHeader>
               <CardTitle>Implementando seu Webhook</CardTitle>
@@ -534,8 +516,62 @@ export default function CheckoutButton({ cartItems, total }) {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+        );
+      default:
+        return <WebhooksCreate />;
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">Criar Novo Webhook</h1>
+          <div className="ml-2">
+            <BreadcrumbSelect
+              items={[
+                {
+                  icon: getActiveIcon(),
+                  isSelect: true,
+                  label: "Visualização",
+                  selectProps: {
+                    defaultValue: activeTab,
+                    options: [
+                      { value: "config", label: "Configuração" },
+                      { value: "implementation", label: "Implementação" },
+                    ],
+                    onChange: (value) => {
+                      setActiveTab(value);
+                    },
+                  },
+                },
+              ]}
+            />
+          </div>
+        </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/dashboard/webhooks">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Link>
+        </Button>
+      </div>
+
+      <Alert className="bg-blue-50 border-blue-200">
+        <AlertTitle className="text-blue-700 flex items-center">
+          <Zap className="h-4 w-4 mr-2" />
+          Novo Sistema de UUIDs
+        </AlertTitle>
+        <AlertDescription className="text-blue-700">
+          Nossos webhooks agora utilizam UUIDs únicos para cada endpoint. Use
+          nomes técnicos em seu código para facilitar o uso e a manutenção. As
+          variáveis de ambiente (WEBHOOK_ID_*) são recomendadas para gerenciar
+          os IDs.
+        </AlertDescription>
+      </Alert>
+
+      {/* Conteúdo baseado na seleção ativa */}
+      <div className="space-y-4">{renderContent()}</div>
     </div>
   );
 }

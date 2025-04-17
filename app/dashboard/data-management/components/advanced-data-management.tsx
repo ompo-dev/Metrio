@@ -1,55 +1,151 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { FileDown, Database, HardDrive, Clock, Filter, Download, ArrowUpDown, RefreshCw, Info, BarChart, Table, FileSpreadsheet, FileJson } from "lucide-react"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  FileDown,
+  Database,
+  HardDrive,
+  Clock,
+  Filter,
+  Download,
+  ArrowUpDown,
+  RefreshCw,
+  Info,
+  BarChart,
+  Table,
+  FileSpreadsheet,
+  FileJson,
+} from "lucide-react";
+import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
 
 export function AdvancedDataManagement() {
+  const [activeTab, setActiveTab] = useState("etl");
+
+  // Função para obter o ícone ativo com base na aba selecionada
+  const getActiveIcon = () => {
+    switch (activeTab) {
+      case "etl":
+        return <ArrowUpDown className="h-4 w-4" />;
+      case "storage":
+        return <Database className="h-4 w-4" />;
+      case "retention":
+        return <Clock className="h-4 w-4" />;
+      case "export":
+        return <FileDown className="h-4 w-4" />;
+      default:
+        return <ArrowUpDown className="h-4 w-4" />;
+    }
+  };
+
+  // Renderiza o conteúdo baseado na tab ativa
+  const renderContent = () => {
+    switch (activeTab) {
+      case "etl":
+        return <ETLConfigSection />;
+      case "storage":
+        return <DataStorageSection />;
+      case "retention":
+        return <RetentionPoliciesSection />;
+      case "export":
+        return <DataExportSection />;
+      default:
+        return <ETLConfigSection />;
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-1">Gestão Avançada de Dados</h2>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold">Gestão Avançada de Dados</h2>
+          <div className="ml-2">
+            <BreadcrumbSelect
+              items={[
+                {
+                  icon: getActiveIcon(),
+                  isSelect: true,
+                  label: "Visualização",
+                  selectProps: {
+                    defaultValue: activeTab,
+                    options: [
+                      { value: "etl", label: "Transformação de Dados" },
+                      { value: "storage", label: "Armazenamento" },
+                      { value: "retention", label: "Políticas de Retenção" },
+                      { value: "export", label: "Exportação" },
+                    ],
+                    onChange: (value) => {
+                      setActiveTab(value);
+                    },
+                  },
+                },
+              ]}
+            />
+          </div>
+        </div>
         <p className="text-muted-foreground">
           Configure transformações, armazenamento e exportação dos seus dados
         </p>
       </div>
 
-      <Tabs defaultValue="etl">
-        <TabsList className="grid grid-cols-4 w-full">
-          <TabsTrigger value="etl">Transformação de Dados</TabsTrigger>
-          <TabsTrigger value="storage">Armazenamento</TabsTrigger>
-          <TabsTrigger value="retention">Políticas de Retenção</TabsTrigger>
-          <TabsTrigger value="export">Exportação</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="etl" className="mt-6">
-          <ETLConfigSection />
-        </TabsContent>
-        
-        <TabsContent value="storage" className="mt-6">
-          <DataStorageSection />
-        </TabsContent>
-        
-        <TabsContent value="retention" className="mt-6">
-          <RetentionPoliciesSection />
-        </TabsContent>
-        
-        <TabsContent value="export" className="mt-6">
-          <DataExportSection />
-        </TabsContent>
-      </Tabs>
+      <div className="flex justify-end gap-2 md:hidden">
+        <Button
+          variant={activeTab === "etl" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("etl")}
+        >
+          <ArrowUpDown className="h-4 w-4 mr-2" />
+          Transformação
+        </Button>
+        <Button
+          variant={activeTab === "storage" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("storage")}
+        >
+          <Database className="h-4 w-4 mr-2" />
+          Armazenamento
+        </Button>
+        <Button
+          variant={activeTab === "retention" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("retention")}
+        >
+          <Clock className="h-4 w-4 mr-2" />
+          Retenção
+        </Button>
+        <Button
+          variant={activeTab === "export" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("export")}
+        >
+          <FileDown className="h-4 w-4 mr-2" />
+          Exportação
+        </Button>
+      </div>
+
+      {renderContent()}
     </div>
-  )
+  );
 }
 
 // Seção de configuração ETL
@@ -64,7 +160,8 @@ function ETLConfigSection() {
       target: "user_data.name",
       transformType: "normalize",
       fields: ["first_name", "last_name"],
-      script: "function normalize(name) {\n  return name.trim().charAt(0).toUpperCase() + name.slice(1).toLowerCase();\n}"
+      script:
+        "function normalize(name) {\n  return name.trim().charAt(0).toUpperCase() + name.slice(1).toLowerCase();\n}",
     },
     {
       id: "transform_2",
@@ -74,7 +171,8 @@ function ETLConfigSection() {
       source: "orders",
       target: "metrics.customer_ltv",
       transformType: "aggregate",
-      script: "function calculateLTV(orders) {\n  return orders.reduce((sum, order) => sum + order.total, 0);\n}"
+      script:
+        "function calculateLTV(orders) {\n  return orders.reduce((sum, order) => sum + order.total, 0);\n}",
     },
     {
       id: "transform_3",
@@ -85,9 +183,10 @@ function ETLConfigSection() {
       target: "user_addresses",
       transformType: "enrich",
       dependencies: ["external_api:geolocation"],
-      script: "async function enrichLocation(address) {\n  const geoData = await fetchGeoData(address.postal_code);\n  return { ...address, ...geoData };\n}"
-    }
-  ])
+      script:
+        "async function enrichLocation(address) {\n  const geoData = await fetchGeoData(address.postal_code);\n  return { ...address, ...geoData };\n}",
+    },
+  ]);
 
   return (
     <div className="space-y-6">
@@ -95,7 +194,8 @@ function ETLConfigSection() {
         <div>
           <h3 className="text-lg font-medium">Transformação de Dados (ETL)</h3>
           <p className="text-sm text-muted-foreground">
-            Configure transformações para limpar e padronizar seus dados antes da visualização
+            Configure transformações para limpar e padronizar seus dados antes
+            da visualização
           </p>
         </div>
         <Button>
@@ -105,14 +205,17 @@ function ETLConfigSection() {
       </div>
 
       <div className="grid gap-4">
-        {dataTransforms.map(transform => (
+        {dataTransforms.map((transform) => (
           <Card key={transform.id}>
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="flex items-center text-base">
                     {transform.name}
-                    <Badge variant={transform.enabled ? "default" : "outline"} className="ml-2">
+                    <Badge
+                      variant={transform.enabled ? "default" : "outline"}
+                      className="ml-2"
+                    >
                       {transform.enabled ? "Ativo" : "Inativo"}
                     </Badge>
                   </CardTitle>
@@ -124,28 +227,34 @@ function ETLConfigSection() {
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Fonte de Dados</Label>
+                  <Label className="text-xs text-muted-foreground">
+                    Fonte de Dados
+                  </Label>
                   <div className="flex items-center mt-1">
                     <Database className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{transform.source}</span>
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Destino</Label>
+                  <Label className="text-xs text-muted-foreground">
+                    Destino
+                  </Label>
                   <div className="flex items-center mt-1">
                     <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground" />
                     <span>{transform.target}</span>
                   </div>
                 </div>
-                
+
                 <div className="col-span-2">
-                  <Label className="text-xs text-muted-foreground">Script de Transformação</Label>
+                  <Label className="text-xs text-muted-foreground">
+                    Script de Transformação
+                  </Label>
                   <pre className="mt-1 text-xs bg-muted p-2 rounded-md overflow-x-auto">
                     {transform.script}
                   </pre>
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-2 mt-4">
                 <Button variant="outline" size="sm">
                   Testar
@@ -159,28 +268,30 @@ function ETLConfigSection() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 // Seção de Armazenamento
 function DataStorageSection() {
   const [storageUsage, setStorageUsage] = useState({
     total: 500, // GB
-    used: 328,  // GB
+    used: 328, // GB
     tables: [
       { name: "events", size: 150, rows: 28500000 },
       { name: "users", size: 45, rows: 1250000 },
       { name: "orders", size: 80, rows: 4200000 },
       { name: "products", size: 30, rows: 120000 },
-      { name: "page_views", size: 23, rows: 48000000 }
-    ]
-  })
+      { name: "page_views", size: 23, rows: 48000000 },
+    ],
+  });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium">Configurações de Armazenamento</h3>
+          <h3 className="text-lg font-medium">
+            Configurações de Armazenamento
+          </h3>
           <p className="text-sm text-muted-foreground">
             Gerencie como seus dados são armazenados e otimizados
           </p>
@@ -195,27 +306,40 @@ function DataStorageSection() {
         <CardHeader>
           <CardTitle>Uso do Armazenamento</CardTitle>
           <CardDescription>
-            {storageUsage.used} GB de {storageUsage.total} GB utilizados ({Math.round(storageUsage.used / storageUsage.total * 100)}%)
+            {storageUsage.used} GB de {storageUsage.total} GB utilizados (
+            {Math.round((storageUsage.used / storageUsage.total) * 100)}%)
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress value={storageUsage.used / storageUsage.total * 100} className="h-2" />
-          
+          <Progress
+            value={(storageUsage.used / storageUsage.total) * 100}
+            className="h-2"
+          />
+
           <div className="mt-6">
-            <h4 className="text-sm font-medium mb-2">Distribuição por Tabela</h4>
+            <h4 className="text-sm font-medium mb-2">
+              Distribuição por Tabela
+            </h4>
             <div className="space-y-1">
-              {storageUsage.tables.map(table => (
-                <div key={table.name} className="grid grid-cols-12 items-center gap-2 text-sm">
+              {storageUsage.tables.map((table) => (
+                <div
+                  key={table.name}
+                  className="grid grid-cols-12 items-center gap-2 text-sm"
+                >
                   <div className="col-span-3 font-medium">{table.name}</div>
                   <div className="col-span-5">
-                    <Progress 
-                      value={table.size / storageUsage.used * 100} 
+                    <Progress
+                      value={(table.size / storageUsage.used) * 100}
                       className={`h-2 ${
-                        table.name === "events" ? "bg-blue-500" :
-                        table.name === "users" ? "bg-green-500" :
-                        table.name === "orders" ? "bg-purple-500" :
-                        table.name === "products" ? "bg-amber-500" :
-                        "bg-rose-500"
+                        table.name === "events"
+                          ? "bg-blue-500"
+                          : table.name === "users"
+                          ? "bg-green-500"
+                          : table.name === "orders"
+                          ? "bg-purple-500"
+                          : table.name === "products"
+                          ? "bg-amber-500"
+                          : "bg-rose-500"
                       }`}
                     />
                   </div>
@@ -227,9 +351,9 @@ function DataStorageSection() {
               ))}
             </div>
           </div>
-          
+
           <Separator className="my-6" />
-          
+
           <div className="grid grid-cols-2 gap-6">
             <div>
               <h4 className="text-sm font-medium mb-2">Otimizações</h4>
@@ -244,7 +368,9 @@ function DataStorageSection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <RefreshCw className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <Label htmlFor="particionamento">Particionamento por Data</Label>
+                    <Label htmlFor="particionamento">
+                      Particionamento por Data
+                    </Label>
                   </div>
                   <Switch id="particionamento" checked={true} />
                 </div>
@@ -257,7 +383,7 @@ function DataStorageSection() {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <h4 className="text-sm font-medium mb-2">Data Warehouse</h4>
               <Card className="bg-muted/50">
@@ -293,7 +419,7 @@ function DataStorageSection() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 // Seção de Políticas de Retenção
@@ -305,7 +431,7 @@ function RetentionPoliciesSection() {
       description: "Dados de visualização e interação com páginas",
       retention: 90, // dias
       enabled: true,
-      archiveEnabled: false
+      archiveEnabled: false,
     },
     {
       id: "policy_2",
@@ -314,7 +440,7 @@ function RetentionPoliciesSection() {
       retention: 730, // 2 anos
       enabled: true,
       archiveEnabled: true,
-      archiveAfter: 365 // 1 ano
+      archiveAfter: 365, // 1 ano
     },
     {
       id: "policy_3",
@@ -322,7 +448,7 @@ function RetentionPoliciesSection() {
       description: "Informações pessoais e perfis",
       retention: 1825, // 5 anos
       enabled: true,
-      archiveEnabled: false
+      archiveEnabled: false,
     },
     {
       id: "policy_4",
@@ -331,7 +457,7 @@ function RetentionPoliciesSection() {
       retention: 180,
       enabled: true,
       archiveEnabled: true,
-      archiveAfter: 30
+      archiveAfter: 30,
     },
     {
       id: "policy_5",
@@ -339,9 +465,9 @@ function RetentionPoliciesSection() {
       description: "Campanhas e analytics de marketing",
       retention: 365,
       enabled: true,
-      archiveEnabled: false
-    }
-  ])
+      archiveEnabled: false,
+    },
+  ]);
 
   return (
     <div className="space-y-6">
@@ -362,40 +488,52 @@ function RetentionPoliciesSection() {
         <CardHeader>
           <CardTitle>Configurações de Retenção por Tipo de Dado</CardTitle>
           <CardDescription>
-            Defina períodos de retenção e regras de arquivamento para diferentes categorias de dados
+            Defina períodos de retenção e regras de arquivamento para diferentes
+            categorias de dados
           </CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px] pr-4">
             <div className="space-y-4">
-              {retentionPolicies.map(policy => (
-                <div 
-                  key={policy.id} 
+              {retentionPolicies.map((policy) => (
+                <div
+                  key={policy.id}
                   className="p-4 border rounded-lg transition-colors hover:bg-muted/50"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h4 className="font-medium">{policy.dataType}</h4>
-                      <p className="text-sm text-muted-foreground">{policy.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {policy.description}
+                      </p>
                     </div>
                     <Switch checked={policy.enabled} />
                   </div>
-                  
+
                   <div className="grid gap-4 mt-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-xs text-muted-foreground">Período de Retenção</Label>
+                        <Label className="text-xs text-muted-foreground">
+                          Período de Retenção
+                        </Label>
                         <div className="flex items-center mt-1">
                           <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
                           <span>
-                            {policy.retention} dias 
-                            {policy.retention >= 365 && ` (${Math.round(policy.retention / 365)} ${Math.round(policy.retention / 365) === 1 ? 'ano' : 'anos'})`}
+                            {policy.retention} dias
+                            {policy.retention >= 365 &&
+                              ` (${Math.round(policy.retention / 365)} ${
+                                Math.round(policy.retention / 365) === 1
+                                  ? "ano"
+                                  : "anos"
+                              })`}
                           </span>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <Label className="text-xs text-muted-foreground">Arquivamento</Label>
+                        <Label className="text-xs text-muted-foreground">
+                          Arquivamento
+                        </Label>
                         <div className="flex items-center mt-1">
                           {policy.archiveEnabled ? (
                             <>
@@ -403,12 +541,14 @@ function RetentionPoliciesSection() {
                               <span>Após {policy.archiveAfter} dias</span>
                             </>
                           ) : (
-                            <span className="text-muted-foreground">Não configurado</span>
+                            <span className="text-muted-foreground">
+                              Não configurado
+                            </span>
                           )}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="sm">
                         Editar
@@ -426,7 +566,7 @@ function RetentionPoliciesSection() {
           </ScrollArea>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle>Agendamento de Limpeza</CardTitle>
@@ -447,7 +587,7 @@ function RetentionPoliciesSection() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <Label htmlFor="cleanup-time">Horário</Label>
               <Select defaultValue="01:00">
@@ -465,20 +605,22 @@ function RetentionPoliciesSection() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="flex items-end">
               <Button className="w-full">Salvar Configurações</Button>
             </div>
           </div>
-          
+
           <div className="flex items-center p-2 bg-muted rounded-md mt-4">
             <Info className="h-4 w-4 mr-2 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">A próxima limpeza agendada ocorrerá em 21/07/2023 às 01:00</span>
+            <span className="text-sm text-muted-foreground">
+              A próxima limpeza agendada ocorrerá em 21/07/2023 às 01:00
+            </span>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 // Seção de Exportação de Dados
@@ -491,7 +633,7 @@ function DataExportSection() {
       status: "completed",
       format: "excel",
       size: "5.2 MB",
-      rows: 125000
+      rows: 125000,
     },
     {
       id: "export_2",
@@ -500,7 +642,7 @@ function DataExportSection() {
       status: "completed",
       format: "csv",
       size: "2.8 MB",
-      rows: 45000
+      rows: 45000,
     },
     {
       id: "export_3",
@@ -509,7 +651,7 @@ function DataExportSection() {
       status: "completed",
       format: "json",
       size: "8.7 MB",
-      rows: 210000
+      rows: 210000,
     },
     {
       id: "export_4",
@@ -518,7 +660,7 @@ function DataExportSection() {
       status: "completed",
       format: "bigquery",
       size: "52 GB",
-      rows: 8500000
+      rows: 8500000,
     },
     {
       id: "export_5",
@@ -527,9 +669,9 @@ function DataExportSection() {
       status: "in_progress",
       format: "excel",
       size: "pendente",
-      rows: "estimado 15000"
-    }
-  ])
+      rows: "estimado 15000",
+    },
+  ]);
 
   return (
     <div className="space-y-6">
@@ -537,7 +679,8 @@ function DataExportSection() {
         <div>
           <h3 className="text-lg font-medium">Exportação de Dados</h3>
           <p className="text-sm text-muted-foreground">
-            Exporte seus dados em diferentes formatos ou integre com plataformas externas
+            Exporte seus dados em diferentes formatos ou integre com plataformas
+            externas
           </p>
         </div>
         <Button>
@@ -566,12 +709,16 @@ function DataExportSection() {
                     <SelectItem value="all_events">Todos os Eventos</SelectItem>
                     <SelectItem value="users">Dados de Usuários</SelectItem>
                     <SelectItem value="transactions">Transações</SelectItem>
-                    <SelectItem value="page_views">Visualizações de Página</SelectItem>
-                    <SelectItem value="custom_metrics">Métricas Personalizadas</SelectItem>
+                    <SelectItem value="page_views">
+                      Visualizações de Página
+                    </SelectItem>
+                    <SelectItem value="custom_metrics">
+                      Métricas Personalizadas
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="export-timeframe">Período</Label>
                 <Select defaultValue="last_30_days">
@@ -582,14 +729,18 @@ function DataExportSection() {
                     <SelectItem value="today">Hoje</SelectItem>
                     <SelectItem value="yesterday">Ontem</SelectItem>
                     <SelectItem value="last_7_days">Últimos 7 dias</SelectItem>
-                    <SelectItem value="last_30_days">Últimos 30 dias</SelectItem>
+                    <SelectItem value="last_30_days">
+                      Últimos 30 dias
+                    </SelectItem>
                     <SelectItem value="this_month">Este mês</SelectItem>
                     <SelectItem value="last_month">Mês passado</SelectItem>
-                    <SelectItem value="custom">Período personalizado</SelectItem>
+                    <SelectItem value="custom">
+                      Período personalizado
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="export-format">Formato de Exportação</Label>
                 <div className="grid grid-cols-3 gap-2 mt-1">
@@ -607,7 +758,7 @@ function DataExportSection() {
                   </Button>
                 </div>
               </div>
-              
+
               <Button className="w-full">
                 <Download className="h-4 w-4 mr-2" />
                 Exportar Dados
@@ -615,7 +766,7 @@ function DataExportSection() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Integrações com Data Warehouses</CardTitle>
@@ -632,12 +783,14 @@ function DataExportSection() {
                   </div>
                   <div>
                     <h4 className="font-medium">Google BigQuery</h4>
-                    <p className="text-xs text-muted-foreground">Sincronização diária ativa</p>
+                    <p className="text-xs text-muted-foreground">
+                      Sincronização diária ativa
+                    </p>
                   </div>
                 </div>
                 <Switch checked={true} />
               </div>
-              
+
               <div className="flex items-center justify-between p-3 border rounded-md">
                 <div className="flex items-center">
                   <div className="w-8 h-8 rounded flex items-center justify-center bg-red-100 mr-3">
@@ -645,14 +798,16 @@ function DataExportSection() {
                   </div>
                   <div>
                     <h4 className="font-medium">Amazon Redshift</h4>
-                    <p className="text-xs text-muted-foreground">Não configurado</p>
+                    <p className="text-xs text-muted-foreground">
+                      Não configurado
+                    </p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm">
                   Configurar
                 </Button>
               </div>
-              
+
               <div className="flex items-center justify-between p-3 border rounded-md">
                 <div className="flex items-center">
                   <div className="w-8 h-8 rounded flex items-center justify-center bg-blue-100 mr-3">
@@ -660,16 +815,18 @@ function DataExportSection() {
                   </div>
                   <div>
                     <h4 className="font-medium">Snowflake</h4>
-                    <p className="text-xs text-muted-foreground">Não configurado</p>
+                    <p className="text-xs text-muted-foreground">
+                      Não configurado
+                    </p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm">
                   Configurar
                 </Button>
               </div>
-              
+
               <Separator />
-              
+
               <div>
                 <Label>Agendamento de Sincronização</Label>
                 <Select defaultValue="daily">
@@ -683,15 +840,13 @@ function DataExportSection() {
                   </SelectContent>
                 </Select>
               </div>
-              
-              <Button className="w-full">
-                Salvar Configurações
-              </Button>
+
+              <Button className="w-full">Salvar Configurações</Button>
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Exportações</CardTitle>
@@ -699,25 +854,34 @@ function DataExportSection() {
         <CardContent>
           <ScrollArea className="h-[300px]">
             <div className="space-y-2">
-              {exportHistory.map(export_ => (
-                <div 
-                  key={export_.id} 
+              {exportHistory.map((export_) => (
+                <div
+                  key={export_.id}
                   className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center">
-                    {export_.format === "excel" && <FileSpreadsheet className="h-5 w-5 mr-3 text-green-600" />}
-                    {export_.format === "csv" && <Table className="h-5 w-5 mr-3 text-blue-600" />}
-                    {export_.format === "json" && <FileJson className="h-5 w-5 mr-3 text-amber-600" />}
-                    {export_.format === "bigquery" && <Database className="h-5 w-5 mr-3 text-blue-700" />}
-                    
+                    {export_.format === "excel" && (
+                      <FileSpreadsheet className="h-5 w-5 mr-3 text-green-600" />
+                    )}
+                    {export_.format === "csv" && (
+                      <Table className="h-5 w-5 mr-3 text-blue-600" />
+                    )}
+                    {export_.format === "json" && (
+                      <FileJson className="h-5 w-5 mr-3 text-amber-600" />
+                    )}
+                    {export_.format === "bigquery" && (
+                      <Database className="h-5 w-5 mr-3 text-blue-700" />
+                    )}
+
                     <div>
                       <h4 className="font-medium">{export_.name}</h4>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(export_.date).toLocaleString()} • {export_.size} • {export_.rows} registros
+                        {new Date(export_.date).toLocaleString()} •{" "}
+                        {export_.size} • {export_.rows} registros
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center">
                     {export_.status === "completed" ? (
                       <Button variant="ghost" size="icon">
@@ -734,5 +898,5 @@ function DataExportSection() {
         </CardContent>
       </Card>
     </div>
-  )
-} 
+  );
+}
