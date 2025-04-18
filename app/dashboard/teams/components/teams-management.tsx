@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Users, UserPlus, Shield, Briefcase } from "lucide-react";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 import { Button } from "@/components/ui/button";
 
 // Importações dos componentes internos
@@ -33,22 +33,6 @@ export function TeamsManagement({
   const [activeTab, setActiveTab] = React.useState<TabType>(
     defaultTab as TabType
   );
-
-  // Função para obter o ícone ativo com base na aba selecionada
-  const getActiveIcon = () => {
-    switch (activeTab) {
-      case "todas":
-        return <Users className="h-4 w-4" />;
-      case "membros":
-        return <UserPlus className="h-4 w-4" />;
-      case "permissoes":
-        return <Shield className="h-4 w-4" />;
-      case "funcoes":
-        return <Briefcase className="h-4 w-4" />;
-      default:
-        return <Users className="h-4 w-4" />;
-    }
-  };
 
   // Função para adicionar nova equipe
   const handleAddTeam = (name: string) => {
@@ -123,26 +107,33 @@ export function TeamsManagement({
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold">Gerenciamento de Equipes</h2>
           <div className="ml-2">
-            <BreadcrumbSelect
-              items={[
+            <SelectIcon
+              defaultValue={activeTab}
+              options={[
                 {
-                  icon: getActiveIcon(),
-                  isSelect: true,
-                  label: "Visualização",
-                  selectProps: {
-                    defaultValue: activeTab,
-                    options: [
-                      { value: "todas", label: "Equipes" },
-                      { value: "membros", label: "Membros" },
-                      { value: "permissoes", label: "Permissões" },
-                      { value: "funcoes", label: "Funções" },
-                    ],
-                    onChange: (value) => {
-                      setActiveTab(value as TabType);
-                    },
-                  },
+                  value: "todas",
+                  label: "Equipes",
+                  icon: <Users className="h-4 w-4" />,
+                },
+                {
+                  value: "membros",
+                  label: "Membros",
+                  icon: <UserPlus className="h-4 w-4" />,
+                },
+                {
+                  value: "permissoes",
+                  label: "Permissões",
+                  icon: <Shield className="h-4 w-4" />,
+                },
+                {
+                  value: "funcoes",
+                  label: "Funções",
+                  icon: <Briefcase className="h-4 w-4" />,
                 },
               ]}
+              onChange={(value) => {
+                setActiveTab(value as TabType);
+              }}
             />
           </div>
         </div>

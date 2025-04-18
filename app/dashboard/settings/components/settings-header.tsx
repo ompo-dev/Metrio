@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 import { Dispatch, SetStateAction } from "react";
 
 interface SettingsHeaderProps {
@@ -38,54 +38,41 @@ export function SettingsHeader({
     }, 1000);
   };
 
-  // Função para obter o ícone ativo com base na aba selecionada
-  const getActiveIcon = () => {
-    switch (activeTab) {
-      case "profile":
-        return <Users className="h-4 w-4" />;
-      case "notifications":
-        return <Bell className="h-4 w-4" />;
-      case "billing":
-        return <CreditCard className="h-4 w-4" />;
-      case "team":
-        return <Building className="h-4 w-4" />;
-      default:
-        return <Users className="h-4 w-4" />;
-    }
-  };
-
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold">Configurações</h2>
           <div className="ml-2">
-            <BreadcrumbSelect
-              items={[
+            <SelectIcon
+              defaultValue={activeTab}
+              options={[
                 {
-                  icon: getActiveIcon(),
-                  isSelect: true,
-                  label: "Visualização",
-                  selectProps: {
-                    defaultValue: activeTab,
-                    options: [
-                      { value: "profile", label: "Perfil" },
-                      { value: "notifications", label: "Notificações" },
-                      { value: "billing", label: "Faturamento" },
-                      { value: "team", label: "Equipe" },
-                    ],
-                    onChange: (value) => {
-                      setActiveTab(
-                        value as
-                          | "profile"
-                          | "notifications"
-                          | "billing"
-                          | "team"
-                      );
-                    },
-                  },
+                  value: "profile",
+                  label: "Perfil",
+                  icon: <Users className="h-4 w-4" />,
+                },
+                {
+                  value: "notifications",
+                  label: "Notificações",
+                  icon: <Bell className="h-4 w-4" />,
+                },
+                {
+                  value: "billing",
+                  label: "Faturamento",
+                  icon: <CreditCard className="h-4 w-4" />,
+                },
+                {
+                  value: "team",
+                  label: "Equipe",
+                  icon: <Building className="h-4 w-4" />,
                 },
               ]}
+              onChange={(value) => {
+                setActiveTab(
+                  value as "profile" | "notifications" | "billing" | "team"
+                );
+              }}
             />
           </div>
           {lastSaved && (

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Download, FileText, BookOpen } from "lucide-react";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 import { Dispatch, SetStateAction } from "react";
 
 interface DocumentationHeaderProps {
@@ -15,18 +15,6 @@ export function DocumentationHeader({
   activeTab,
   setActiveTab,
 }: DocumentationHeaderProps) {
-  // Função para obter o ícone ativo com base na aba selecionada
-  const getActiveIcon = () => {
-    switch (activeTab) {
-      case "webhooks":
-        return <FileText className="h-4 w-4" />;
-      case "examples":
-        return <BookOpen className="h-4 w-4" />;
-      default:
-        return <FileText className="h-4 w-4" />;
-    }
-  };
-
   return (
     <div className="flex flex-col space-y-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -34,24 +22,23 @@ export function DocumentationHeader({
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-bold">Documentação</h2>
             <div className="ml-2">
-              <BreadcrumbSelect
-                items={[
+              <SelectIcon
+                defaultValue={activeTab}
+                options={[
                   {
-                    icon: getActiveIcon(),
-                    isSelect: true,
-                    label: "Visualização",
-                    selectProps: {
-                      defaultValue: activeTab,
-                      options: [
-                        { value: "webhooks", label: "Webhooks" },
-                        { value: "examples", label: "Exemplos" },
-                      ],
-                      onChange: (value) => {
-                        setActiveTab(value as "webhooks" | "examples");
-                      },
-                    },
+                    value: "webhooks",
+                    label: "Webhooks",
+                    icon: <FileText className="h-4 w-4" />,
+                  },
+                  {
+                    value: "examples",
+                    label: "Exemplos",
+                    icon: <BookOpen className="h-4 w-4" />,
                   },
                 ]}
+                onChange={(value) => {
+                  setActiveTab(value as "webhooks" | "examples");
+                }}
               />
             </div>
           </div>

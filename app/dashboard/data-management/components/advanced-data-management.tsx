@@ -37,7 +37,7 @@ import {
   FileSpreadsheet,
   FileJson,
 } from "lucide-react";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 
 export function AdvancedDataManagement() {
   const [activeTab, setActiveTab] = useState("etl");
@@ -80,26 +80,33 @@ export function AdvancedDataManagement() {
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold">Gestão Avançada de Dados</h2>
           <div className="ml-2">
-            <BreadcrumbSelect
-              items={[
+            <SelectIcon
+              defaultValue={activeTab}
+              options={[
                 {
-                  icon: getActiveIcon(),
-                  isSelect: true,
-                  label: "Visualização",
-                  selectProps: {
-                    defaultValue: activeTab,
-                    options: [
-                      { value: "etl", label: "Transformação de Dados" },
-                      { value: "storage", label: "Armazenamento" },
-                      { value: "retention", label: "Políticas de Retenção" },
-                      { value: "export", label: "Exportação" },
-                    ],
-                    onChange: (value) => {
-                      setActiveTab(value);
-                    },
-                  },
+                  value: "etl",
+                  label: "Transformação de Dados",
+                  icon: <ArrowUpDown className="h-4 w-4" />,
+                },
+                {
+                  value: "storage",
+                  label: "Armazenamento",
+                  icon: <Database className="h-4 w-4" />,
+                },
+                {
+                  value: "retention",
+                  label: "Políticas de Retenção",
+                  icon: <Clock className="h-4 w-4" />,
+                },
+                {
+                  value: "export",
+                  label: "Exportação",
+                  icon: <FileDown className="h-4 w-4" />,
                 },
               ]}
+              onChange={(value) => {
+                setActiveTab(value);
+              }}
             />
           </div>
         </div>

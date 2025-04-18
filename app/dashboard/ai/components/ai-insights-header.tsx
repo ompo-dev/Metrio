@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 import { AiInsightsDashboard } from "@/app/dashboard/ai/components/ai-insights-dashboard";
 import { AIFeatures } from "@/app/dashboard/ai/components/ai-features";
 import { AIAssistant } from "@/app/dashboard/ai/components/ai-assistant";
@@ -87,24 +87,23 @@ export function AiInsightsHeader() {
                 IA & Insights
               </h2>
               <div className="ml-2">
-                <BreadcrumbSelect
-                  items={[
+                <SelectIcon
+                  defaultValue={activeTab}
+                  options={[
                     {
-                      icon: getActiveIcon(),
-                      isSelect: true,
-                      label: "Visualização",
-                      selectProps: {
-                        defaultValue: activeTab,
-                        options: [
-                          { value: "dashboard", label: "Dashboard" },
-                          { value: "ai-features", label: "Recursos de IA" },
-                        ],
-                        onChange: (value) => {
-                          setActiveTab(value);
-                        },
-                      },
+                      value: "dashboard",
+                      label: "Dashboard",
+                      icon: <BarChart className="h-4 w-4" />,
+                    },
+                    {
+                      value: "ai-features",
+                      label: "Recursos de IA",
+                      icon: <Settings className="h-4 w-4" />,
                     },
                   ]}
+                  onChange={(value) => {
+                    setActiveTab(value);
+                  }}
                 />
               </div>
               <Badge className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 h-7">

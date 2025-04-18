@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 import { useState } from "react";
 
 export default function CreateWebhookPage() {
@@ -528,24 +528,23 @@ export default function CheckoutButton({ cartItems, total }) {
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold">Criar Novo Webhook</h1>
           <div className="ml-2">
-            <BreadcrumbSelect
-              items={[
+            <SelectIcon
+              defaultValue={activeTab}
+              options={[
                 {
-                  icon: getActiveIcon(),
-                  isSelect: true,
-                  label: "Visualização",
-                  selectProps: {
-                    defaultValue: activeTab,
-                    options: [
-                      { value: "config", label: "Configuração" },
-                      { value: "implementation", label: "Implementação" },
-                    ],
-                    onChange: (value) => {
-                      setActiveTab(value);
-                    },
-                  },
+                  value: "config",
+                  label: "Configuração",
+                  icon: <Settings className="h-4 w-4" />,
+                },
+                {
+                  value: "implementation",
+                  label: "Implementação",
+                  icon: <Code className="h-4 w-4" />,
                 },
               ]}
+              onChange={(value) => {
+                setActiveTab(value);
+              }}
             />
           </div>
         </div>

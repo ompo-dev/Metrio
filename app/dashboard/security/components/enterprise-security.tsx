@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 import {
   Shield,
   Key,
@@ -91,25 +91,28 @@ export function EnterpriseSecurity() {
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold">Segurança Empresarial</h2>
           <div className="ml-2">
-            <BreadcrumbSelect
-              items={[
+            <SelectIcon
+              defaultValue={activeTab}
+              options={[
                 {
-                  icon: getActiveIcon(),
-                  isSelect: true,
-                  label: "Visualização",
-                  selectProps: {
-                    defaultValue: activeTab,
-                    options: [
-                      { value: "2fa", label: "Autenticação em 2 Fatores" },
-                      { value: "audit", label: "Logs de Auditoria" },
-                      { value: "permissions", label: "Permissões" },
-                    ],
-                    onChange: (value) => {
-                      setActiveTab(value as "2fa" | "audit" | "permissions");
-                    },
-                  },
+                  value: "2fa",
+                  label: "Autenticação em 2 Fatores",
+                  icon: <Shield className="h-4 w-4" />,
+                },
+                {
+                  value: "audit",
+                  label: "Logs de Auditoria",
+                  icon: <FileText className="h-4 w-4" />,
+                },
+                {
+                  value: "permissions",
+                  label: "Permissões",
+                  icon: <Key className="h-4 w-4" />,
                 },
               ]}
+              onChange={(value) => {
+                setActiveTab(value as "2fa" | "audit" | "permissions");
+              }}
             />
           </div>
         </div>

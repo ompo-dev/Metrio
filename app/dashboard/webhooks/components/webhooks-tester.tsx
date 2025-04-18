@@ -46,8 +46,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
 import Link from "next/link";
+import SelectIcon from "@/components/select-icon";
 
 // Tipos de dados
 type EventCategory = "users" | "payments" | "products" | "system";
@@ -985,25 +985,28 @@ print(f'Resposta: {response.text}')`;
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold">Teste e Depuração de Webhooks</h1>
           <div className="ml-2">
-            <BreadcrumbSelect
-              items={[
+            <SelectIcon
+              defaultValue={activeTab}
+              options={[
                 {
-                  icon: getActiveIcon(),
-                  isSelect: true,
-                  label: "Visualização",
-                  selectProps: {
-                    defaultValue: activeTab,
-                    options: [
-                      { value: "test", label: "Test Runner" },
-                      { value: "sandbox", label: "Sandbox" },
-                      { value: "implement", label: "Implementação" },
-                    ],
-                    onChange: (value) => {
-                      setActiveTab(value);
-                    },
-                  },
+                  value: "test",
+                  label: "Test Runner",
+                  icon: <Play className="h-4 w-4" />,
+                },
+                {
+                  value: "sandbox",
+                  label: "Sandbox",
+                  icon: <GitCompareArrows className="h-4 w-4" />,
+                },
+                {
+                  value: "implement",
+                  label: "Implementação",
+                  icon: <Code2 className="h-4 w-4" />,
                 },
               ]}
+              onChange={(value) => {
+                setActiveTab(value);
+              }}
             />
           </div>
         </div>

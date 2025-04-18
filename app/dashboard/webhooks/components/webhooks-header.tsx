@@ -32,7 +32,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
-import { BreadcrumbSelect } from "@/components/breadcrumb-select/breadcrumb-select";
+import SelectIcon from "@/components/select-icon";
 
 type WebhooksHeaderProps = {
   activeView: string;
@@ -47,20 +47,6 @@ export function WebhooksHeader({
   const [totalActiveWebhooks, setTotalActiveWebhooks] = useState(3);
   const [totalWebhooks, setTotalWebhooks] = useState(5);
 
-  // Determina qual ícone mostrar com base na visualização ativa
-  const getActiveIcon = () => {
-    switch (activeView) {
-      case "manage":
-        return <ListFilter className="h-4 w-4" />;
-      case "monitor":
-        return <BarChart className="h-4 w-4" />;
-      case "logs":
-        return <ClipboardList className="h-4 w-4" />;
-      default:
-        return <ListFilter className="h-4 w-4" />;
-    }
-  };
-
   return (
     <div className="flex flex-col space-y-5">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -68,23 +54,26 @@ export function WebhooksHeader({
           <div className="flex items-center gap-2">
             <h2 className="text-3xl font-bold tracking-tight">Webhooks</h2>
             <div className="ml-2">
-              <BreadcrumbSelect
-                items={[
+              <SelectIcon
+                defaultValue={activeView}
+                options={[
                   {
-                    icon: getActiveIcon(),
-                    isSelect: true,
-                    label: "Visualização",
-                    selectProps: {
-                      defaultValue: activeView,
-                      options: [
-                        { value: "manage", label: "Gerenciar" },
-                        { value: "monitor", label: "Monitoramento" },
-                        { value: "logs", label: "Logs" },
-                      ],
-                      onChange: (value) => setActiveView(value),
-                    },
+                    value: "manage",
+                    label: "Gerenciar",
+                    icon: <ListFilter className="h-4 w-4" />,
+                  },
+                  {
+                    value: "monitor",
+                    label: "Monitoramento",
+                    icon: <BarChart className="h-4 w-4" />,
+                  },
+                  {
+                    value: "logs",
+                    label: "Logs",
+                    icon: <ClipboardList className="h-4 w-4" />,
                   },
                 ]}
+                onChange={setActiveView}
               />
             </div>
             <Badge variant="outline" className="ml-2 px-2 py-1">

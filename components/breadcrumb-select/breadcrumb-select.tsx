@@ -26,7 +26,7 @@ type BreadcrumbSelectItemProps = {
   selectProps?: {
     defaultValue?: string;
     placeholder?: string;
-    options: { value: string; label: string }[];
+    options: { value: string; label: string; icon?: React.ReactNode }[];
     onChange?: (value: string) => void;
   };
 };
@@ -80,8 +80,12 @@ export function BreadcrumbSelect({ items, className }: BreadcrumbSelectProps) {
                   </SelectTrigger>
                   <SelectContent>
                     {item.selectProps?.options.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        className="text-black"
+                      >
+                        {option.icon} {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
