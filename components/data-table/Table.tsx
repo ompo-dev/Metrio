@@ -96,7 +96,7 @@ import {
 export type DataTableProps<TData> = {
   data: TData[];
   columns: ColumnDef<TData>[];
-  searchKey?: string;
+  searchColumn?: string;
   searchPlaceholder?: string;
   enableMultiSort?: boolean;
   enableColumnVisibility?: boolean;
@@ -174,7 +174,7 @@ export const statusFilterFn: FilterFn<any> = (
 export function DataTable<TData extends { id: string }>({
   data,
   columns,
-  searchKey = "name",
+  searchColumn = "name",
   searchPlaceholder = "Filtrar por nome...",
   enableMultiSort = false,
   enableColumnVisibility = true,
@@ -352,8 +352,8 @@ export function DataTable<TData extends { id: string }>({
     );
   };
 
-  // Verificar se searchKey é válido
-  const searchColumn = table.getColumn(searchKey);
+  // Verificar se searchColumn é válido
+  const searchColumnObj = table.getColumn(searchColumn);
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -361,17 +361,17 @@ export function DataTable<TData extends { id: string }>({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {/* Filtro por texto */}
-          {searchColumn && (
+          {searchColumnObj && (
             <div className="relative">
               <Input
                 id={`${id}-input`}
                 ref={inputRef}
                 className={cn(
                   "peer min-w-60 ps-9",
-                  Boolean(searchColumn.getFilterValue()) && "pe-9"
+                  Boolean(searchColumnObj.getFilterValue()) && "pe-9"
                 )}
-                value={(searchColumn.getFilterValue() ?? "") as string}
-                onChange={(e) => searchColumn.setFilterValue(e.target.value)}
+                value={(searchColumnObj.getFilterValue() ?? "") as string}
+                onChange={(e) => searchColumnObj.setFilterValue(e.target.value)}
                 placeholder={searchPlaceholder}
                 type="text"
                 aria-label={searchPlaceholder}
@@ -379,12 +379,12 @@ export function DataTable<TData extends { id: string }>({
               <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
                 <ListFilterIcon size={16} aria-hidden="true" />
               </div>
-              {Boolean(searchColumn.getFilterValue()) && (
+              {Boolean(searchColumnObj.getFilterValue()) && (
                 <button
                   className="text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="Limpar filtro"
                   onClick={() => {
-                    searchColumn.setFilterValue("");
+                    searchColumnObj.setFilterValue("");
                     if (inputRef.current) {
                       inputRef.current.focus();
                     }
@@ -804,9 +804,16 @@ export function DataTable<TData extends { id: string }>({
 export function RowActions<TData>({
   row,
   onAction,
+  actions,
 }: {
   row: Row<TData>;
   onAction?: (row: TData) => void;
+  actions?: Array<{
+    label: string;
+    onClick: () => void;
+    icon?: React.ReactNode;
+    destructive?: boolean;
+  }>;
 }) {
   return (
     <DropdownMenu>
@@ -823,44 +830,63 @@ export function RowActions<TData>({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => onAction?.(row.original)}>
-            <span>Editar</span>
-            <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <span>Duplicar</span>
-            <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <span>Arquivar</span>
-            <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Mais</DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem>Mover para projeto</DropdownMenuItem>
-                <DropdownMenuItem>Mover para pasta</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Opções avançadas</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Compartilhar</DropdownMenuItem>
-          <DropdownMenuItem>Adicionar aos favoritos</DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive focus:text-destructive">
-          <span>Excluir</span>
-          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-        </DropdownMenuItem>
+        {actions ? (
+          // Renderiza ações personalizadas
+          actions.map((action, index) => (
+            <DropdownMenuItem
+              key={index}
+              onClick={action.onClick}
+              className={cn(
+                action.destructive && "text-destructive focus:text-destructive"
+              )}
+            >
+              {action.icon && <span className="mr-2">{action.icon}</span>}
+              <span>{action.label}</span>
+            </DropdownMenuItem>
+          ))
+        ) : (
+          // Menu padrão
+          <>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => onAction?.(row.original)}>
+                <span>Editar</span>
+                <DropdownMenuShortcut>⌘E</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <span>Duplicar</span>
+                <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <span>Arquivar</span>
+                <DropdownMenuShortcut>⌘A</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>Mais</DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem>Mover para projeto</DropdownMenuItem>
+                    <DropdownMenuItem>Mover para pasta</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Opções avançadas</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>Compartilhar</DropdownMenuItem>
+              <DropdownMenuItem>Adicionar aos favoritos</DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-destructive focus:text-destructive">
+              <span>Excluir</span>
+              <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -957,12 +983,12 @@ export default function TableExample() {
       enableRowSelection
       enablePagination
       enableVirtualization
-      searchKey="name"
+      searchColumn="name"
       searchPlaceholder="Filtrar por nome ou email..."
       statusColumn="status"
-      onDeleteRows={handleDeleteRows}
+      onDeleteRows={(rows) => console.log("Remover linhas:", rows)}
       onAddItem={() => console.log("Adicionar novo item")}
-      addButtonLabel="Adicionar usuário"
+      addButtonLabel="Adicionar novo"
     />
   );
 }

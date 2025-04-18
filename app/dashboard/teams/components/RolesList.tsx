@@ -30,7 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { DataTable, RowActions } from "@/components/ui/data-table/Table";
+import { DataTable, RowActions } from "@/components/data-table/Table";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { RoleListProps, Role } from "./types";

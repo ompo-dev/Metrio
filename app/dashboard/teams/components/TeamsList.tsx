@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DataTable, RowActions } from "@/components/ui/data-table/Table";
+import { DataTable, RowActions } from "@/components/data-table/Table";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { TeamListProps, Team } from "./types";

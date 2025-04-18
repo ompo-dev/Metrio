@@ -32,9 +32,8 @@ import {
 import {
   DataTable,
   RowActions,
-  createMultiColumnFilterFn,
   statusFilterFn,
-} from "@/components/ui/data-table/Table";
+} from "@/components/data-table/Table";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { MemberListProps, Member } from "./types";

@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { DataTable, RowActions } from "@/components/ui/data-table/Table";
+import { DataTable, RowActions } from "@/components/data-table/Table";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { PermissionListProps, Permission } from "./types";
