@@ -9,7 +9,7 @@ export default function RegisterPage() {
           <Logo className="h-12 w-12" />
           <h1 className="text-3xl font-bold">Métricas SaaS</h1>
           <p className="text-muted-foreground">
-            Crie sua conta para começar a usar a plataforma
+            Crie sua conta para acessar o dashboard
           </p>
         </div>
         <RegisterForm />

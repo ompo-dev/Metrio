@@ -1,64 +1,170 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { z } from "zod";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+// Esquema de validação
+const registerSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formValues, setFormValues] = useState<RegisterFormValues>({
+    name: "",
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<Partial<RegisterFormValues>>({});
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+    // Limpa o erro quando o usuário começa a digitar
+    if (errors[name as keyof RegisterFormValues]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const validate = () => {
+    try {
+      registerSchema.parse(formValues);
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Partial<RegisterFormValues> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0] as keyof RegisterFormValues] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
 
-    // Simulando registro
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 1500)
-  }
+    if (!validate()) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formValues),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao registrar usuário");
+      }
+
+      toast.success("Conta criada com sucesso!");
+
+      // Login automático após registro
+      await signIn("credentials", {
+        email: formValues.email,
+        password: formValues.password,
+        redirect: false,
+      });
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      console.error("Erro no registro:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Ocorreu um erro durante o registro"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Card>
       <form onSubmit={handleSubmit}>
         <CardHeader>
-          <CardTitle>Criar Conta</CardTitle>
-          <CardDescription>Preencha os dados abaixo para criar sua conta</CardDescription>
+          <CardTitle>Criar conta</CardTitle>
+          <CardDescription>
+            Preencha os dados abaixo para criar sua conta
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="first-name">Nome</Label>
-              <Input id="first-name" placeholder="João" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="last-name">Sobrenome</Label>
-              <Input id="last-name" placeholder="Silva" required />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Nome</Label>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Seu nome"
+              required
+              value={formValues.name}
+              onChange={handleChange}
+            />
+            {errors.name && (
+              <p className="text-sm text-red-500">{errors.name}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="seu@email.com" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="company">Empresa</Label>
-            <Input id="company" placeholder="Nome da sua empresa" required />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="seu@email.com"
+              required
+              value={formValues.email}
+              onChange={handleChange}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-500">{errors.email}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Senha</Label>
             <div className="relative">
-              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                value={formValues.password}
+                onChange={handleChange}
+              />
               <Button
                 type="button"
                 variant="ghost"
@@ -71,22 +177,14 @@ export function RegisterForm() {
                 ) : (
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="sr-only">{showPassword ? "Esconder senha" : "Mostrar senha"}</span>
+                <span className="sr-only">
+                  {showPassword ? "Esconder senha" : "Mostrar senha"}
+                </span>
               </Button>
             </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="terms" required />
-            <Label htmlFor="terms" className="text-sm">
-              Eu concordo com os{" "}
-              <Link href="/terms" className="font-medium text-primary hover:underline">
-                Termos de Serviço
-              </Link>{" "}
-              e{" "}
-              <Link href="/privacy" className="font-medium text-primary hover:underline">
-                Política de Privacidade
-              </Link>
-            </Label>
+            {errors.password && (
+              <p className="text-sm text-red-500">{errors.password}</p>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
@@ -97,18 +195,20 @@ export function RegisterForm() {
                 Criando conta...
               </>
             ) : (
-              "Criar Conta"
+              "Criar conta"
             )}
           </Button>
           <div className="text-center text-sm text-muted-foreground">
             Já tem uma conta?{" "}
-            <Link href="/login" className="font-medium text-primary hover:underline">
+            <Link
+              href="/auth/login"
+              className="font-medium text-primary hover:underline"
+            >
               Faça login
             </Link>
           </div>
         </CardFooter>
       </form>
     </Card>
-  )
+  );
 }
-

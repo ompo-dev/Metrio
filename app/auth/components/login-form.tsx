@@ -1,54 +1,100 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
-    // Simulando login
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 1500)
-  }
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast.error("Credenciais inválidas");
+        return;
+      }
+
+      toast.success("Login realizado com sucesso!");
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error) {
+      console.error("Erro no login:", error);
+      toast.error("Ocorreu um erro durante o login");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Card>
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Login</CardTitle>
-          <CardDescription>Entre com seu email e senha para acessar sua conta</CardDescription>
+          <CardDescription>
+            Entre com seu email e senha para acessar sua conta
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="seu@email.com" required />
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Senha</Label>
-              <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground hover:text-primary"
+              >
                 Esqueceu a senha?
               </Link>
             </div>
             <div className="relative">
-              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
               <Button
                 type="button"
                 variant="ghost"
@@ -61,7 +107,9 @@ export function LoginForm() {
                 ) : (
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="sr-only">{showPassword ? "Esconder senha" : "Mostrar senha"}</span>
+                <span className="sr-only">
+                  {showPassword ? "Esconder senha" : "Mostrar senha"}
+                </span>
               </Button>
             </div>
           </div>
@@ -79,13 +127,15 @@ export function LoginForm() {
           </Button>
           <div className="text-center text-sm text-muted-foreground">
             Não tem uma conta?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
+            <Link
+              href="/auth/register"
+              className="font-medium text-primary hover:underline"
+            >
               Registre-se
             </Link>
           </div>
         </CardFooter>
       </form>
     </Card>
-  )
+  );
 }
-

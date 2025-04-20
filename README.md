@@ -19,16 +19,19 @@ Métricas SaaS é uma plataforma completa para coleta, análise e visualização
 ### Configuração Inicial
 
 1. **Criação de Webhooks ou APIs Personalizadas**:
+
    - Usuários configuram webhooks de forma simples e intuitiva na plataforma
    - Interface low-code/no-code permite definir quais eventos monitorar
    - Geração automática de endpoints e tokens de autenticação
 
 2. **Integração com o Site/Plataforma do Cliente**:
+
    - Cliente implementa o código do webhook ou configura chamadas à API em seu sistema
    - Eventos como adições ao carrinho, logins ou erros disparam automaticamente chamadas
    - Envio de payloads JSON detalhados contendo informações relevantes do evento
 
 3. **Coleta e Armazenamento de Métricas**:
+
    - Recebimento e processamento de eventos em tempo real
    - Armazenamento estruturado em banco de dados otimizado para análises
    - Construção de histórico contínuo de métricas para análise temporal
@@ -134,21 +137,25 @@ Após iniciar o servidor de desenvolvimento, acesse:
 ## 🗺️ Roadmap
 
 ### Fase 1 (Q1-Q2 2024)
+
 - Implementação dos primeiros recursos de IA e análise preditiva
 - Expansão de integrações com outras plataformas
 - Melhorias na experiência do usuário e onboarding
 
 ### Fase 2 (Q3-Q4 2024)
+
 - Recursos de colaboração e compartilhamento
 - Análise preditiva avançada
 - Experiência mobile
 
 ### Fase 3 (Q1-Q2 2025)
+
 - Recursos de segurança e conformidade avançados
 - Marketplace e extensibilidade
 - Automação avançada
 
 ### Fase 4 (Q3-Q4 2025)
+
 - Soluções verticais para indústrias específicas
 - Benchmarking de indústria
 - Recursos de monetização para clientes
@@ -156,6 +163,7 @@ Após iniciar o servidor de desenvolvimento, acesse:
 ## 🚀 Implantação
 
 O projeto está configurado para fácil implantação em:
+
 - [Vercel](https://vercel.com)
 - [Netlify](https://netlify.com)
 - [AWS](https://aws.amazon.com)
@@ -182,5 +190,71 @@ Métricas SaaS é desenvolvido por uma equipe dedicada de especialistas em dados
 
 ## 📄 Licença
 
-Copyright © 2024 Métricas SaaS. Todos os direitos reservados. #   M e t r i o  
- 
+Copyright © 2024 Métricas SaaS. Todos os direitos reservados.
+
+## Sistema de Autenticação
+
+Este projeto utiliza NextAuth.js para autenticação de usuários com banco de dados PostgreSQL e Prisma como ORM.
+
+### Configuração do Banco de Dados
+
+1. Certifique-se de ter o PostgreSQL instalado e rodando em sua máquina.
+2. Configure a string de conexão no arquivo `.env`:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metrio?schema=public"
+NEXTAUTH_SECRET="seu-segredo-super-seguro-aqui"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+3. Execute as migrações do Prisma para criar as tabelas:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### Funcionalidades Implementadas
+
+- Registro de usuários com validação de dados usando Zod
+- Autenticação com email e senha
+- Proteção de rotas privadas
+- Documentação da API com Swagger
+
+### Rotas da API
+
+- `POST /api/register` - Registra um novo usuário
+- `POST /api/auth/[...nextauth]` - Endpoint do NextAuth para autenticação
+
+### Documentação da API
+
+Acesse a documentação da API através da rota:
+
+```
+/api/docs
+```
+
+### Como Usar
+
+1. Clone o repositório
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Configure o arquivo `.env` com as credenciais do banco de dados
+4. Execute as migrações do Prisma:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+5. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+## Tecnologias Utilizadas
+
+- Next.js App Router
+- NextAuth.js para autenticação
+- Prisma como ORM
+- PostgreSQL como banco de dados
+- Zod para validação de dados
+- Swagger para documentação da API
