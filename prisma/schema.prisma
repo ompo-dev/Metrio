@@ -104,8 +104,22 @@ model Webhook {
   projectId     String    // Projeto ao qual o webhook está associado
   project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
+  // Dados recebidos pelo webhook
+  webhookData   DataWebhook?
+
   // Índices para melhorar performance de consultas
   @@index([userId])
   @@index([projectId])
   @@index([technicalName])
+}
+
+// Modelo para armazenar dados recebidos por webhooks
+model DataWebhook {
+  id            String    @id  // Esse é o id do webhook, usado como chave primária
+  data          Json      // Dados JSON recebidos pelo webhook
+  createdAt     DateTime  @default(now()) // Data do último recebimento
+  updatedAt     DateTime  @updatedAt // Data de atualização
+  
+  // Relação com o webhook
+  webhook       Webhook   @relation(fields: [id], references: [id], onDelete: Cascade)
 }
