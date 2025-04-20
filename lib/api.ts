@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "sonner";
+import { WebhookCreateInput, WebhookUpdateInput } from "@/app/lib/webhooks";
 
 // Criar instância do Axios com configurações base
 const api = axios.create({
@@ -39,5 +40,49 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// API de Webhooks
+export const webhooksApi = {
+  // Criar um novo webhook
+  create: async (webhookData: WebhookCreateInput) => {
+    const response = await api.post("/api/webhooks", webhookData);
+    return response.data;
+  },
+
+  // Listar webhooks de um projeto
+  getByProject: async (projectId: string) => {
+    const response = await api.get(`/api/webhooks?projectId=${projectId}`);
+    return response.data;
+  },
+
+  // Buscar webhook por id
+  getById: async (id: string) => {
+    const response = await api.get(`/api/webhooks/${id}`);
+    return response.data;
+  },
+
+  // Atualizar webhook
+  update: async (id: string, data: WebhookUpdateInput) => {
+    const response = await api.put(`/api/webhooks/${id}`, data);
+    return response.data;
+  },
+
+  // Atualizar webhook parcialmente
+  patch: async (id: string, data: Partial<WebhookUpdateInput>) => {
+    const response = await api.patch(`/api/webhooks/${id}`, data);
+    return response.data;
+  },
+
+  // Excluir webhook
+  delete: async (id: string) => {
+    const response = await api.delete(`/api/webhooks/${id}`);
+    return response.data;
+  },
+
+  // Ativar/desativar webhook usando o PATCH
+  toggleActive: async (id: string, isActive: boolean) => {
+    return await webhooksApi.patch(id, { isActive });
+  },
+};
 
 export default api;

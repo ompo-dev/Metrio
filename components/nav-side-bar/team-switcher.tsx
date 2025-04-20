@@ -55,14 +55,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import api from "@/lib/api";
-
-// Interface para projetos do usuário
-export interface Project {
-  id: string;
-  name: string;
-  logoIcon: string;
-  type: string | null;
-}
+import { Project, useProjectStore } from "@/lib/store/project-store";
 
 // Lista de ícones para projetos
 const PROJECT_ICONS = [
@@ -94,12 +87,17 @@ export function TeamSwitcher() {
   const { isMobile } = useSidebar();
   const { data: session, status } = useSession();
 
+  // Usar a store de projetos
+  const {
+    projects,
+    activeProject,
+    isLoading: isStoreLoading,
+    fetchProjects,
+    setActiveProject,
+    addProject,
+  } = useProjectStore();
+
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isFetching, setIsFetching] = React.useState(true);
-  const [projects, setProjects] = React.useState<Project[]>([]);
-  const [activeProject, setActiveProject] = React.useState<Project | null>(
-    null
-  );
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   // Estados para o modal de criar projeto
@@ -107,37 +105,12 @@ export function TeamSwitcher() {
   const [projectType, setProjectType] = React.useState("");
   const [selectedIcon, setSelectedIcon] = React.useState(PROJECT_ICONS[0].name);
 
-  // Buscar projetos do usuário
-  const fetchProjects = React.useCallback(async () => {
-    if (status !== "authenticated" || !session?.user?.id) return;
-
-    try {
-      setIsFetching(true);
-      const response = await api.get("/api/projects");
-
-      const data = response.data;
-      setProjects(data);
-
-      // Buscar o projeto ativo, se houver projetos
-      if (data.length > 0) {
-        // A API já retorna os projetos ordenados com o mais recente primeiro
-        setActiveProject(data[0]);
-      } else {
-        // Se não houver projetos, abrir o modal de criação
-        setIsCreateModalOpen(true);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar projetos:", error);
-      // O toast de erro já é exibido pelo interceptor do Axios
-    } finally {
-      setIsFetching(false);
-    }
-  }, [session?.user?.id, status]);
-
   // Carregar projetos ao iniciar
   React.useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+    if (status === "authenticated" && session?.user?.id) {
+      fetchProjects();
+    }
+  }, [session?.user?.id, status, fetchProjects]);
 
   // Abrir modal de criação de projeto
   const handleCreateProjectModalOpen = () => {
@@ -168,9 +141,8 @@ export function TeamSwitcher() {
 
       const newProject = response.data;
 
-      // Atualizar a lista de projetos e definir o novo como ativo
-      setProjects((prev) => [newProject, ...prev]);
-      setActiveProject(newProject);
+      // Adicionar à store e definir como ativo
+      addProject(newProject);
 
       toast.success("Projeto criado com sucesso!");
       setIsCreateModalOpen(false);
@@ -182,27 +154,6 @@ export function TeamSwitcher() {
     }
   };
 
-  // Definir um projeto como ativo
-  const handleSelectProject = async (project: Project) => {
-    try {
-      // Atualizar a interface imediatamente para feedback
-      setActiveProject(project);
-
-      // Enviar para a API
-      await api.put("/api/projects/active", {
-        projectId: project.id,
-      });
-
-      // Não é necessário atualizar a UI novamente, já atualizamos anteriormente
-    } catch (error) {
-      console.error("Erro ao definir projeto ativo:", error);
-      // O toast de erro já é exibido pelo interceptor do Axios
-
-      // Reverter a alteração na interface em caso de erro
-      fetchProjects();
-    }
-  };
-
   // Obter o componente do ícone pelo nome
   const getIconComponent = (iconName: string): LucideIcon => {
     const iconItem = PROJECT_ICONS.find((item) => item.name === iconName);
@@ -210,7 +161,7 @@ export function TeamSwitcher() {
   };
 
   // Mostrar estado de carregamento enquanto busca dados
-  if (isFetching) {
+  if (isStoreLoading) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -287,7 +238,7 @@ export function TeamSwitcher() {
                 return (
                   <DropdownMenuItem
                     key={project.id}
-                    onClick={() => handleSelectProject(project)}
+                    onClick={() => setActiveProject(project)}
                     className="gap-2 p-2"
                   >
                     <div className="flex size-6 items-center justify-center rounded-sm border">

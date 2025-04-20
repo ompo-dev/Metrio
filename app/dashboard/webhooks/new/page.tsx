@@ -1,6 +1,6 @@
 "use client";
 
-import { WebhooksCreate } from "@/app/dashboard/webhooks/components/webhooks-create";
+import WebhooksCreate from "@/app/dashboard/webhooks/components/webhooks-create";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Zap, ArrowLeft, Code, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
