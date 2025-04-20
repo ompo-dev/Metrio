@@ -214,6 +214,14 @@ export const getApiDocs = () => {
                 type: "string",
                 format: "date-time",
               },
+              webhookName: {
+                type: "string",
+                description: "Nome do webhook",
+              },
+              projectId: {
+                type: "string",
+                description: "ID do projeto associado",
+              },
             },
           },
           WebhookPayload: {
@@ -872,6 +880,101 @@ export const getApiDocs = () => {
               },
               404: {
                 description: "Webhook não encontrado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/api/webhook-data": {
+          get: {
+            tags: ["Webhook Data"],
+            summary: "Listar dados de webhooks",
+            description: "Obter todos os dados recebidos por webhooks",
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              {
+                name: "projectId",
+                in: "query",
+                description: "ID do projeto para filtrar dados",
+                required: false,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              200: {
+                description: "Lista de dados de webhooks",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/DataWebhook",
+                      },
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/api/webhook-data/{id}": {
+          get: {
+            tags: ["Webhook Data"],
+            summary: "Obter dados de um webhook específico",
+            description: "Obter dados recebidos por um webhook específico",
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              {
+                name: "id",
+                in: "path",
+                description: "ID do webhook",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              200: {
+                description: "Dados do webhook",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/DataWebhook",
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              404: {
+                description: "Dados não encontrados",
                 content: {
                   "application/json": {
                     schema: {

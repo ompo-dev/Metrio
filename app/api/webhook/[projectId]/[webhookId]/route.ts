@@ -54,8 +54,11 @@ interface RouteParams {
  */
 export async function POST(request: Request, { params }: RouteParams) {
   try {
+    // Obter o webhook ID dos parâmetros
+    const webhookId = params.webhookId;
+
     // Buscar o webhook pelo ID
-    const webhook = await getWebhookById(params.webhookId);
+    const webhook = await getWebhookById(webhookId);
 
     // Verificar se o webhook existe e pertence ao projeto
     if (!webhook || webhook.projectId !== params.projectId) {
@@ -91,14 +94,47 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     try {
-      // Armazenar os dados recebidos na tabela DataWebhook
-      // Usando upsert para criar ou atualizar o registro
+      // Primeiro, verificar se já existe um registro para este webhook
+      const existingData = await db.$queryRawUnsafe<any[]>(
+        `
+        SELECT data 
+        FROM "DataWebhook" 
+        WHERE id = $1
+      `,
+        webhookId
+      );
+
+      let dataArray = [];
+
+      // Adicionar timestamp ao novo payload para registro
+      const payloadWithTimestamp = {
+        ...payload,
+        receivedAt: new Date().toISOString(),
+      };
+
+      // Se já existir dados, adicionar o novo payload ao array existente
+      if (existingData && existingData.length > 0) {
+        // Se o dado existente não for um array, convertê-lo para array
+        if (Array.isArray(existingData[0].data)) {
+          dataArray = [...existingData[0].data];
+        } else {
+          dataArray = [existingData[0].data];
+        }
+
+        // Adicionar o novo payload ao array
+        dataArray.push(payloadWithTimestamp);
+      } else {
+        // Criar um novo array com apenas o payload atual
+        dataArray = [payloadWithTimestamp];
+      }
+
+      // Armazenar os dados atualizados
       await db.$executeRaw`
         INSERT INTO "DataWebhook" ("id", "data", "updatedAt")
-        VALUES (${webhook.id}, ${JSON.stringify(payload)}::jsonb, NOW())
+        VALUES (${webhookId}, ${JSON.stringify(dataArray)}::jsonb, NOW())
         ON CONFLICT ("id") 
         DO UPDATE SET 
-          "data" = ${JSON.stringify(payload)}::jsonb,
+          "data" = ${JSON.stringify(dataArray)}::jsonb,
           "updatedAt" = NOW()
       `;
 
