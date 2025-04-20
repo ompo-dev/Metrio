@@ -54,6 +54,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import api from "@/lib/api";
 
 // Interface para projetos do usuário
 export interface Project {
@@ -112,12 +113,9 @@ export function TeamSwitcher() {
 
     try {
       setIsFetching(true);
-      const response = await fetch("/api/projects");
-      if (!response.ok) {
-        throw new Error("Falha ao buscar projetos");
-      }
+      const response = await api.get("/api/projects");
 
-      const data = await response.json();
+      const data = response.data;
       setProjects(data);
 
       // Buscar o projeto ativo, se houver projetos
@@ -130,7 +128,7 @@ export function TeamSwitcher() {
       }
     } catch (error) {
       console.error("Erro ao buscar projetos:", error);
-      toast.error("Não foi possível carregar seus projetos");
+      // O toast de erro já é exibido pelo interceptor do Axios
     } finally {
       setIsFetching(false);
     }
@@ -162,23 +160,13 @@ export function TeamSwitcher() {
       }
 
       // Enviar para a API
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: teamName,
-          logoIcon: selectedIcon,
-          type: projectType || null,
-        }),
+      const response = await api.post("/api/projects", {
+        name: teamName,
+        logoIcon: selectedIcon,
+        type: projectType || null,
       });
 
-      if (!response.ok) {
-        throw new Error("Falha ao criar projeto");
-      }
-
-      const newProject = await response.json();
+      const newProject = response.data;
 
       // Atualizar a lista de projetos e definir o novo como ativo
       setProjects((prev) => [newProject, ...prev]);
@@ -187,8 +175,8 @@ export function TeamSwitcher() {
       toast.success("Projeto criado com sucesso!");
       setIsCreateModalOpen(false);
     } catch (error) {
+      // O toast de erro já é exibido pelo interceptor do Axios
       console.error("Erro ao criar projeto:", error);
-      toast.error("Ocorreu um erro ao criar o projeto");
     } finally {
       setIsLoading(false);
     }
@@ -201,24 +189,14 @@ export function TeamSwitcher() {
       setActiveProject(project);
 
       // Enviar para a API
-      const response = await fetch("/api/projects/active", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          projectId: project.id,
-        }),
+      await api.put("/api/projects/active", {
+        projectId: project.id,
       });
-
-      if (!response.ok) {
-        throw new Error("Falha ao atualizar projeto ativo");
-      }
 
       // Não é necessário atualizar a UI novamente, já atualizamos anteriormente
     } catch (error) {
       console.error("Erro ao definir projeto ativo:", error);
-      toast.error("Não foi possível definir o projeto ativo");
+      // O toast de erro já é exibido pelo interceptor do Axios
 
       // Reverter a alteração na interface em caso de erro
       fetchProjects();

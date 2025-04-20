@@ -7,6 +7,8 @@ import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import api from "@/lib/api";
+import { AxiosError } from "axios";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -76,19 +78,7 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formValues),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Erro ao registrar usuário");
-      }
+      await api.post("/api/register", formValues);
 
       toast.success("Conta criada com sucesso!");
 
@@ -108,11 +98,17 @@ export function RegisterForm() {
       router.refresh();
     } catch (error) {
       console.error("Erro no registro:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Ocorreu um erro durante o registro"
-      );
+
+      // Verificar se é um erro do Axios com resposta
+      if (error instanceof AxiosError && error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Ocorreu um erro durante o registro"
+        );
+      }
     } finally {
       setIsLoading(false);
     }

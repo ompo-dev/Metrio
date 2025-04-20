@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import api from "@/lib/api";
 
 // Lista de ícones para projetos
 const PROJECT_ICONS = [
@@ -81,22 +82,12 @@ export default function CreateTeamPage() {
         return;
       }
 
-      // Criar novo projeto
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: teamName,
-          logoIcon: selectedIcon,
-          type: projectType || null,
-        }),
+      // Criar novo projeto usando Axios
+      await api.post("/api/projects", {
+        name: teamName,
+        logoIcon: selectedIcon,
+        type: projectType || null,
       });
-
-      if (!response.ok) {
-        throw new Error("Falha ao criar projeto");
-      }
 
       toast.success("Projeto criado com sucesso!");
 
@@ -104,7 +95,7 @@ export default function CreateTeamPage() {
       router.push("/dashboard");
     } catch (error) {
       console.error("Erro ao criar projeto:", error);
-      toast.error("Ocorreu um erro ao criar o projeto");
+      // O toast de erro já é exibido pelo interceptor do Axios
     } finally {
       setIsLoading(false);
     }

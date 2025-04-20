@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import api from "@/lib/api";
+import { AxiosError } from "axios";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -48,26 +50,32 @@ export function LoginForm() {
       toast.success("Login realizado com sucesso!");
 
       // Verificar se o usuário já tem projetos
-      const response = await fetch("/api/projects");
+      try {
+        const response = await api.get("/api/projects");
+        const projects = response.data;
+        const hasProjects = Array.isArray(projects) && projects.length > 0;
 
-      if (!response.ok) {
-        throw new Error("Falha ao verificar projetos");
-      }
-
-      const projects = await response.json();
-      const hasProjects = Array.isArray(projects) && projects.length > 0;
-
-      // Redirecionar para onboarding se não tiver projetos, senão para dashboard
-      if (hasProjects) {
+        // Redirecionar para onboarding se não tiver projetos, senão para dashboard
+        if (hasProjects) {
+          router.push("/dashboard");
+        } else {
+          router.push("/onboarding/create-team");
+        }
+      } catch (error) {
+        // Se ocorrer erro ao verificar projetos, redirecionar para o dashboard
+        console.error("Erro ao verificar projetos:", error);
         router.push("/dashboard");
-      } else {
-        router.push("/onboarding/create-team");
       }
 
       router.refresh();
     } catch (error) {
       console.error("Erro no login:", error);
-      toast.error("Ocorreu um erro durante o login");
+
+      if (error instanceof AxiosError && error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Ocorreu um erro durante o login");
+      }
 
       // Em caso de erro, redirecionar para o dashboard
       router.push("/dashboard");
