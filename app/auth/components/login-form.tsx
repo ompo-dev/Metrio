@@ -41,11 +41,23 @@ export function LoginForm() {
 
       if (result?.error) {
         toast.error("Credenciais inválidas");
+        setIsLoading(false);
         return;
       }
 
       toast.success("Login realizado com sucesso!");
-      router.push("/dashboard");
+
+      // Verificar se o usuário já tem projetos
+      const storedTeams = localStorage.getItem("userTeams");
+      const hasProjects = storedTeams && JSON.parse(storedTeams).length > 0;
+
+      // Redirecionar para onboarding se não tiver projetos, senão para dashboard
+      if (hasProjects) {
+        router.push("/dashboard");
+      } else {
+        router.push("/onboarding/create-team");
+      }
+
       router.refresh();
     } catch (error) {
       console.error("Erro no login:", error);

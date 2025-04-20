@@ -92,14 +92,28 @@ export function RegisterForm() {
 
       toast.success("Conta criada com sucesso!");
 
+      // Verificar se o usuário já tem projetos
+      const storedTeams = localStorage.getItem("userTeams");
+      const hasProjects = storedTeams && JSON.parse(storedTeams).length > 0;
+
       // Login automático após registro
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email: formValues.email,
         password: formValues.password,
         redirect: false,
       });
 
-      router.push("/dashboard");
+      if (result?.error) {
+        throw new Error("Erro ao fazer login automático");
+      }
+
+      // Redirecionar para onboarding se não tiver projetos, senão para dashboard
+      if (hasProjects) {
+        router.push("/dashboard");
+      } else {
+        router.push("/onboarding/create-team");
+      }
+
       router.refresh();
     } catch (error) {
       console.error("Erro no registro:", error);
