@@ -2,8 +2,37 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcrypt";
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { JWT } from "next-auth/jwt";
 
 import { db } from "@/lib/db";
+
+// Estendendo os tipos
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+
+  interface User {
+    id: string;
+    name?: string | null;
+    email: string;
+    image?: string | null;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  }
+}
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(db),
@@ -45,6 +74,28 @@ export const authOptions: AuthOptions = {
   debug: process.env.NODE_ENV === "development",
   session: {
     strategy: "jwt",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.image = user.image;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user = {
+          id: token.id,
+          name: token.name,
+          email: token.email,
+          image: token.image,
+        };
+      }
+      return session;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
