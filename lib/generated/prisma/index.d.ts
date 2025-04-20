@@ -38,6 +38,11 @@ export type VerificationToken = $Result.DefaultSelection<Prisma.$VerificationTok
  * 
  */
 export type Project = $Result.DefaultSelection<Prisma.$ProjectPayload>
+/**
+ * Model Webhook
+ * 
+ */
+export type Webhook = $Result.DefaultSelection<Prisma.$WebhookPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -213,6 +218,16 @@ export class PrismaClient<
     * ```
     */
   get project(): Prisma.ProjectDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.webhook`: Exposes CRUD operations for the **Webhook** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Webhooks
+    * const webhooks = await prisma.webhook.findMany()
+    * ```
+    */
+  get webhook(): Prisma.WebhookDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -657,7 +672,8 @@ export namespace Prisma {
     Account: 'Account',
     Session: 'Session',
     VerificationToken: 'VerificationToken',
-    Project: 'Project'
+    Project: 'Project',
+    Webhook: 'Webhook'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -676,7 +692,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "project"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "webhook"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1050,6 +1066,80 @@ export namespace Prisma {
           }
         }
       }
+      Webhook: {
+        payload: Prisma.$WebhookPayload<ExtArgs>
+        fields: Prisma.WebhookFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WebhookFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WebhookFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>
+          }
+          findFirst: {
+            args: Prisma.WebhookFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WebhookFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>
+          }
+          findMany: {
+            args: Prisma.WebhookFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>[]
+          }
+          create: {
+            args: Prisma.WebhookCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>
+          }
+          createMany: {
+            args: Prisma.WebhookCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WebhookCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>[]
+          }
+          delete: {
+            args: Prisma.WebhookDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>
+          }
+          update: {
+            args: Prisma.WebhookUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>
+          }
+          deleteMany: {
+            args: Prisma.WebhookDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WebhookUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WebhookUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>[]
+          }
+          upsert: {
+            args: Prisma.WebhookUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookPayload>
+          }
+          aggregate: {
+            args: Prisma.WebhookAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWebhook>
+          }
+          groupBy: {
+            args: Prisma.WebhookGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WebhookGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WebhookCountArgs<ExtArgs>
+            result: $Utils.Optional<WebhookCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1139,6 +1229,7 @@ export namespace Prisma {
     session?: SessionOmit
     verificationToken?: VerificationTokenOmit
     project?: ProjectOmit
+    webhook?: WebhookOmit
   }
 
   /* Types for Logging */
@@ -1236,12 +1327,14 @@ export namespace Prisma {
     accounts: number
     sessions: number
     projects: number
+    webhooks: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
     projects?: boolean | UserCountOutputTypeCountProjectsArgs
+    webhooks?: boolean | UserCountOutputTypeCountWebhooksArgs
   }
 
   // Custom InputTypes
@@ -1276,6 +1369,13 @@ export namespace Prisma {
     where?: ProjectWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountWebhooksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebhookWhereInput
+  }
+
 
   /**
    * Count Type ProjectCountOutputType
@@ -1283,10 +1383,12 @@ export namespace Prisma {
 
   export type ProjectCountOutputType = {
     activeFor: number
+    webhooks: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     activeFor?: boolean | ProjectCountOutputTypeCountActiveForArgs
+    webhooks?: boolean | ProjectCountOutputTypeCountWebhooksArgs
   }
 
   // Custom InputTypes
@@ -1305,6 +1407,13 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountActiveForArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserWhereInput
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountWebhooksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebhookWhereInput
   }
 
 
@@ -1512,6 +1621,7 @@ export namespace Prisma {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     projects?: boolean | User$projectsArgs<ExtArgs>
     activeProject?: boolean | User$activeProjectArgs<ExtArgs>
+    webhooks?: boolean | User$webhooksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -1559,6 +1669,7 @@ export namespace Prisma {
     sessions?: boolean | User$sessionsArgs<ExtArgs>
     projects?: boolean | User$projectsArgs<ExtArgs>
     activeProject?: boolean | User$activeProjectArgs<ExtArgs>
+    webhooks?: boolean | User$webhooksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1575,6 +1686,7 @@ export namespace Prisma {
       sessions: Prisma.$SessionPayload<ExtArgs>[]
       projects: Prisma.$ProjectPayload<ExtArgs>[]
       activeProject: Prisma.$ProjectPayload<ExtArgs> | null
+      webhooks: Prisma.$WebhookPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -1984,6 +2096,7 @@ export namespace Prisma {
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     projects<T extends User$projectsArgs<ExtArgs> = {}>(args?: Subset<T, User$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     activeProject<T extends User$activeProjectArgs<ExtArgs> = {}>(args?: Subset<T, User$activeProjectArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    webhooks<T extends User$webhooksArgs<ExtArgs> = {}>(args?: Subset<T, User$webhooksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2506,6 +2619,30 @@ export namespace Prisma {
      */
     include?: ProjectInclude<ExtArgs> | null
     where?: ProjectWhereInput
+  }
+
+  /**
+   * User.webhooks
+   */
+  export type User$webhooksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    where?: WebhookWhereInput
+    orderBy?: WebhookOrderByWithRelationInput | WebhookOrderByWithRelationInput[]
+    cursor?: WebhookWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WebhookScalarFieldEnum | WebhookScalarFieldEnum[]
   }
 
   /**
@@ -5906,6 +6043,7 @@ export namespace Prisma {
     userId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     activeFor?: boolean | Project$activeForArgs<ExtArgs>
+    webhooks?: boolean | Project$webhooksArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -5945,6 +6083,7 @@ export namespace Prisma {
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     activeFor?: boolean | Project$activeForArgs<ExtArgs>
+    webhooks?: boolean | Project$webhooksArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5959,6 +6098,7 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       activeFor: Prisma.$UserPayload<ExtArgs>[]
+      webhooks: Prisma.$WebhookPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -6364,6 +6504,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     activeFor<T extends Project$activeForArgs<ExtArgs> = {}>(args?: Subset<T, Project$activeForArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    webhooks<T extends Project$webhooksArgs<ExtArgs> = {}>(args?: Subset<T, Project$webhooksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6820,6 +6961,30 @@ export namespace Prisma {
   }
 
   /**
+   * Project.webhooks
+   */
+  export type Project$webhooksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    where?: WebhookWhereInput
+    orderBy?: WebhookOrderByWithRelationInput | WebhookOrderByWithRelationInput[]
+    cursor?: WebhookWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WebhookScalarFieldEnum | WebhookScalarFieldEnum[]
+  }
+
+  /**
    * Project without action
    */
   export type ProjectDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6835,6 +7000,1164 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProjectInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Webhook
+   */
+
+  export type AggregateWebhook = {
+    _count: WebhookCountAggregateOutputType | null
+    _min: WebhookMinAggregateOutputType | null
+    _max: WebhookMaxAggregateOutputType | null
+  }
+
+  export type WebhookMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    technicalName: string | null
+    description: string | null
+    isActive: boolean | null
+    secretToken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    userId: string | null
+    projectId: string | null
+  }
+
+  export type WebhookMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    technicalName: string | null
+    description: string | null
+    isActive: boolean | null
+    secretToken: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    userId: string | null
+    projectId: string | null
+  }
+
+  export type WebhookCountAggregateOutputType = {
+    id: number
+    name: number
+    technicalName: number
+    description: number
+    isActive: number
+    secretToken: number
+    events: number
+    headers: number
+    payloadSchema: number
+    createdAt: number
+    updatedAt: number
+    userId: number
+    projectId: number
+    _all: number
+  }
+
+
+  export type WebhookMinAggregateInputType = {
+    id?: true
+    name?: true
+    technicalName?: true
+    description?: true
+    isActive?: true
+    secretToken?: true
+    createdAt?: true
+    updatedAt?: true
+    userId?: true
+    projectId?: true
+  }
+
+  export type WebhookMaxAggregateInputType = {
+    id?: true
+    name?: true
+    technicalName?: true
+    description?: true
+    isActive?: true
+    secretToken?: true
+    createdAt?: true
+    updatedAt?: true
+    userId?: true
+    projectId?: true
+  }
+
+  export type WebhookCountAggregateInputType = {
+    id?: true
+    name?: true
+    technicalName?: true
+    description?: true
+    isActive?: true
+    secretToken?: true
+    events?: true
+    headers?: true
+    payloadSchema?: true
+    createdAt?: true
+    updatedAt?: true
+    userId?: true
+    projectId?: true
+    _all?: true
+  }
+
+  export type WebhookAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Webhook to aggregate.
+     */
+    where?: WebhookWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Webhooks to fetch.
+     */
+    orderBy?: WebhookOrderByWithRelationInput | WebhookOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WebhookWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Webhooks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Webhooks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Webhooks
+    **/
+    _count?: true | WebhookCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WebhookMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WebhookMaxAggregateInputType
+  }
+
+  export type GetWebhookAggregateType<T extends WebhookAggregateArgs> = {
+        [P in keyof T & keyof AggregateWebhook]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWebhook[P]>
+      : GetScalarType<T[P], AggregateWebhook[P]>
+  }
+
+
+
+
+  export type WebhookGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebhookWhereInput
+    orderBy?: WebhookOrderByWithAggregationInput | WebhookOrderByWithAggregationInput[]
+    by: WebhookScalarFieldEnum[] | WebhookScalarFieldEnum
+    having?: WebhookScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WebhookCountAggregateInputType | true
+    _min?: WebhookMinAggregateInputType
+    _max?: WebhookMaxAggregateInputType
+  }
+
+  export type WebhookGroupByOutputType = {
+    id: string
+    name: string
+    technicalName: string
+    description: string | null
+    isActive: boolean
+    secretToken: string
+    events: string[]
+    headers: JsonValue | null
+    payloadSchema: JsonValue
+    createdAt: Date
+    updatedAt: Date
+    userId: string
+    projectId: string
+    _count: WebhookCountAggregateOutputType | null
+    _min: WebhookMinAggregateOutputType | null
+    _max: WebhookMaxAggregateOutputType | null
+  }
+
+  type GetWebhookGroupByPayload<T extends WebhookGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WebhookGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WebhookGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WebhookGroupByOutputType[P]>
+            : GetScalarType<T[P], WebhookGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WebhookSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    technicalName?: boolean
+    description?: boolean
+    isActive?: boolean
+    secretToken?: boolean
+    events?: boolean
+    headers?: boolean
+    payloadSchema?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    userId?: boolean
+    projectId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["webhook"]>
+
+  export type WebhookSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    technicalName?: boolean
+    description?: boolean
+    isActive?: boolean
+    secretToken?: boolean
+    events?: boolean
+    headers?: boolean
+    payloadSchema?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    userId?: boolean
+    projectId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["webhook"]>
+
+  export type WebhookSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    technicalName?: boolean
+    description?: boolean
+    isActive?: boolean
+    secretToken?: boolean
+    events?: boolean
+    headers?: boolean
+    payloadSchema?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    userId?: boolean
+    projectId?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["webhook"]>
+
+  export type WebhookSelectScalar = {
+    id?: boolean
+    name?: boolean
+    technicalName?: boolean
+    description?: boolean
+    isActive?: boolean
+    secretToken?: boolean
+    events?: boolean
+    headers?: boolean
+    payloadSchema?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    userId?: boolean
+    projectId?: boolean
+  }
+
+  export type WebhookOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "technicalName" | "description" | "isActive" | "secretToken" | "events" | "headers" | "payloadSchema" | "createdAt" | "updatedAt" | "userId" | "projectId", ExtArgs["result"]["webhook"]>
+  export type WebhookInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type WebhookIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type WebhookIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+
+  export type $WebhookPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Webhook"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      project: Prisma.$ProjectPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      technicalName: string
+      description: string | null
+      isActive: boolean
+      secretToken: string
+      events: string[]
+      headers: Prisma.JsonValue | null
+      payloadSchema: Prisma.JsonValue
+      createdAt: Date
+      updatedAt: Date
+      userId: string
+      projectId: string
+    }, ExtArgs["result"]["webhook"]>
+    composites: {}
+  }
+
+  type WebhookGetPayload<S extends boolean | null | undefined | WebhookDefaultArgs> = $Result.GetResult<Prisma.$WebhookPayload, S>
+
+  type WebhookCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WebhookFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WebhookCountAggregateInputType | true
+    }
+
+  export interface WebhookDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Webhook'], meta: { name: 'Webhook' } }
+    /**
+     * Find zero or one Webhook that matches the filter.
+     * @param {WebhookFindUniqueArgs} args - Arguments to find a Webhook
+     * @example
+     * // Get one Webhook
+     * const webhook = await prisma.webhook.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WebhookFindUniqueArgs>(args: SelectSubset<T, WebhookFindUniqueArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Webhook that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WebhookFindUniqueOrThrowArgs} args - Arguments to find a Webhook
+     * @example
+     * // Get one Webhook
+     * const webhook = await prisma.webhook.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WebhookFindUniqueOrThrowArgs>(args: SelectSubset<T, WebhookFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Webhook that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookFindFirstArgs} args - Arguments to find a Webhook
+     * @example
+     * // Get one Webhook
+     * const webhook = await prisma.webhook.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WebhookFindFirstArgs>(args?: SelectSubset<T, WebhookFindFirstArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Webhook that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookFindFirstOrThrowArgs} args - Arguments to find a Webhook
+     * @example
+     * // Get one Webhook
+     * const webhook = await prisma.webhook.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WebhookFindFirstOrThrowArgs>(args?: SelectSubset<T, WebhookFindFirstOrThrowArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Webhooks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Webhooks
+     * const webhooks = await prisma.webhook.findMany()
+     * 
+     * // Get first 10 Webhooks
+     * const webhooks = await prisma.webhook.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const webhookWithIdOnly = await prisma.webhook.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WebhookFindManyArgs>(args?: SelectSubset<T, WebhookFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Webhook.
+     * @param {WebhookCreateArgs} args - Arguments to create a Webhook.
+     * @example
+     * // Create one Webhook
+     * const Webhook = await prisma.webhook.create({
+     *   data: {
+     *     // ... data to create a Webhook
+     *   }
+     * })
+     * 
+     */
+    create<T extends WebhookCreateArgs>(args: SelectSubset<T, WebhookCreateArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Webhooks.
+     * @param {WebhookCreateManyArgs} args - Arguments to create many Webhooks.
+     * @example
+     * // Create many Webhooks
+     * const webhook = await prisma.webhook.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WebhookCreateManyArgs>(args?: SelectSubset<T, WebhookCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Webhooks and returns the data saved in the database.
+     * @param {WebhookCreateManyAndReturnArgs} args - Arguments to create many Webhooks.
+     * @example
+     * // Create many Webhooks
+     * const webhook = await prisma.webhook.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Webhooks and only return the `id`
+     * const webhookWithIdOnly = await prisma.webhook.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WebhookCreateManyAndReturnArgs>(args?: SelectSubset<T, WebhookCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Webhook.
+     * @param {WebhookDeleteArgs} args - Arguments to delete one Webhook.
+     * @example
+     * // Delete one Webhook
+     * const Webhook = await prisma.webhook.delete({
+     *   where: {
+     *     // ... filter to delete one Webhook
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WebhookDeleteArgs>(args: SelectSubset<T, WebhookDeleteArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Webhook.
+     * @param {WebhookUpdateArgs} args - Arguments to update one Webhook.
+     * @example
+     * // Update one Webhook
+     * const webhook = await prisma.webhook.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WebhookUpdateArgs>(args: SelectSubset<T, WebhookUpdateArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Webhooks.
+     * @param {WebhookDeleteManyArgs} args - Arguments to filter Webhooks to delete.
+     * @example
+     * // Delete a few Webhooks
+     * const { count } = await prisma.webhook.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WebhookDeleteManyArgs>(args?: SelectSubset<T, WebhookDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Webhooks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Webhooks
+     * const webhook = await prisma.webhook.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WebhookUpdateManyArgs>(args: SelectSubset<T, WebhookUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Webhooks and returns the data updated in the database.
+     * @param {WebhookUpdateManyAndReturnArgs} args - Arguments to update many Webhooks.
+     * @example
+     * // Update many Webhooks
+     * const webhook = await prisma.webhook.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Webhooks and only return the `id`
+     * const webhookWithIdOnly = await prisma.webhook.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WebhookUpdateManyAndReturnArgs>(args: SelectSubset<T, WebhookUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Webhook.
+     * @param {WebhookUpsertArgs} args - Arguments to update or create a Webhook.
+     * @example
+     * // Update or create a Webhook
+     * const webhook = await prisma.webhook.upsert({
+     *   create: {
+     *     // ... data to create a Webhook
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Webhook we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WebhookUpsertArgs>(args: SelectSubset<T, WebhookUpsertArgs<ExtArgs>>): Prisma__WebhookClient<$Result.GetResult<Prisma.$WebhookPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Webhooks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookCountArgs} args - Arguments to filter Webhooks to count.
+     * @example
+     * // Count the number of Webhooks
+     * const count = await prisma.webhook.count({
+     *   where: {
+     *     // ... the filter for the Webhooks we want to count
+     *   }
+     * })
+    **/
+    count<T extends WebhookCountArgs>(
+      args?: Subset<T, WebhookCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WebhookCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Webhook.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WebhookAggregateArgs>(args: Subset<T, WebhookAggregateArgs>): Prisma.PrismaPromise<GetWebhookAggregateType<T>>
+
+    /**
+     * Group by Webhook.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WebhookGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WebhookGroupByArgs['orderBy'] }
+        : { orderBy?: WebhookGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WebhookGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWebhookGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Webhook model
+   */
+  readonly fields: WebhookFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Webhook.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WebhookClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Webhook model
+   */
+  interface WebhookFieldRefs {
+    readonly id: FieldRef<"Webhook", 'String'>
+    readonly name: FieldRef<"Webhook", 'String'>
+    readonly technicalName: FieldRef<"Webhook", 'String'>
+    readonly description: FieldRef<"Webhook", 'String'>
+    readonly isActive: FieldRef<"Webhook", 'Boolean'>
+    readonly secretToken: FieldRef<"Webhook", 'String'>
+    readonly events: FieldRef<"Webhook", 'String[]'>
+    readonly headers: FieldRef<"Webhook", 'Json'>
+    readonly payloadSchema: FieldRef<"Webhook", 'Json'>
+    readonly createdAt: FieldRef<"Webhook", 'DateTime'>
+    readonly updatedAt: FieldRef<"Webhook", 'DateTime'>
+    readonly userId: FieldRef<"Webhook", 'String'>
+    readonly projectId: FieldRef<"Webhook", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Webhook findUnique
+   */
+  export type WebhookFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * Filter, which Webhook to fetch.
+     */
+    where: WebhookWhereUniqueInput
+  }
+
+  /**
+   * Webhook findUniqueOrThrow
+   */
+  export type WebhookFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * Filter, which Webhook to fetch.
+     */
+    where: WebhookWhereUniqueInput
+  }
+
+  /**
+   * Webhook findFirst
+   */
+  export type WebhookFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * Filter, which Webhook to fetch.
+     */
+    where?: WebhookWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Webhooks to fetch.
+     */
+    orderBy?: WebhookOrderByWithRelationInput | WebhookOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Webhooks.
+     */
+    cursor?: WebhookWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Webhooks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Webhooks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Webhooks.
+     */
+    distinct?: WebhookScalarFieldEnum | WebhookScalarFieldEnum[]
+  }
+
+  /**
+   * Webhook findFirstOrThrow
+   */
+  export type WebhookFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * Filter, which Webhook to fetch.
+     */
+    where?: WebhookWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Webhooks to fetch.
+     */
+    orderBy?: WebhookOrderByWithRelationInput | WebhookOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Webhooks.
+     */
+    cursor?: WebhookWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Webhooks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Webhooks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Webhooks.
+     */
+    distinct?: WebhookScalarFieldEnum | WebhookScalarFieldEnum[]
+  }
+
+  /**
+   * Webhook findMany
+   */
+  export type WebhookFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * Filter, which Webhooks to fetch.
+     */
+    where?: WebhookWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Webhooks to fetch.
+     */
+    orderBy?: WebhookOrderByWithRelationInput | WebhookOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Webhooks.
+     */
+    cursor?: WebhookWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Webhooks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Webhooks.
+     */
+    skip?: number
+    distinct?: WebhookScalarFieldEnum | WebhookScalarFieldEnum[]
+  }
+
+  /**
+   * Webhook create
+   */
+  export type WebhookCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Webhook.
+     */
+    data: XOR<WebhookCreateInput, WebhookUncheckedCreateInput>
+  }
+
+  /**
+   * Webhook createMany
+   */
+  export type WebhookCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Webhooks.
+     */
+    data: WebhookCreateManyInput | WebhookCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Webhook createManyAndReturn
+   */
+  export type WebhookCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * The data used to create many Webhooks.
+     */
+    data: WebhookCreateManyInput | WebhookCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Webhook update
+   */
+  export type WebhookUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Webhook.
+     */
+    data: XOR<WebhookUpdateInput, WebhookUncheckedUpdateInput>
+    /**
+     * Choose, which Webhook to update.
+     */
+    where: WebhookWhereUniqueInput
+  }
+
+  /**
+   * Webhook updateMany
+   */
+  export type WebhookUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Webhooks.
+     */
+    data: XOR<WebhookUpdateManyMutationInput, WebhookUncheckedUpdateManyInput>
+    /**
+     * Filter which Webhooks to update
+     */
+    where?: WebhookWhereInput
+    /**
+     * Limit how many Webhooks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Webhook updateManyAndReturn
+   */
+  export type WebhookUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * The data used to update Webhooks.
+     */
+    data: XOR<WebhookUpdateManyMutationInput, WebhookUncheckedUpdateManyInput>
+    /**
+     * Filter which Webhooks to update
+     */
+    where?: WebhookWhereInput
+    /**
+     * Limit how many Webhooks to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Webhook upsert
+   */
+  export type WebhookUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Webhook to update in case it exists.
+     */
+    where: WebhookWhereUniqueInput
+    /**
+     * In case the Webhook found by the `where` argument doesn't exist, create a new Webhook with this data.
+     */
+    create: XOR<WebhookCreateInput, WebhookUncheckedCreateInput>
+    /**
+     * In case the Webhook was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WebhookUpdateInput, WebhookUncheckedUpdateInput>
+  }
+
+  /**
+   * Webhook delete
+   */
+  export type WebhookDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
+    /**
+     * Filter which Webhook to delete.
+     */
+    where: WebhookWhereUniqueInput
+  }
+
+  /**
+   * Webhook deleteMany
+   */
+  export type WebhookDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Webhooks to delete
+     */
+    where?: WebhookWhereInput
+    /**
+     * Limit how many Webhooks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Webhook without action
+   */
+  export type WebhookDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Webhook
+     */
+    select?: WebhookSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Webhook
+     */
+    omit?: WebhookOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookInclude<ExtArgs> | null
   }
 
 
@@ -6917,12 +8240,46 @@ export namespace Prisma {
   export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
 
 
+  export const WebhookScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    technicalName: 'technicalName',
+    description: 'description',
+    isActive: 'isActive',
+    secretToken: 'secretToken',
+    events: 'events',
+    headers: 'headers',
+    payloadSchema: 'payloadSchema',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    userId: 'userId',
+    projectId: 'projectId'
+  };
+
+  export type WebhookScalarFieldEnum = (typeof WebhookScalarFieldEnum)[keyof typeof WebhookScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -6939,6 +8296,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
   /**
@@ -6989,6 +8355,27 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -7022,6 +8409,7 @@ export namespace Prisma {
     sessions?: SessionListRelationFilter
     projects?: ProjectListRelationFilter
     activeProject?: XOR<ProjectNullableScalarRelationFilter, ProjectWhereInput> | null
+    webhooks?: WebhookListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -7038,6 +8426,7 @@ export namespace Prisma {
     sessions?: SessionOrderByRelationAggregateInput
     projects?: ProjectOrderByRelationAggregateInput
     activeProject?: ProjectOrderByWithRelationInput
+    webhooks?: WebhookOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -7057,6 +8446,7 @@ export namespace Prisma {
     sessions?: SessionListRelationFilter
     projects?: ProjectListRelationFilter
     activeProject?: XOR<ProjectNullableScalarRelationFilter, ProjectWhereInput> | null
+    webhooks?: WebhookListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -7288,6 +8678,7 @@ export namespace Prisma {
     userId?: StringFilter<"Project"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     activeFor?: UserListRelationFilter
+    webhooks?: WebhookListRelationFilter
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -7300,6 +8691,7 @@ export namespace Prisma {
     userId?: SortOrder
     user?: UserOrderByWithRelationInput
     activeFor?: UserOrderByRelationAggregateInput
+    webhooks?: WebhookOrderByRelationAggregateInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -7315,6 +8707,7 @@ export namespace Prisma {
     userId?: StringFilter<"Project"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     activeFor?: UserListRelationFilter
+    webhooks?: WebhookListRelationFilter
   }, "id">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -7343,6 +8736,104 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Project"> | string
   }
 
+  export type WebhookWhereInput = {
+    AND?: WebhookWhereInput | WebhookWhereInput[]
+    OR?: WebhookWhereInput[]
+    NOT?: WebhookWhereInput | WebhookWhereInput[]
+    id?: StringFilter<"Webhook"> | string
+    name?: StringFilter<"Webhook"> | string
+    technicalName?: StringFilter<"Webhook"> | string
+    description?: StringNullableFilter<"Webhook"> | string | null
+    isActive?: BoolFilter<"Webhook"> | boolean
+    secretToken?: StringFilter<"Webhook"> | string
+    events?: StringNullableListFilter<"Webhook">
+    headers?: JsonNullableFilter<"Webhook">
+    payloadSchema?: JsonFilter<"Webhook">
+    createdAt?: DateTimeFilter<"Webhook"> | Date | string
+    updatedAt?: DateTimeFilter<"Webhook"> | Date | string
+    userId?: StringFilter<"Webhook"> | string
+    projectId?: StringFilter<"Webhook"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }
+
+  export type WebhookOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    technicalName?: SortOrder
+    description?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    secretToken?: SortOrder
+    events?: SortOrder
+    headers?: SortOrderInput | SortOrder
+    payloadSchema?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    user?: UserOrderByWithRelationInput
+    project?: ProjectOrderByWithRelationInput
+  }
+
+  export type WebhookWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: WebhookWhereInput | WebhookWhereInput[]
+    OR?: WebhookWhereInput[]
+    NOT?: WebhookWhereInput | WebhookWhereInput[]
+    name?: StringFilter<"Webhook"> | string
+    technicalName?: StringFilter<"Webhook"> | string
+    description?: StringNullableFilter<"Webhook"> | string | null
+    isActive?: BoolFilter<"Webhook"> | boolean
+    secretToken?: StringFilter<"Webhook"> | string
+    events?: StringNullableListFilter<"Webhook">
+    headers?: JsonNullableFilter<"Webhook">
+    payloadSchema?: JsonFilter<"Webhook">
+    createdAt?: DateTimeFilter<"Webhook"> | Date | string
+    updatedAt?: DateTimeFilter<"Webhook"> | Date | string
+    userId?: StringFilter<"Webhook"> | string
+    projectId?: StringFilter<"Webhook"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }, "id">
+
+  export type WebhookOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    technicalName?: SortOrder
+    description?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    secretToken?: SortOrder
+    events?: SortOrder
+    headers?: SortOrderInput | SortOrder
+    payloadSchema?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    _count?: WebhookCountOrderByAggregateInput
+    _max?: WebhookMaxOrderByAggregateInput
+    _min?: WebhookMinOrderByAggregateInput
+  }
+
+  export type WebhookScalarWhereWithAggregatesInput = {
+    AND?: WebhookScalarWhereWithAggregatesInput | WebhookScalarWhereWithAggregatesInput[]
+    OR?: WebhookScalarWhereWithAggregatesInput[]
+    NOT?: WebhookScalarWhereWithAggregatesInput | WebhookScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Webhook"> | string
+    name?: StringWithAggregatesFilter<"Webhook"> | string
+    technicalName?: StringWithAggregatesFilter<"Webhook"> | string
+    description?: StringNullableWithAggregatesFilter<"Webhook"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Webhook"> | boolean
+    secretToken?: StringWithAggregatesFilter<"Webhook"> | string
+    events?: StringNullableListFilter<"Webhook">
+    headers?: JsonNullableWithAggregatesFilter<"Webhook">
+    payloadSchema?: JsonWithAggregatesFilter<"Webhook">
+    createdAt?: DateTimeWithAggregatesFilter<"Webhook"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Webhook"> | Date | string
+    userId?: StringWithAggregatesFilter<"Webhook"> | string
+    projectId?: StringWithAggregatesFilter<"Webhook"> | string
+  }
+
   export type UserCreateInput = {
     id?: string
     name?: string | null
@@ -7356,6 +8847,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     projects?: ProjectCreateNestedManyWithoutUserInput
     activeProject?: ProjectCreateNestedOneWithoutActiveForInput
+    webhooks?: WebhookCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -7371,6 +8863,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -7386,6 +8879,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     projects?: ProjectUpdateManyWithoutUserNestedInput
     activeProject?: ProjectUpdateOneWithoutActiveForNestedInput
+    webhooks?: WebhookUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -7401,6 +8895,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -7641,6 +9136,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutProjectsInput
     activeFor?: UserCreateNestedManyWithoutActiveProjectInput
+    webhooks?: WebhookCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -7652,6 +9148,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     userId: string
     activeFor?: UserUncheckedCreateNestedManyWithoutActiveProjectInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -7663,6 +9160,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutProjectsNestedInput
     activeFor?: UserUpdateManyWithoutActiveProjectNestedInput
+    webhooks?: WebhookUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -7674,6 +9172,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
     activeFor?: UserUncheckedUpdateManyWithoutActiveProjectNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -7703,6 +9202,116 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type WebhookCreateInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutWebhooksInput
+    project: ProjectCreateNestedOneWithoutWebhooksInput
+  }
+
+  export type WebhookUncheckedCreateInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    projectId: string
+  }
+
+  export type WebhookUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutWebhooksNestedInput
+    project?: ProjectUpdateOneRequiredWithoutWebhooksNestedInput
+  }
+
+  export type WebhookUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type WebhookCreateManyInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    projectId: string
+  }
+
+  export type WebhookUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebhookUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -7780,6 +9389,12 @@ export namespace Prisma {
     isNot?: ProjectWhereInput | null
   }
 
+  export type WebhookListRelationFilter = {
+    every?: WebhookWhereInput
+    some?: WebhookWhereInput
+    none?: WebhookWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -7794,6 +9409,10 @@ export namespace Prisma {
   }
 
   export type ProjectOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WebhookOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -8071,6 +9690,172 @@ export namespace Prisma {
     userId?: SortOrder
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type ProjectScalarRelationFilter = {
+    is?: ProjectWhereInput
+    isNot?: ProjectWhereInput
+  }
+
+  export type WebhookCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    technicalName?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    secretToken?: SortOrder
+    events?: SortOrder
+    headers?: SortOrder
+    payloadSchema?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+  }
+
+  export type WebhookMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    technicalName?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    secretToken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+  }
+
+  export type WebhookMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    technicalName?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    secretToken?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
   export type AccountCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -8098,6 +9883,13 @@ export namespace Prisma {
     connect?: ProjectWhereUniqueInput
   }
 
+  export type WebhookCreateNestedManyWithoutUserInput = {
+    create?: XOR<WebhookCreateWithoutUserInput, WebhookUncheckedCreateWithoutUserInput> | WebhookCreateWithoutUserInput[] | WebhookUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutUserInput | WebhookCreateOrConnectWithoutUserInput[]
+    createMany?: WebhookCreateManyUserInputEnvelope
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -8117,6 +9909,13 @@ export namespace Prisma {
     connectOrCreate?: ProjectCreateOrConnectWithoutUserInput | ProjectCreateOrConnectWithoutUserInput[]
     createMany?: ProjectCreateManyUserInputEnvelope
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+  }
+
+  export type WebhookUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<WebhookCreateWithoutUserInput, WebhookUncheckedCreateWithoutUserInput> | WebhookCreateWithoutUserInput[] | WebhookUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutUserInput | WebhookCreateOrConnectWithoutUserInput[]
+    createMany?: WebhookCreateManyUserInputEnvelope
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -8187,6 +9986,20 @@ export namespace Prisma {
     update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutActiveForInput, ProjectUpdateWithoutActiveForInput>, ProjectUncheckedUpdateWithoutActiveForInput>
   }
 
+  export type WebhookUpdateManyWithoutUserNestedInput = {
+    create?: XOR<WebhookCreateWithoutUserInput, WebhookUncheckedCreateWithoutUserInput> | WebhookCreateWithoutUserInput[] | WebhookUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutUserInput | WebhookCreateOrConnectWithoutUserInput[]
+    upsert?: WebhookUpsertWithWhereUniqueWithoutUserInput | WebhookUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: WebhookCreateManyUserInputEnvelope
+    set?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    disconnect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    delete?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    update?: WebhookUpdateWithWhereUniqueWithoutUserInput | WebhookUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: WebhookUpdateManyWithWhereWithoutUserInput | WebhookUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: WebhookScalarWhereInput | WebhookScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -8227,6 +10040,20 @@ export namespace Prisma {
     update?: ProjectUpdateWithWhereUniqueWithoutUserInput | ProjectUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: ProjectUpdateManyWithWhereWithoutUserInput | ProjectUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
+  }
+
+  export type WebhookUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<WebhookCreateWithoutUserInput, WebhookUncheckedCreateWithoutUserInput> | WebhookCreateWithoutUserInput[] | WebhookUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutUserInput | WebhookCreateOrConnectWithoutUserInput[]
+    upsert?: WebhookUpsertWithWhereUniqueWithoutUserInput | WebhookUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: WebhookCreateManyUserInputEnvelope
+    set?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    disconnect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    delete?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    update?: WebhookUpdateWithWhereUniqueWithoutUserInput | WebhookUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: WebhookUpdateManyWithWhereWithoutUserInput | WebhookUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: WebhookScalarWhereInput | WebhookScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -8278,11 +10105,25 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
+  export type WebhookCreateNestedManyWithoutProjectInput = {
+    create?: XOR<WebhookCreateWithoutProjectInput, WebhookUncheckedCreateWithoutProjectInput> | WebhookCreateWithoutProjectInput[] | WebhookUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutProjectInput | WebhookCreateOrConnectWithoutProjectInput[]
+    createMany?: WebhookCreateManyProjectInputEnvelope
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutActiveProjectInput = {
     create?: XOR<UserCreateWithoutActiveProjectInput, UserUncheckedCreateWithoutActiveProjectInput> | UserCreateWithoutActiveProjectInput[] | UserUncheckedCreateWithoutActiveProjectInput[]
     connectOrCreate?: UserCreateOrConnectWithoutActiveProjectInput | UserCreateOrConnectWithoutActiveProjectInput[]
     createMany?: UserCreateManyActiveProjectInputEnvelope
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type WebhookUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<WebhookCreateWithoutProjectInput, WebhookUncheckedCreateWithoutProjectInput> | WebhookCreateWithoutProjectInput[] | WebhookUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutProjectInput | WebhookCreateOrConnectWithoutProjectInput[]
+    createMany?: WebhookCreateManyProjectInputEnvelope
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutProjectsNestedInput = {
@@ -8307,6 +10148,20 @@ export namespace Prisma {
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
+  export type WebhookUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<WebhookCreateWithoutProjectInput, WebhookUncheckedCreateWithoutProjectInput> | WebhookCreateWithoutProjectInput[] | WebhookUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutProjectInput | WebhookCreateOrConnectWithoutProjectInput[]
+    upsert?: WebhookUpsertWithWhereUniqueWithoutProjectInput | WebhookUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: WebhookCreateManyProjectInputEnvelope
+    set?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    disconnect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    delete?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    update?: WebhookUpdateWithWhereUniqueWithoutProjectInput | WebhookUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: WebhookUpdateManyWithWhereWithoutProjectInput | WebhookUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: WebhookScalarWhereInput | WebhookScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutActiveProjectNestedInput = {
     create?: XOR<UserCreateWithoutActiveProjectInput, UserUncheckedCreateWithoutActiveProjectInput> | UserCreateWithoutActiveProjectInput[] | UserUncheckedCreateWithoutActiveProjectInput[]
     connectOrCreate?: UserCreateOrConnectWithoutActiveProjectInput | UserCreateOrConnectWithoutActiveProjectInput[]
@@ -8319,6 +10174,61 @@ export namespace Prisma {
     update?: UserUpdateWithWhereUniqueWithoutActiveProjectInput | UserUpdateWithWhereUniqueWithoutActiveProjectInput[]
     updateMany?: UserUpdateManyWithWhereWithoutActiveProjectInput | UserUpdateManyWithWhereWithoutActiveProjectInput[]
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type WebhookUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<WebhookCreateWithoutProjectInput, WebhookUncheckedCreateWithoutProjectInput> | WebhookCreateWithoutProjectInput[] | WebhookUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: WebhookCreateOrConnectWithoutProjectInput | WebhookCreateOrConnectWithoutProjectInput[]
+    upsert?: WebhookUpsertWithWhereUniqueWithoutProjectInput | WebhookUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: WebhookCreateManyProjectInputEnvelope
+    set?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    disconnect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    delete?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    connect?: WebhookWhereUniqueInput | WebhookWhereUniqueInput[]
+    update?: WebhookUpdateWithWhereUniqueWithoutProjectInput | WebhookUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: WebhookUpdateManyWithWhereWithoutProjectInput | WebhookUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: WebhookScalarWhereInput | WebhookScalarWhereInput[]
+  }
+
+  export type WebhookCreateeventsInput = {
+    set: string[]
+  }
+
+  export type UserCreateNestedOneWithoutWebhooksInput = {
+    create?: XOR<UserCreateWithoutWebhooksInput, UserUncheckedCreateWithoutWebhooksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWebhooksInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ProjectCreateNestedOneWithoutWebhooksInput = {
+    create?: XOR<ProjectCreateWithoutWebhooksInput, ProjectUncheckedCreateWithoutWebhooksInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutWebhooksInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type WebhookUpdateeventsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type UserUpdateOneRequiredWithoutWebhooksNestedInput = {
+    create?: XOR<UserCreateWithoutWebhooksInput, UserUncheckedCreateWithoutWebhooksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutWebhooksInput
+    upsert?: UserUpsertWithoutWebhooksInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutWebhooksInput, UserUpdateWithoutWebhooksInput>, UserUncheckedUpdateWithoutWebhooksInput>
+  }
+
+  export type ProjectUpdateOneRequiredWithoutWebhooksNestedInput = {
+    create?: XOR<ProjectCreateWithoutWebhooksInput, ProjectUncheckedCreateWithoutWebhooksInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutWebhooksInput
+    upsert?: ProjectUpsertWithoutWebhooksInput
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutWebhooksInput, ProjectUpdateWithoutWebhooksInput>, ProjectUncheckedUpdateWithoutWebhooksInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -8482,6 +10392,65 @@ export namespace Prisma {
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
   export type AccountCreateWithoutUserInput = {
     id?: string
     type: string
@@ -8550,6 +10519,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     activeFor?: UserCreateNestedManyWithoutActiveProjectInput
+    webhooks?: WebhookCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutUserInput = {
@@ -8560,6 +10530,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     activeFor?: UserUncheckedCreateNestedManyWithoutActiveProjectInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutUserInput = {
@@ -8580,6 +10551,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutProjectsInput
+    webhooks?: WebhookCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutActiveForInput = {
@@ -8590,11 +10562,52 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     userId: string
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutActiveForInput = {
     where: ProjectWhereUniqueInput
     create: XOR<ProjectCreateWithoutActiveForInput, ProjectUncheckedCreateWithoutActiveForInput>
+  }
+
+  export type WebhookCreateWithoutUserInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    project: ProjectCreateNestedOneWithoutWebhooksInput
+  }
+
+  export type WebhookUncheckedCreateWithoutUserInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    projectId: string
+  }
+
+  export type WebhookCreateOrConnectWithoutUserInput = {
+    where: WebhookWhereUniqueInput
+    create: XOR<WebhookCreateWithoutUserInput, WebhookUncheckedCreateWithoutUserInput>
+  }
+
+  export type WebhookCreateManyUserInputEnvelope = {
+    data: WebhookCreateManyUserInput | WebhookCreateManyUserInput[]
+    skipDuplicates?: boolean
   }
 
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
@@ -8705,6 +10718,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutProjectsNestedInput
+    webhooks?: WebhookUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutActiveForInput = {
@@ -8715,6 +10729,42 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     userId?: StringFieldUpdateOperationsInput | string
+    webhooks?: WebhookUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type WebhookUpsertWithWhereUniqueWithoutUserInput = {
+    where: WebhookWhereUniqueInput
+    update: XOR<WebhookUpdateWithoutUserInput, WebhookUncheckedUpdateWithoutUserInput>
+    create: XOR<WebhookCreateWithoutUserInput, WebhookUncheckedCreateWithoutUserInput>
+  }
+
+  export type WebhookUpdateWithWhereUniqueWithoutUserInput = {
+    where: WebhookWhereUniqueInput
+    data: XOR<WebhookUpdateWithoutUserInput, WebhookUncheckedUpdateWithoutUserInput>
+  }
+
+  export type WebhookUpdateManyWithWhereWithoutUserInput = {
+    where: WebhookScalarWhereInput
+    data: XOR<WebhookUpdateManyMutationInput, WebhookUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type WebhookScalarWhereInput = {
+    AND?: WebhookScalarWhereInput | WebhookScalarWhereInput[]
+    OR?: WebhookScalarWhereInput[]
+    NOT?: WebhookScalarWhereInput | WebhookScalarWhereInput[]
+    id?: StringFilter<"Webhook"> | string
+    name?: StringFilter<"Webhook"> | string
+    technicalName?: StringFilter<"Webhook"> | string
+    description?: StringNullableFilter<"Webhook"> | string | null
+    isActive?: BoolFilter<"Webhook"> | boolean
+    secretToken?: StringFilter<"Webhook"> | string
+    events?: StringNullableListFilter<"Webhook">
+    headers?: JsonNullableFilter<"Webhook">
+    payloadSchema?: JsonFilter<"Webhook">
+    createdAt?: DateTimeFilter<"Webhook"> | Date | string
+    updatedAt?: DateTimeFilter<"Webhook"> | Date | string
+    userId?: StringFilter<"Webhook"> | string
+    projectId?: StringFilter<"Webhook"> | string
   }
 
   export type UserCreateWithoutAccountsInput = {
@@ -8729,6 +10779,7 @@ export namespace Prisma {
     sessions?: SessionCreateNestedManyWithoutUserInput
     projects?: ProjectCreateNestedManyWithoutUserInput
     activeProject?: ProjectCreateNestedOneWithoutActiveForInput
+    webhooks?: WebhookCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -8743,6 +10794,7 @@ export namespace Prisma {
     activeProjectId?: string | null
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -8773,6 +10825,7 @@ export namespace Prisma {
     sessions?: SessionUpdateManyWithoutUserNestedInput
     projects?: ProjectUpdateManyWithoutUserNestedInput
     activeProject?: ProjectUpdateOneWithoutActiveForNestedInput
+    webhooks?: WebhookUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -8787,6 +10840,7 @@ export namespace Prisma {
     activeProjectId?: NullableStringFieldUpdateOperationsInput | string | null
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -8801,6 +10855,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     projects?: ProjectCreateNestedManyWithoutUserInput
     activeProject?: ProjectCreateNestedOneWithoutActiveForInput
+    webhooks?: WebhookCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -8815,6 +10870,7 @@ export namespace Prisma {
     activeProjectId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -8845,6 +10901,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     projects?: ProjectUpdateManyWithoutUserNestedInput
     activeProject?: ProjectUpdateOneWithoutActiveForNestedInput
+    webhooks?: WebhookUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -8859,6 +10916,7 @@ export namespace Prisma {
     activeProjectId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProjectsInput = {
@@ -8873,6 +10931,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     activeProject?: ProjectCreateNestedOneWithoutActiveForInput
+    webhooks?: WebhookCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectsInput = {
@@ -8887,6 +10946,7 @@ export namespace Prisma {
     activeProjectId?: string | null
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectsInput = {
@@ -8906,6 +10966,7 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
     projects?: ProjectCreateNestedManyWithoutUserInput
+    webhooks?: WebhookCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutActiveProjectInput = {
@@ -8920,6 +10981,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
     projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    webhooks?: WebhookUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutActiveProjectInput = {
@@ -8929,6 +10991,46 @@ export namespace Prisma {
 
   export type UserCreateManyActiveProjectInputEnvelope = {
     data: UserCreateManyActiveProjectInput | UserCreateManyActiveProjectInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WebhookCreateWithoutProjectInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutWebhooksInput
+  }
+
+  export type WebhookUncheckedCreateWithoutProjectInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+  }
+
+  export type WebhookCreateOrConnectWithoutProjectInput = {
+    where: WebhookWhereUniqueInput
+    create: XOR<WebhookCreateWithoutProjectInput, WebhookUncheckedCreateWithoutProjectInput>
+  }
+
+  export type WebhookCreateManyProjectInputEnvelope = {
+    data: WebhookCreateManyProjectInput | WebhookCreateManyProjectInput[]
     skipDuplicates?: boolean
   }
 
@@ -8955,6 +11057,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     activeProject?: ProjectUpdateOneWithoutActiveForNestedInput
+    webhooks?: WebhookUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -8969,6 +11072,7 @@ export namespace Prisma {
     activeProjectId?: NullableStringFieldUpdateOperationsInput | string | null
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithWhereUniqueWithoutActiveProjectInput = {
@@ -9002,6 +11106,158 @@ export namespace Prisma {
     activeProjectId?: StringNullableFilter<"User"> | string | null
   }
 
+  export type WebhookUpsertWithWhereUniqueWithoutProjectInput = {
+    where: WebhookWhereUniqueInput
+    update: XOR<WebhookUpdateWithoutProjectInput, WebhookUncheckedUpdateWithoutProjectInput>
+    create: XOR<WebhookCreateWithoutProjectInput, WebhookUncheckedCreateWithoutProjectInput>
+  }
+
+  export type WebhookUpdateWithWhereUniqueWithoutProjectInput = {
+    where: WebhookWhereUniqueInput
+    data: XOR<WebhookUpdateWithoutProjectInput, WebhookUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type WebhookUpdateManyWithWhereWithoutProjectInput = {
+    where: WebhookScalarWhereInput
+    data: XOR<WebhookUpdateManyMutationInput, WebhookUncheckedUpdateManyWithoutProjectInput>
+  }
+
+  export type UserCreateWithoutWebhooksInput = {
+    id?: string
+    name?: string | null
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    image?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+    activeProject?: ProjectCreateNestedOneWithoutActiveForInput
+  }
+
+  export type UserUncheckedCreateWithoutWebhooksInput = {
+    id?: string
+    name?: string | null
+    email: string
+    emailVerified?: Date | string | null
+    password?: string | null
+    image?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    activeProjectId?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutWebhooksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutWebhooksInput, UserUncheckedCreateWithoutWebhooksInput>
+  }
+
+  export type ProjectCreateWithoutWebhooksInput = {
+    id?: string
+    name: string
+    logoIcon: string
+    type?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutProjectsInput
+    activeFor?: UserCreateNestedManyWithoutActiveProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutWebhooksInput = {
+    id?: string
+    name: string
+    logoIcon: string
+    type?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
+    activeFor?: UserUncheckedCreateNestedManyWithoutActiveProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutWebhooksInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutWebhooksInput, ProjectUncheckedCreateWithoutWebhooksInput>
+  }
+
+  export type UserUpsertWithoutWebhooksInput = {
+    update: XOR<UserUpdateWithoutWebhooksInput, UserUncheckedUpdateWithoutWebhooksInput>
+    create: XOR<UserCreateWithoutWebhooksInput, UserUncheckedCreateWithoutWebhooksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutWebhooksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutWebhooksInput, UserUncheckedUpdateWithoutWebhooksInput>
+  }
+
+  export type UserUpdateWithoutWebhooksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+    activeProject?: ProjectUpdateOneWithoutActiveForNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutWebhooksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    activeProjectId?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type ProjectUpsertWithoutWebhooksInput = {
+    update: XOR<ProjectUpdateWithoutWebhooksInput, ProjectUncheckedUpdateWithoutWebhooksInput>
+    create: XOR<ProjectCreateWithoutWebhooksInput, ProjectUncheckedCreateWithoutWebhooksInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutWebhooksInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutWebhooksInput, ProjectUncheckedUpdateWithoutWebhooksInput>
+  }
+
+  export type ProjectUpdateWithoutWebhooksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    logoIcon?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutProjectsNestedInput
+    activeFor?: UserUpdateManyWithoutActiveProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutWebhooksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    logoIcon?: StringFieldUpdateOperationsInput | string
+    type?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    activeFor?: UserUncheckedUpdateManyWithoutActiveProjectNestedInput
+  }
+
   export type AccountCreateManyUserInput = {
     id?: string
     type: string
@@ -9029,6 +11285,21 @@ export namespace Prisma {
     type?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type WebhookCreateManyUserInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    projectId: string
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -9099,6 +11370,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activeFor?: UserUpdateManyWithoutActiveProjectNestedInput
+    webhooks?: WebhookUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutUserInput = {
@@ -9109,6 +11381,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     activeFor?: UserUncheckedUpdateManyWithoutActiveProjectNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutUserInput = {
@@ -9120,6 +11393,51 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type WebhookUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutWebhooksNestedInput
+  }
+
+  export type WebhookUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    projectId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type WebhookUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    projectId?: StringFieldUpdateOperationsInput | string
+  }
+
   export type UserCreateManyActiveProjectInput = {
     id?: string
     name?: string | null
@@ -9129,6 +11447,21 @@ export namespace Prisma {
     image?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type WebhookCreateManyProjectInput = {
+    id?: string
+    name: string
+    technicalName: string
+    description?: string | null
+    isActive?: boolean
+    secretToken: string
+    events?: WebhookCreateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    userId: string
   }
 
   export type UserUpdateWithoutActiveProjectInput = {
@@ -9143,6 +11476,7 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
     projects?: ProjectUpdateManyWithoutUserNestedInput
+    webhooks?: WebhookUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutActiveProjectInput = {
@@ -9157,6 +11491,7 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
     projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    webhooks?: WebhookUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutActiveProjectInput = {
@@ -9168,6 +11503,51 @@ export namespace Prisma {
     image?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WebhookUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutWebhooksNestedInput
+  }
+
+  export type WebhookUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type WebhookUncheckedUpdateManyWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    technicalName?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    secretToken?: StringFieldUpdateOperationsInput | string
+    events?: WebhookUpdateeventsInput | string[]
+    headers?: NullableJsonNullValueInput | InputJsonValue
+    payloadSchema?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
 

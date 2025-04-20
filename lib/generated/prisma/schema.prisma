@@ -28,6 +28,7 @@ model User {
   projects        Project[]
   activeProject   Project?  @relation("ActiveProject", fields: [activeProjectId], references: [id])
   activeProjectId String?
+  webhooks        Webhook[] // Webhooks criados pelo usuário
 }
 
 model Account {
@@ -76,5 +77,35 @@ model Project {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  activeFor User[] @relation("ActiveProject")
+  activeFor User[]    @relation("ActiveProject")
+  webhooks  Webhook[] // Webhooks associados ao projeto
+}
+
+// Modelo para Webhooks personalizados
+model Webhook {
+  id            String   @id @default(cuid())
+  name          String // Nome amigável do webhook
+  technicalName String // Nome técnico para uso no código
+  description   String? // Descrição opcional
+  isActive      Boolean  @default(true)
+  secretToken   String // Token secreto para autenticação
+  events        String[] // Lista de eventos que disparam este webhook
+  headers       Json? // Headers personalizados como JSON
+  payloadSchema Json // Schema do payload esperado como JSON
+
+  // Campos de auditoria
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  userId String // Criador do webhook
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String // Projeto ao qual o webhook está associado
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Índices para melhorar performance de consultas
+  @@index([userId])
+  @@index([projectId])
+  @@index([technicalName])
 }
