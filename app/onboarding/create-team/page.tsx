@@ -2,7 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { v4 as uuidv4 } from "uuid";
+import {
+  Rocket,
+  Briefcase,
+  Code,
+  BarChart,
+  LineChart,
+  Building,
+  Settings,
+  Wrench,
+  Smartphone,
+  Globe,
+  LucideIcon,
+  Loader2,
+} from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,18 +37,18 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-// Lista de emojis para projetos
+// Lista de ícones para projetos
 const PROJECT_ICONS = [
-  "💼",
-  "🚀",
-  "💻",
-  "📊",
-  "📈",
-  "🏢",
-  "🔧",
-  "🛠️",
-  "📱",
-  "🌐",
+  { icon: Briefcase, name: "briefcase" },
+  { icon: Rocket, name: "rocket" },
+  { icon: Code, name: "code" },
+  { icon: BarChart, name: "bar-chart" },
+  { icon: LineChart, name: "line-chart" },
+  { icon: Building, name: "building" },
+  { icon: Settings, name: "settings" },
+  { icon: Wrench, name: "wrench" },
+  { icon: Smartphone, name: "smartphone" },
+  { icon: Globe, name: "globe" },
 ];
 
 // Tipos de projetos
@@ -54,9 +67,9 @@ export default function CreateTeamPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [projectType, setProjectType] = useState("");
-  const [selectedIcon, setSelectedIcon] = useState(PROJECT_ICONS[0]);
+  const [selectedIcon, setSelectedIcon] = useState(PROJECT_ICONS[0].name);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -69,20 +82,21 @@ export default function CreateTeamPage() {
       }
 
       // Criar novo projeto
-      const newTeam = {
-        id: uuidv4(),
-        name: teamName,
-        logo: selectedIcon,
-        plan: projectType || "Gratuito",
-      };
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: teamName,
+          logoIcon: selectedIcon,
+          type: projectType || null,
+        }),
+      });
 
-      // Salvar no localStorage
-      const existingTeams = localStorage.getItem("userTeams");
-      const parsedTeams = existingTeams ? JSON.parse(existingTeams) : [];
-      const updatedTeams = [...parsedTeams, newTeam];
-
-      localStorage.setItem("userTeams", JSON.stringify(updatedTeams));
-      localStorage.setItem("activeTeamId", newTeam.id);
+      if (!response.ok) {
+        throw new Error("Falha ao criar projeto");
+      }
 
       toast.success("Projeto criado com sucesso!");
 
@@ -146,24 +160,36 @@ export default function CreateTeamPage() {
               <div className="space-y-2">
                 <Label>Ícone do Projeto</Label>
                 <div className="flex flex-wrap gap-2">
-                  {PROJECT_ICONS.map((icon) => (
-                    <Button
-                      key={icon}
-                      type="button"
-                      variant={selectedIcon === icon ? "default" : "outline"}
-                      size="icon"
-                      className="h-10 w-10 text-lg"
-                      onClick={() => setSelectedIcon(icon)}
-                    >
-                      {icon}
-                    </Button>
-                  ))}
+                  {PROJECT_ICONS.map((iconData) => {
+                    const IconComponent = iconData.icon;
+                    return (
+                      <Button
+                        key={iconData.name}
+                        type="button"
+                        variant={
+                          selectedIcon === iconData.name ? "default" : "outline"
+                        }
+                        size="icon"
+                        className="h-10 w-10"
+                        onClick={() => setSelectedIcon(iconData.name)}
+                      >
+                        <IconComponent className="size-5" />
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
             </CardContent>
             <CardFooter>
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Criando..." : "Criar Projeto e Continuar"}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  "Criar Projeto e Continuar"
+                )}
               </Button>
             </CardFooter>
           </form>

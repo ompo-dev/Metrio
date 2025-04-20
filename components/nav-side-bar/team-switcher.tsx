@@ -16,8 +16,10 @@ import {
   Wrench,
   Smartphone,
   Globe,
+  Loader2,
 } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -52,14 +54,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
 
-// Interface para times do usuário
-export interface UserTeam {
+// Interface para projetos do usuário
+export interface Project {
   id: string;
   name: string;
-  logo: string;
-  plan: string;
+  logoIcon: string;
+  type: string | null;
 }
 
 // Lista de ícones para projetos
@@ -87,57 +88,61 @@ const PROJECT_TYPES = [
   { value: "other", label: "Outro" },
 ];
 
-export function TeamSwitcher({
-  teams,
-}: {
-  teams: {
-    name: string;
-    logo: React.ElementType;
-    plan: string;
-  }[];
-}) {
+export function TeamSwitcher() {
   const router = useRouter();
   const { isMobile } = useSidebar();
-  const [userTeams, setUserTeams] = React.useState<UserTeam[]>([]);
-  const [activeTeam, setActiveTeam] = React.useState<UserTeam | null>(null);
+  const { data: session, status } = useSession();
+
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isFetching, setIsFetching] = React.useState(true);
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [activeProject, setActiveProject] = React.useState<Project | null>(
+    null
+  );
   const [isCreateModalOpen, setIsCreateModalOpen] = React.useState(false);
 
   // Estados para o modal de criar projeto
   const [teamName, setTeamName] = React.useState("");
   const [projectType, setProjectType] = React.useState("");
   const [selectedIcon, setSelectedIcon] = React.useState(PROJECT_ICONS[0].name);
-  const [isLoading, setIsLoading] = React.useState(false);
 
-  // Carregar times do localStorage ao iniciar
-  React.useEffect(() => {
-    const storedTeams = localStorage.getItem("userTeams");
-    const parsedTeams = storedTeams ? JSON.parse(storedTeams) : [];
+  // Buscar projetos do usuário
+  const fetchProjects = React.useCallback(async () => {
+    if (status !== "authenticated" || !session?.user?.id) return;
 
-    setUserTeams(parsedTeams);
+    try {
+      setIsFetching(true);
+      const response = await fetch("/api/projects");
+      if (!response.ok) {
+        throw new Error("Falha ao buscar projetos");
+      }
 
-    if (parsedTeams.length > 0) {
-      // Recuperar time ativo do localStorage ou definir o primeiro time como ativo
-      const activeTeamId = localStorage.getItem("activeTeamId");
-      const foundActiveTeam = activeTeamId
-        ? parsedTeams.find((team: UserTeam) => team.id === activeTeamId)
-        : parsedTeams[0];
+      const data = await response.json();
+      setProjects(data);
 
-      setActiveTeam(foundActiveTeam || parsedTeams[0]);
-    } else {
-      // Se não houver times, abrir o modal de criação de time
-      setIsCreateModalOpen(true);
+      // Buscar o projeto ativo, se houver projetos
+      if (data.length > 0) {
+        // A API já retorna os projetos ordenados com o mais recente primeiro
+        setActiveProject(data[0]);
+      } else {
+        // Se não houver projetos, abrir o modal de criação
+        setIsCreateModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar projetos:", error);
+      toast.error("Não foi possível carregar seus projetos");
+    } finally {
+      setIsFetching(false);
     }
-  }, [router]);
+  }, [session?.user?.id, status]);
 
-  // Salvar time ativo no localStorage quando mudar
+  // Carregar projetos ao iniciar
   React.useEffect(() => {
-    if (activeTeam) {
-      localStorage.setItem("activeTeamId", activeTeam.id);
-    }
-  }, [activeTeam]);
+    fetchProjects();
+  }, [fetchProjects]);
 
   // Abrir modal de criação de projeto
-  const handleCreateTeamModalOpen = () => {
+  const handleCreateProjectModalOpen = () => {
     setTeamName("");
     setProjectType("");
     setSelectedIcon(PROJECT_ICONS[0].name);
@@ -145,7 +150,7 @@ export function TeamSwitcher({
   };
 
   // Criar novo projeto
-  const handleCreateTeam = () => {
+  const handleCreateProject = async () => {
     setIsLoading(true);
 
     try {
@@ -156,23 +161,28 @@ export function TeamSwitcher({
         return;
       }
 
-      // Criar novo projeto
-      const newTeam = {
-        id: uuidv4(),
-        name: teamName,
-        logo: selectedIcon,
-        plan: projectType || "Gratuito",
-      };
+      // Enviar para a API
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: teamName,
+          logoIcon: selectedIcon,
+          type: projectType || null,
+        }),
+      });
 
-      // Salvar no localStorage
-      const updatedTeams = [...userTeams, newTeam];
+      if (!response.ok) {
+        throw new Error("Falha ao criar projeto");
+      }
 
-      localStorage.setItem("userTeams", JSON.stringify(updatedTeams));
-      localStorage.setItem("activeTeamId", newTeam.id);
+      const newProject = await response.json();
 
-      // Atualizar estado
-      setUserTeams(updatedTeams);
-      setActiveTeam(newTeam);
+      // Atualizar a lista de projetos e definir o novo como ativo
+      setProjects((prev) => [newProject, ...prev]);
+      setActiveProject(newProject);
 
       toast.success("Projeto criado com sucesso!");
       setIsCreateModalOpen(false);
@@ -184,8 +194,35 @@ export function TeamSwitcher({
     }
   };
 
-  const handleSelectTeam = (team: UserTeam) => {
-    setActiveTeam(team);
+  // Definir um projeto como ativo
+  const handleSelectProject = async (project: Project) => {
+    try {
+      // Atualizar a interface imediatamente para feedback
+      setActiveProject(project);
+
+      // Enviar para a API
+      const response = await fetch("/api/projects/active", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectId: project.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao atualizar projeto ativo");
+      }
+
+      // Não é necessário atualizar a UI novamente, já atualizamos anteriormente
+    } catch (error) {
+      console.error("Erro ao definir projeto ativo:", error);
+      toast.error("Não foi possível definir o projeto ativo");
+
+      // Reverter a alteração na interface em caso de erro
+      fetchProjects();
+    }
   };
 
   // Obter o componente do ícone pelo nome
@@ -194,8 +231,8 @@ export function TeamSwitcher({
     return iconItem?.icon || Briefcase;
   };
 
-  // Mostrar placeholder enquanto carrega os dados
-  if (!activeTeam) {
+  // Mostrar estado de carregamento enquanto busca dados
+  if (isFetching) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -211,10 +248,29 @@ export function TeamSwitcher({
     );
   }
 
-  // Componente do ícone ativo
-  const ActiveIconComponent = getIconComponent(activeTeam.logo);
+  // Mostrar estado de sem projetos
+  if (!activeProject) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" onClick={handleCreateProjectModalOpen}>
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-muted">
+              <Plus className="size-4" />
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">Criar Projeto</span>
+              <span className="truncate text-xs">Comece aqui</span>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
 
-  // Renderizar com os dados do localStorage
+  // Componente do ícone ativo
+  const ActiveIconComponent = getIconComponent(activeProject.logoIcon);
+
+  // Renderizar com os dados do banco
   return (
     <>
       <SidebarMenu>
@@ -230,9 +286,11 @@ export function TeamSwitcher({
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {activeTeam.name}
+                    {activeProject.name}
                   </span>
-                  <span className="truncate text-xs">{activeTeam.plan}</span>
+                  <span className="truncate text-xs">
+                    {activeProject.type || "Projeto"}
+                  </span>
                 </div>
                 <ChevronsUpDown className="ml-auto" />
               </SidebarMenuButton>
@@ -246,18 +304,18 @@ export function TeamSwitcher({
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Projetos
               </DropdownMenuLabel>
-              {userTeams.map((team, index) => {
-                const TeamIconComponent = getIconComponent(team.logo);
+              {projects.map((project, index) => {
+                const ProjectIconComponent = getIconComponent(project.logoIcon);
                 return (
                   <DropdownMenuItem
-                    key={team.id}
-                    onClick={() => handleSelectTeam(team)}
+                    key={project.id}
+                    onClick={() => handleSelectProject(project)}
                     className="gap-2 p-2"
                   >
                     <div className="flex size-6 items-center justify-center rounded-sm border">
-                      <TeamIconComponent className="size-4 shrink-0" />
+                      <ProjectIconComponent className="size-4 shrink-0" />
                     </div>
-                    {team.name}
+                    {project.name}
                     <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
                   </DropdownMenuItem>
                 );
@@ -265,7 +323,7 @@ export function TeamSwitcher({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="gap-2 p-2"
-                onClick={handleCreateTeamModalOpen}
+                onClick={handleCreateProjectModalOpen}
               >
                 <div className="flex size-6 items-center justify-center rounded-md border bg-background">
                   <Plus className="size-4" />
@@ -345,12 +403,19 @@ export function TeamSwitcher({
             <Button
               variant="outline"
               onClick={() => setIsCreateModalOpen(false)}
-              disabled={isLoading || userTeams.length === 0}
+              disabled={isLoading || projects.length === 0}
             >
               Cancelar
             </Button>
-            <Button onClick={handleCreateTeam} disabled={isLoading}>
-              {isLoading ? "Criando..." : "Criar Projeto"}
+            <Button onClick={handleCreateProject} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                "Criar Projeto"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

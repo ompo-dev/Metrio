@@ -48,8 +48,14 @@ export function LoginForm() {
       toast.success("Login realizado com sucesso!");
 
       // Verificar se o usuário já tem projetos
-      const storedTeams = localStorage.getItem("userTeams");
-      const hasProjects = storedTeams && JSON.parse(storedTeams).length > 0;
+      const response = await fetch("/api/projects");
+
+      if (!response.ok) {
+        throw new Error("Falha ao verificar projetos");
+      }
+
+      const projects = await response.json();
+      const hasProjects = Array.isArray(projects) && projects.length > 0;
 
       // Redirecionar para onboarding se não tiver projetos, senão para dashboard
       if (hasProjects) {
@@ -62,6 +68,9 @@ export function LoginForm() {
     } catch (error) {
       console.error("Erro no login:", error);
       toast.error("Ocorreu um erro durante o login");
+
+      // Em caso de erro, redirecionar para o dashboard
+      router.push("/dashboard");
     } finally {
       setIsLoading(false);
     }
