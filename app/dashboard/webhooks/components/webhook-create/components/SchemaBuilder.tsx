@@ -41,7 +41,8 @@ export function SchemaBuilder({
       return;
     }
 
-    const newId = (fields.length + 1).toString();
+    // Usar timestamp como parte do ID para garantir unicidade
+    const newId = `field_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     setFields([...fields, { ...newField, id: newId }]);
     setNewField({
       id: "",

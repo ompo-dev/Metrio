@@ -22,7 +22,6 @@ import { parseSchemaToFields, generateSecretKey } from "./utils";
 import { BasicInformationForm } from "./components/BasicInformationForm";
 import { SchemaBuilder } from "./components/SchemaBuilder";
 import { ExampleRequest } from "./components/ExampleRequest";
-import { RetryOptions } from "./components/RetryOptions";
 import {
   Dialog,
   DialogContent,
@@ -38,44 +37,48 @@ export default function WebhooksCreate() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fields, setFields] = useState<SchemaField[]>([
+
+  // Estado inicial dos campos do formulário
+  const initialFields: SchemaField[] = [
     {
-      id: "1",
+      id: "field_userId",
       name: "userId",
       type: "number",
       required: true,
       description: "ID do usuário",
     },
     {
-      id: "2",
+      id: "field_value",
       name: "value",
       type: "string",
       required: true,
       description: "Valor da transação",
     },
     {
-      id: "3",
+      id: "field_currency",
       name: "currency",
       type: "string",
       required: true,
       description: "Moeda (ex: BRL, USD)",
     },
     {
-      id: "4",
+      id: "field_itemId",
       name: "itemId",
       type: "number",
       required: true,
       description: "ID do item",
     },
     {
-      id: "5",
+      id: "field_keyHook",
       name: "keyHook",
       type: "string",
       required: true,
       description: "Chave de autenticação",
     },
-  ]);
-  const [formData, setFormData] = useState<WebhookFormData>({
+  ];
+
+  // Estado inicial do formulário
+  const initialFormData: WebhookFormData = {
     name: "",
     hookName: "",
     url: "",
@@ -86,15 +89,20 @@ export default function WebhooksCreate() {
     maxRetries: 5,
     eventFormat: "json",
     isShared: false,
-  });
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [newField, setNewField] = useState<SchemaField>({
+  };
+
+  const initialNewField: SchemaField = {
     id: "",
     name: "",
     type: "string",
     required: true,
     description: "",
-  });
+  };
+
+  const [fields, setFields] = useState<SchemaField[]>(initialFields);
+  const [formData, setFormData] = useState<WebhookFormData>(initialFormData);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [newField, setNewField] = useState<SchemaField>(initialNewField);
 
   // Estados para o diálogo de confirmação
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
@@ -295,6 +303,22 @@ export default function WebhooksCreate() {
     }
   };
 
+  // Função para resetar o formulário
+  const resetForm = () => {
+    setFields(initialFields);
+    setFormData(initialFormData);
+    setSelectedTemplate(null);
+    setNewField(initialNewField);
+    setShowSuccessDialog(false);
+    setCreatedWebhook(null);
+
+    toast({
+      title: "Formulário resetado",
+      description: "Você pode criar um novo webhook agora",
+      duration: 3000,
+    });
+  };
+
   return (
     <>
       <form onSubmit={handleFormSubmit}>
@@ -327,13 +351,6 @@ export default function WebhooksCreate() {
 
             {/* Exemplo de Requisição */}
             <ExampleRequest fields={fields} formData={formData} />
-
-            {/* Opções de Retentativa */}
-            <RetryOptions
-              formData={formData}
-              onSwitchChange={handleSwitchChange}
-              setFormData={setFormData}
-            />
           </CardContent>
 
           <CardFooter className="flex flex-col sm:flex-row gap-3 sm:gap-6 px-6 py-4 border-t">
@@ -417,16 +434,9 @@ export default function WebhooksCreate() {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              onClick={() => {
-                setShowSuccessDialog(false);
-                router.push("/dashboard/webhooks");
-              }}
-              className="w-full"
-            >
+            <Button type="button" onClick={resetForm} className="w-full">
               <Check className="mr-2 h-4 w-4" />
-              Concluir
+              Criar Novo Webhook
             </Button>
           </DialogFooter>
         </DialogContent>
