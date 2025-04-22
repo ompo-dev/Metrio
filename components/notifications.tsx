@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Bell, BellIcon, X } from "lucide-react";
+import {
+  Bell,
+  BellIcon,
+  Radio as RadioIcon,
+  RefreshCw as RefreshCwIcon,
+  X,
+} from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,19 +18,88 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-const initialNotifications = [
+// Tipos de notificações
+type NotificationType = "mention" | "event" | "update" | "default";
+
+interface BaseNotification {
+  id: number;
+  timestamp: string;
+  unread: boolean;
+  type: NotificationType;
+}
+
+interface MentionNotification extends BaseNotification {
+  type: "mention";
+  image: string;
+  initials: string;
+  user: string;
+  action: string;
+  target: string;
+  needsAction?: boolean;
+}
+
+interface EventNotification extends BaseNotification {
+  type: "event";
+  title: string;
+  scheduledTime: string;
+  eventDate: string;
+}
+
+interface UpdateNotification extends BaseNotification {
+  type: "update";
+  title: string;
+  description: string;
+}
+
+interface DefaultNotification extends BaseNotification {
+  type: "default";
+  image: string;
+  initials: string;
+  user: string;
+  action: string;
+  target: string;
+}
+
+type Notification =
+  | MentionNotification
+  | EventNotification
+  | UpdateNotification
+  | DefaultNotification;
+
+const initialNotifications: Notification[] = [
   {
     id: 1,
+    type: "mention",
     image: "",
-    initials: "CT",
-    user: "Chris Tompson",
-    action: "solicitou revisão em",
-    target: "PR #42: Implementação de funcionalidade",
-    timestamp: "15 minutos atrás",
+    initials: "MP",
+    user: "Mary Palmer",
+    action: "mencionou você em",
+    target: "project-campaign-02",
+    timestamp: "2 minutos atrás",
     unread: true,
+    needsAction: true,
   },
   {
     id: 2,
+    type: "event",
+    title: "Ao vivo em 27 horas",
+    scheduledTime: "20 de Novembro às 20:00",
+    eventDate: "Nov 20",
+    timestamp: "5 minutos atrás",
+    unread: true,
+  },
+  {
+    id: 3,
+    type: "update",
+    title: "Versão 1.4 já está disponível!",
+    description:
+      "Esta atualização contém várias correções de bugs e melhorias de desempenho.",
+    timestamp: "30 minutos atrás",
+    unread: true,
+  },
+  {
+    id: 4,
+    type: "default",
     image: "",
     initials: "ED",
     user: "Emma Davis",
@@ -34,7 +109,8 @@ const initialNotifications = [
     unread: true,
   },
   {
-    id: 3,
+    id: 5,
+    type: "default",
     image: "",
     initials: "JW",
     user: "James Wilson",
@@ -44,7 +120,8 @@ const initialNotifications = [
     unread: false,
   },
   {
-    id: 4,
+    id: 6,
+    type: "default",
     image: "",
     initials: "AM",
     user: "Alex Morgan",
@@ -54,23 +131,14 @@ const initialNotifications = [
     unread: false,
   },
   {
-    id: 5,
+    id: 7,
+    type: "default",
     image: "",
     initials: "SC",
     user: "Sarah Chen",
     action: "comentou em",
     target: "Redesign do Dashboard",
     timestamp: "2 dias atrás",
-    unread: false,
-  },
-  {
-    id: 6,
-    image: "",
-    initials: "MD",
-    user: "Miky Derya",
-    action: "mencionou você em",
-    target: "Imagem Open Graph da UI Origin",
-    timestamp: "2 semanas atrás",
     unread: false,
   },
 ];
@@ -92,7 +160,8 @@ function Dot({ className }: { className?: string }) {
 }
 
 export function Notifications({ children }: { children?: React.ReactNode }) {
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] =
+    useState<Notification[]>(initialNotifications);
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => n.unread).length;
 
@@ -115,12 +184,201 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
     );
   };
 
+  const handleDismissNotification = (id: number) => {
+    setNotifications(
+      notifications.filter((notification) => notification.id !== id)
+    );
+  };
+
+  const handleAcceptInvite = (id: number) => {
+    handleNotificationClick(id);
+    // Lógica para aceitar o convite iria aqui
+    console.log(`Convite ${id} aceito`);
+  };
+
+  const handleDeclineInvite = (id: number) => {
+    handleDismissNotification(id);
+    // Lógica para recusar o convite iria aqui
+    console.log(`Convite ${id} recusado`);
+  };
+
+  const handleNotifyMe = (id: number) => {
+    handleNotificationClick(id);
+    // Lógica para ativar notificação do evento
+    console.log(`Notificação ativada para o evento ${id}`);
+  };
+
+  const handleInstallUpdate = (id: number) => {
+    handleNotificationClick(id);
+    // Lógica para instalar a atualização
+    console.log(`Instalando atualização ${id}`);
+  };
+
   const handleToggle = () => {
     setOpen(!open);
   };
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const renderNotificationItem = (notification: Notification) => {
+    const hasUnread = notification.unread;
+
+    switch (notification.type) {
+      case "mention":
+        return (
+          <div className="relative flex items-start gap-3 pe-3">
+            <Avatar className="h-9 w-9 rounded-full">
+              <AvatarImage src={notification.image} alt={notification.user} />
+              <AvatarFallback>{notification.initials}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+              <div className="text-foreground/80">
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.user}
+                </span>{" "}
+                {notification.action}{" "}
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.target}
+                </span>
+                .
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {notification.timestamp}
+              </div>
+              {notification.needsAction && (
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    onClick={() => handleAcceptInvite(notification.id)}
+                  >
+                    Aceitar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDeclineInvite(notification.id)}
+                  >
+                    Recusar
+                  </Button>
+                </div>
+              )}
+            </div>
+            {hasUnread && (
+              <div className="absolute end-0 self-center">
+                <Dot />
+              </div>
+            )}
+          </div>
+        );
+
+      case "event":
+        return (
+          <div className="relative flex items-center gap-3 pe-3">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true"
+            >
+              <RadioIcon className="opacity-60" size={16} />
+            </div>
+            <div className="flex grow items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{notification.title}</p>
+                <p className="text-muted-foreground text-xs">
+                  {notification.scheduledTime}
+                </p>
+              </div>
+              <Button size="sm" onClick={() => handleNotifyMe(notification.id)}>
+                Notificar-me
+              </Button>
+            </div>
+            {hasUnread && (
+              <div className="absolute end-0 self-center">
+                <Dot />
+              </div>
+            )}
+          </div>
+        );
+
+      case "update":
+        return (
+          <div className="relative flex gap-3 pe-3">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true"
+            >
+              <RefreshCwIcon className="opacity-60" size={16} />
+            </div>
+            <div className="flex grow flex-col gap-2">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{notification.title}</p>
+                <p className="text-muted-foreground text-sm">
+                  {notification.description}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  {notification.timestamp}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleInstallUpdate(notification.id)}
+                >
+                  Instalar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="link"
+                  onClick={() => handleDismissNotification(notification.id)}
+                >
+                  Depois
+                </Button>
+              </div>
+            </div>
+            {hasUnread && (
+              <div className="absolute end-0 self-center">
+                <Dot />
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <div className="relative flex items-start gap-3 pe-3">
+            <Avatar className="h-9 w-9 rounded-md">
+              <AvatarImage src={notification.image} alt={notification.user} />
+              <AvatarFallback className="rounded-md">
+                {notification.initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+              <button
+                className="text-foreground/80 text-left after:absolute after:inset-0"
+                onClick={() => handleNotificationClick(notification.id)}
+              >
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.user}
+                </span>{" "}
+                {notification.action}{" "}
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.target}
+                </span>
+                .
+              </button>
+              <div className="text-muted-foreground text-xs">
+                {notification.timestamp}
+              </div>
+            </div>
+            {hasUnread && (
+              <div className="absolute end-0 self-center">
+                <Dot />
+              </div>
+            )}
+          </div>
+        );
+    }
   };
 
   return (
@@ -147,7 +405,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
         )}
       </PopoverTrigger>
       <PopoverContent
-        className="w-80 p-1"
+        className="w-[300px] md:w-[400px] p-1"
         side="bottom"
         align="end"
         hideWhenDetached={false}
@@ -185,47 +443,17 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
         ></div>
         <div className="max-h-[400px] overflow-y-auto">
           {notifications.length > 0 ? (
-            notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className="hover:bg-accent rounded-md px-3 py-2 text-sm transition-colors"
-              >
-                <div className="relative flex items-start gap-3 pe-3">
-                  <Avatar className="h-9 w-9 rounded-md">
-                    <AvatarImage
-                      src={notification.image}
-                      alt={notification.user}
-                    />
-                    <AvatarFallback className="rounded-md">
-                      {notification.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-1">
-                    <button
-                      className="text-foreground/80 text-left after:absolute after:inset-0"
-                      onClick={() => handleNotificationClick(notification.id)}
-                    >
-                      <span className="text-foreground font-medium hover:underline">
-                        {notification.user}
-                      </span>{" "}
-                      {notification.action}{" "}
-                      <span className="text-foreground font-medium hover:underline">
-                        {notification.target}
-                      </span>
-                      .
-                    </button>
-                    <div className="text-muted-foreground text-xs">
-                      {notification.timestamp}
-                    </div>
-                  </div>
-                  {notification.unread && (
-                    <div className="absolute end-0 self-center">
-                      <Dot />
-                    </div>
-                  )}
+            <div className="space-y-1">
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className="hover:bg-accent group rounded-md px-3 py-2 text-sm transition-colors"
+                  onClick={() => handleNotificationClick(notification.id)}
+                >
+                  {renderNotificationItem(notification)}
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
             <div className="p-4 text-center text-sm text-muted-foreground">
               Sem notificações no momento
