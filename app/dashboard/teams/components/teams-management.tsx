@@ -5,7 +5,6 @@ import { Users, UserPlus, Shield, Briefcase } from "lucide-react";
 import SelectIcon from "@/components/select-icon";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import api from "@/lib/api";
 
 // Importações dos componentes internos
 import { TeamsList } from "./TeamsList";

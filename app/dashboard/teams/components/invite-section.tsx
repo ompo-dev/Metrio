@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,14 +7,13 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useProjectStore } from "@/lib/store/project-store";
+import { useInviteStore } from "@/lib/store/invite-store";
 import {
   Copy,
   Send,
@@ -29,6 +26,8 @@ import {
 } from "lucide-react";
 import { DataTable, RowActions } from "@/components/data-table/Table";
 import { ColumnDef } from "@tanstack/react-table";
+import { toast } from "sonner";
+import { useToast } from "@/components/ui/use-toast";
 
 // Interface para o modelo de convite
 interface Invite {
@@ -63,22 +62,26 @@ async function safeJsonParse(response: Response) {
 }
 
 export function InviteSection() {
-  const { data: session } = useSession();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [activeTab, setActiveTab] = useState("email");
   const [emailInput, setEmailInput] = useState("");
-  const [invites, setInvites] = useState<Invite[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [linkCopied, setLinkCopied] = useState(false);
-  const [inviteLink, setInviteLink] = useState("");
-  const [isLoadingLink, setIsLoadingLink] = useState(false);
 
   // Usar o store de projetos
+  const { activeProject, fetchProjects } = useProjectStore();
+
+  // Usar o store de convites
   const {
-    activeProject,
-    fetchProjects,
-    isLoading: isLoadingProjects,
-  } = useProjectStore();
+    invites,
+    isLoading,
+    inviteLink,
+    linkCopied,
+    fetchInvites,
+    sendEmailInvite,
+    generateInviteLink,
+    copyLinkToClipboard,
+    deleteInvite,
+    deleteManyInvites,
+  } = useInviteStore();
 
   // Função para buscar projetos do usuário
   useEffect(() => {
@@ -89,53 +92,14 @@ export function InviteSection() {
   // Função para buscar convites do projeto selecionado
   useEffect(() => {
     if (activeProject?.id) {
-      fetchInvites();
+      fetchInvites(activeProject.id);
     }
-  }, [activeProject?.id]);
-
-  async function fetchInvites() {
-    if (!activeProject?.id) return;
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `/api/projects/invite?projectId=${activeProject.id}`
-      );
-      if (response.ok) {
-        const data = await safeJsonParse(response);
-        if (data) {
-          setInvites(data.invites || []);
-        } else {
-          setInvites([]);
-          toast({
-            title: "Erro",
-            description: "Formato de resposta inválido ao carregar convites.",
-            variant: "destructive",
-          });
-        }
-      } else {
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os convites.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao buscar convites:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os convites.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  }, [activeProject?.id, fetchInvites]);
 
   // Função para enviar convite por email
   async function handleSendEmailInvite() {
     if (!emailInput.trim() || !activeProject?.id) {
-      toast({
+      uiToast({
         title: "Erro",
         description:
           "Por favor, forneça um email válido e aguarde o carregamento do projeto.",
@@ -144,53 +108,18 @@ export function InviteSection() {
       return;
     }
 
-    setIsLoading(true);
     try {
-      const response = await fetch("/api/projects/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: emailInput.trim(),
-          projectId: activeProject.id,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await safeJsonParse(response);
-        toast({
-          title: "Sucesso",
-          description: "Convite enviado com sucesso!",
-        });
-        setEmailInput("");
-        fetchInvites(); // Atualizar lista de convites
-      } else {
-        const errorData = await safeJsonParse(response);
-        toast({
-          title: "Erro",
-          description:
-            (errorData && errorData.error) ||
-            "Não foi possível enviar o convite.",
-          variant: "destructive",
-        });
-      }
+      await sendEmailInvite(emailInput.trim(), activeProject.id);
+      setEmailInput("");
     } catch (error) {
-      console.error("Erro ao enviar convite:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível enviar o convite.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      // Erros já tratados na store
     }
   }
 
   // Função para gerar link de convite
   async function handleGenerateInviteLink() {
     if (!activeProject?.id) {
-      toast({
+      uiToast({
         title: "Erro",
         description: "Aguarde o carregamento do projeto.",
         variant: "destructive",
@@ -198,56 +127,10 @@ export function InviteSection() {
       return;
     }
 
-    setIsLoadingLink(true);
     try {
-      const response = await fetch("/api/projects/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: `Aguardando uso do link de convite`, // Email temporário único
-          projectId: activeProject.id,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await safeJsonParse(response);
-        if (data && data.invite) {
-          const baseUrl = window.location.origin;
-          // Novo formato do link de convite que aponta para a página de registro
-          const link = `${baseUrl}/auth/register?inviteToken=${data.invite.inviteToken}&inviteProjectId=${activeProject.id}`;
-          setInviteLink(link);
-          toast({
-            title: "Sucesso",
-            description: "Link de convite gerado com sucesso!",
-          });
-        } else {
-          toast({
-            title: "Erro",
-            description: "Formato de resposta inválido ao gerar link.",
-            variant: "destructive",
-          });
-        }
-      } else {
-        const errorData = await safeJsonParse(response);
-        toast({
-          title: "Erro",
-          description:
-            (errorData && errorData.error) ||
-            "Não foi possível gerar o link de convite.",
-          variant: "destructive",
-        });
-      }
+      await generateInviteLink(activeProject.id);
     } catch (error) {
-      console.error("Erro ao gerar link de convite:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível gerar o link de convite.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingLink(false);
+      // Erros já tratados na store
     }
   }
 
@@ -256,24 +139,9 @@ export function InviteSection() {
     if (!inviteLink) return;
 
     try {
-      await navigator.clipboard.writeText(inviteLink);
-      setLinkCopied(true);
-      toast({
-        title: "Copiado!",
-        description: "Link copiado para a área de transferência.",
-      });
-
-      // Reset copy status after 3 seconds
-      setTimeout(() => {
-        setLinkCopied(false);
-      }, 3000);
+      await copyLinkToClipboard(inviteLink);
     } catch (error) {
-      console.error("Erro ao copiar link:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível copiar o link.",
-        variant: "destructive",
-      });
+      // Erros já tratados na store
     }
   }
 
@@ -281,41 +149,10 @@ export function InviteSection() {
   async function handleDeleteInvite(inviteId: string) {
     if (!inviteId) return;
 
-    setIsLoading(true);
     try {
-      const response = await fetch(
-        `/api/projects/invite?inviteId=${inviteId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (response.ok) {
-        toast({
-          title: "Sucesso",
-          description: "Convite excluído com sucesso!",
-        });
-        // Atualizar a lista de convites
-        fetchInvites();
-      } else {
-        const errorData = await safeJsonParse(response);
-        toast({
-          title: "Erro",
-          description:
-            (errorData && errorData.error) ||
-            "Não foi possível excluir o convite.",
-          variant: "destructive",
-        });
-      }
+      await deleteInvite(inviteId);
     } catch (error) {
-      console.error("Erro ao excluir convite:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível excluir o convite.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      // Erros já tratados na store
     }
   }
 
@@ -492,30 +329,18 @@ export function InviteSection() {
   ];
 
   // Handler para excluir múltiplos convites
-  const handleDeleteMultipleInvites = (selectedInvites: Invite[]) => {
-    // Usamos Promise.all para excluir todos os convites selecionados em paralelo
-    Promise.all(
-      selectedInvites.map((invite) =>
-        fetch(`/api/projects/invite?inviteId=${invite.id}`, {
-          method: "DELETE",
-        })
-      )
-    )
-      .then(() => {
-        toast({
-          title: "Sucesso",
-          description: `${selectedInvites.length} convites excluídos com sucesso!`,
-        });
-        fetchInvites();
-      })
-      .catch((error) => {
-        console.error("Erro ao excluir convites:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível excluir alguns convites.",
-          variant: "destructive",
-        });
+  const handleDeleteMultipleInvites = async (selectedInvites: Invite[]) => {
+    try {
+      const inviteIds = selectedInvites.map((invite) => invite.id);
+      const result = await deleteManyInvites(inviteIds);
+
+      uiToast({
+        title: "Sucesso",
+        description: `${result.removedCount} convites excluídos com sucesso!`,
       });
+    } catch (error) {
+      // Erros já tratados na store
+    }
   };
 
   return (
@@ -607,10 +432,10 @@ export function InviteSection() {
                   variant="outline"
                   onClick={handleGenerateInviteLink}
                   className="w-full"
-                  disabled={isLoadingLink || !activeProject?.id}
+                  disabled={isLoading || !activeProject?.id}
                 >
                   <LinkIcon className="mr-2 h-4 w-4" />
-                  {isLoadingLink ? "Gerando link..." : "Gerar link de convite"}
+                  {isLoading ? "Gerando link..." : "Gerar link de convite"}
                 </Button>
               )}
             </CardContent>
