@@ -1164,6 +1164,108 @@ export const getApiDocs = () => {
               },
             },
           },
+          delete: {
+            tags: ["Convites"],
+            summary: "Excluir um convite",
+            description: "Remove um convite pendente do sistema",
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              {
+                name: "inviteId",
+                in: "query",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+                description: "ID do convite a ser excluído",
+              },
+            ],
+            responses: {
+              200: {
+                description: "Convite excluído com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        message: {
+                          type: "string",
+                          example: "Convite excluído com sucesso",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "ID do convite não fornecido",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        error: {
+                          type: "string",
+                          example: "ID do convite é obrigatório",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              403: {
+                description: "Sem permissão para excluir este convite",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        error: {
+                          type: "string",
+                          example: "Sem permissão para excluir este convite",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              404: {
+                description: "Convite não encontrado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        error: {
+                          type: "string",
+                          example: "Convite não encontrado",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              500: {
+                description: "Erro interno do servidor",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        error: {
+                          type: "string",
+                          example: "Erro ao excluir convite",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         "/api/invites/pending": {
           get: {

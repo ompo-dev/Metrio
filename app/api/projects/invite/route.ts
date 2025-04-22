@@ -238,3 +238,89 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+/**
+ * DELETE - Excluir um convite
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // Verificar autenticação
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    // Tipagem segura do usuário da sessão
+    const user = session.user as SessionUser;
+
+    // Obter inviteId dos parâmetros de consulta
+    const { searchParams } = new URL(request.url);
+    const inviteId = searchParams.get("inviteId");
+
+    if (!inviteId) {
+      return NextResponse.json(
+        { error: "ID do convite é obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    // Buscar o convite para verificar permissões
+    const invite = await prisma.invite.findUnique({
+      where: {
+        id: inviteId,
+      },
+      include: {
+        project: true,
+      },
+    });
+
+    if (!invite) {
+      return NextResponse.json(
+        { error: "Convite não encontrado" },
+        { status: 404 }
+      );
+    }
+
+    // Verificar se o usuário tem permissão para excluir o convite
+    // 1. Verificar se é o remetente do convite
+    const isSender = invite.senderId === user.id;
+
+    // 2. Verificar se é o dono do projeto
+    const isProjectOwner = invite.project.userId === user.id;
+
+    // 3. Verificar se é um admin do projeto
+    const isProjectAdmin = await prisma.projectMember.findFirst({
+      where: {
+        projectId: invite.projectId,
+        userId: user.id,
+        role: "admin",
+      },
+    });
+
+    // Se não tiver permissão, negar acesso
+    if (!isSender && !isProjectOwner && !isProjectAdmin) {
+      return NextResponse.json(
+        { error: "Sem permissão para excluir este convite" },
+        { status: 403 }
+      );
+    }
+
+    // Excluir o convite
+    await prisma.invite.delete({
+      where: {
+        id: inviteId,
+      },
+    });
+
+    return NextResponse.json(
+      { message: "Convite excluído com sucesso" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Erro ao excluir convite:", error);
+    return NextResponse.json(
+      { error: "Erro ao excluir convite" },
+      { status: 500 }
+    );
+  }
+}

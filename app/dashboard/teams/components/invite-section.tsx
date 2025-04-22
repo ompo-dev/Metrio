@@ -25,6 +25,7 @@ import {
   X,
   Clock,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 
 // Interface para o modelo de convite
@@ -203,7 +204,7 @@ export function InviteSection() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: `temp_${Date.now()}@example.com`, // Email temporário único
+          email: `Aguardando uso do link de convite`, // Email temporário único
           projectId: activeProject.id,
         }),
       });
@@ -271,6 +272,48 @@ export function InviteSection() {
         description: "Não foi possível copiar o link.",
         variant: "destructive",
       });
+    }
+  }
+
+  // Função para deletar um convite
+  async function handleDeleteInvite(inviteId: string) {
+    if (!inviteId) return;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `/api/projects/invite?inviteId=${inviteId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: "Sucesso",
+          description: "Convite excluído com sucesso!",
+        });
+        // Atualizar a lista de convites
+        fetchInvites();
+      } else {
+        const errorData = await safeJsonParse(response);
+        toast({
+          title: "Erro",
+          description:
+            (errorData && errorData.error) ||
+            "Não foi possível excluir o convite.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erro ao excluir convite:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o convite.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -444,8 +487,19 @@ export function InviteSection() {
         ) : (
           <div className="space-y-3">
             {invites.map((invite) => (
-              <Card key={invite.id}>
+              <Card key={invite.id} className="group relative">
                 <CardContent className="p-4">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8 text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    onClick={() => handleDeleteInvite(invite.id)}
+                    disabled={isLoading}
+                    title="Excluir convite"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Excluir convite</span>
+                  </Button>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-9 w-9">
@@ -453,18 +507,39 @@ export function InviteSection() {
                           src={invite.recipient?.image || undefined}
                         />
                         <AvatarFallback>
-                          {invite.email.substring(0, 2).toUpperCase()}
+                          {invite.status === "pending" ? (
+                            <Clock className="h-4 w-4" />
+                          ) : (
+                            invite.email.substring(0, 2).toUpperCase()
+                          )}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{invite.email}</div>
+                        <div className="font-medium">
+                          {invite.recipient?.email &&
+                          invite.email.startsWith("temp_")
+                            ? invite.recipient.email
+                            : invite.email}
+                          {invite.email.startsWith("temp_") && (
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              <LinkIcon className="h-3 w-3 mr-1" /> Convite por
+                              Link
+                            </Badge>
+                          )}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           Convite enviado em{" "}
                           {new Date(invite.createdAt).toLocaleDateString()}
+                          {invite.email.startsWith("temp_") &&
+                            invite.status === "pending" && (
+                              <div className="mt-1 italic">
+                                O email será exibido quando o convite for aceito
+                              </div>
+                            )}
                         </div>
                       </div>
                     </div>
-                    {renderStatusBadge(invite.status)}
+                    <div>{renderStatusBadge(invite.status)}</div>
                   </div>
                 </CardContent>
               </Card>
