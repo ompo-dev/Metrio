@@ -45,6 +45,7 @@ export interface MemberListProps {
   members: Member[];
   roles: Role[];
   onAddMember: (name: string, email: string, role: string) => void;
+  onUpdateRole: (memberId: string, newRole: string) => Promise<void>;
 }
 
 export interface PermissionListProps {

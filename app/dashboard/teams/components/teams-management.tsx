@@ -101,6 +101,47 @@ export function TeamsManagement({
     }
   };
 
+  // Função para atualizar a função de um membro
+  const handleUpdateRole = async (
+    memberId: string,
+    newRole: string
+  ): Promise<void> => {
+    try {
+      setIsLoading(true);
+
+      // Extrair memberId limpo se estiver no formato "member-xyz"
+      const cleanMemberId = memberId.startsWith("member-")
+        ? memberId.substring(7)
+        : memberId;
+
+      // Chamar API para atualizar a função do membro
+      const response = await api.patch(`/api/projects/members/${memberId}`, {
+        role: newRole,
+      });
+
+      // Atualizar o estado local
+      setMembers((prevMembers) =>
+        prevMembers.map((member) =>
+          member.id === memberId ? { ...member, role: newRole } : member
+        )
+      );
+
+      return Promise.resolve();
+    } catch (error: any) {
+      console.error("Erro ao atualizar função do membro:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        (Array.isArray(error.response?.data?.errors)
+          ? error.response.data.errors.join(", ")
+          : "Erro ao atualizar função do membro");
+
+      toast.error(errorMessage);
+      return Promise.reject(new Error(errorMessage));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Função para adicionar nova função
   const handleAddRole = (
     name: string,
@@ -127,6 +168,7 @@ export function TeamsManagement({
             members={members}
             roles={roles}
             onAddMember={handleAddMember}
+            onUpdateRole={handleUpdateRole}
           />
         );
       case "permissoes":

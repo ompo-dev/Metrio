@@ -35,14 +35,28 @@ import {
   statusFilterFn,
 } from "@/components/data-table/Table";
 import { ColumnDef } from "@tanstack/react-table";
+import { toast } from "sonner";
 
 import { MemberListProps, Member } from "./types";
 
-export function MembersList({ members, roles, onAddMember }: MemberListProps) {
+export function MembersList({
+  members,
+  roles,
+  onAddMember,
+  onUpdateRole,
+}: MemberListProps) {
   const [newMemberName, setNewMemberName] = React.useState("");
   const [newMemberEmail, setNewMemberEmail] = React.useState("");
   const [newMemberRole, setNewMemberRole] = React.useState("");
   const [open, setOpen] = React.useState(false);
+
+  // Estado para o modal de edição de função
+  const [editRoleOpen, setEditRoleOpen] = React.useState(false);
+  const [selectedMember, setSelectedMember] = React.useState<Member | null>(
+    null
+  );
+  const [newRole, setNewRole] = React.useState("");
+  const [isUpdating, setIsUpdating] = React.useState(false);
 
   const handleAddMember = () => {
     if (newMemberName.trim() && newMemberEmail.trim() && newMemberRole) {
@@ -51,6 +65,33 @@ export function MembersList({ members, roles, onAddMember }: MemberListProps) {
       setNewMemberEmail("");
       setNewMemberRole("");
       setOpen(false);
+    }
+  };
+
+  // Função para abrir o modal de edição de função
+  const handleOpenEditRole = (member: Member) => {
+    setSelectedMember(member);
+    setNewRole(member.role);
+    setEditRoleOpen(true);
+  };
+
+  // Função para atualizar a função do membro
+  const handleUpdateRole = async () => {
+    if (!selectedMember || !newRole || newRole === selectedMember.role) {
+      setEditRoleOpen(false);
+      return;
+    }
+
+    setIsUpdating(true);
+
+    try {
+      await onUpdateRole(selectedMember.id, newRole);
+      toast.success("Função do membro atualizada com sucesso");
+      setEditRoleOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao atualizar função do membro");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -139,11 +180,7 @@ export function MembersList({ members, roles, onAddMember }: MemberListProps) {
               },
               {
                 label: "Editar Função",
-                onClick: () =>
-                  console.log(
-                    "Editar função do membro",
-                    row.original.userId || row.original.id
-                  ),
+                onClick: () => handleOpenEditRole(row.original),
                 icon: <UserCog className="h-4 w-4" />,
               },
               {
@@ -173,90 +210,143 @@ export function MembersList({ members, roles, onAddMember }: MemberListProps) {
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Membros</CardTitle>
-            <CardDescription>
-              Gerencie os membros da sua organização
-            </CardDescription>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <UserPlusIcon className="h-4 w-4" />
-                Adicionar Membro
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar Novo Membro</DialogTitle>
-                <DialogDescription>
-                  Adicione um novo membro à sua organização
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="member-name">Nome</Label>
-                  <Input
-                    id="member-name"
-                    placeholder="Nome completo"
-                    value={newMemberName}
-                    onChange={(e) => setNewMemberName(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="member-email">Email</Label>
-                  <Input
-                    id="member-email"
-                    placeholder="email@example.com"
-                    type="email"
-                    value={newMemberEmail}
-                    onChange={(e) => setNewMemberEmail(e.target.value)}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="member-role">Função</Label>
-                  <Select
-                    value={newMemberRole}
-                    onValueChange={setNewMemberRole}
-                  >
-                    <SelectTrigger id="member-role">
-                      <SelectValue placeholder="Selecione uma função" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles
-                        .filter((role) => role.id !== "owner") // Filtrar o papel de proprietário
-                        .map((role) => (
-                          <SelectItem key={role.id} value={role.id}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit" onClick={handleAddMember}>
-                  Adicionar
+    <>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Membros</CardTitle>
+              <CardDescription>
+                Gerencie os membros da sua organização
+              </CardDescription>
+            </div>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <UserPlusIcon className="h-4 w-4" />
+                  Adicionar Membro
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <DataTable
-          columns={columns}
-          data={members}
-          searchColumn="name"
-          searchPlaceholder="Buscar por nome, email ou função..."
-          statusColumn="status"
-          onAddItem={() => setOpen(true)}
-          addButtonLabel="Adicionar Membro"
-        />
-      </CardContent>
-    </Card>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Adicionar Novo Membro</DialogTitle>
+                  <DialogDescription>
+                    Adicione um novo membro à sua organização
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="member-name">Nome</Label>
+                    <Input
+                      id="member-name"
+                      placeholder="Nome completo"
+                      value={newMemberName}
+                      onChange={(e) => setNewMemberName(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="member-email">Email</Label>
+                    <Input
+                      id="member-email"
+                      placeholder="email@example.com"
+                      type="email"
+                      value={newMemberEmail}
+                      onChange={(e) => setNewMemberEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="member-role">Função</Label>
+                    <Select
+                      value={newMemberRole}
+                      onValueChange={setNewMemberRole}
+                    >
+                      <SelectTrigger id="member-role">
+                        <SelectValue placeholder="Selecione uma função" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {roles
+                          .filter((role) => role.id !== "owner") // Filtrar o papel de proprietário
+                          .map((role) => (
+                            <SelectItem key={role.id} value={role.id}>
+                              {role.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" onClick={handleAddMember}>
+                    Adicionar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            data={members}
+            searchColumn="name"
+            searchPlaceholder="Buscar por nome, email ou função..."
+            statusColumn="status"
+            onAddItem={() => setOpen(true)}
+            addButtonLabel="Adicionar Membro"
+          />
+        </CardContent>
+      </Card>
+
+      {/* Modal para editar função do membro */}
+      <Dialog open={editRoleOpen} onOpenChange={setEditRoleOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Função do Membro</DialogTitle>
+            <DialogDescription>
+              Altere a função de {selectedMember?.name || "membro selecionado"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-role">Nova Função</Label>
+              <Select
+                value={newRole}
+                onValueChange={setNewRole}
+                disabled={isUpdating}
+              >
+                <SelectTrigger id="edit-role">
+                  <SelectValue placeholder="Selecione uma função" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles
+                    .filter((role) => role.id !== "owner") // Não pode promover a proprietário
+                    .map((role) => (
+                      <SelectItem key={role.id} value={role.id}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditRoleOpen(false)}
+              disabled={isUpdating}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              onClick={handleUpdateRole}
+              disabled={isUpdating || newRole === selectedMember?.role}
+            >
+              {isUpdating ? "Atualizando..." : "Atualizar Função"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
