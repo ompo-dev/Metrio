@@ -4,6 +4,8 @@ import * as React from "react";
 import { Users, UserPlus, Shield, Briefcase } from "lucide-react";
 import SelectIcon from "@/components/select-icon";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import api from "@/lib/api";
 
 // Importações dos componentes internos
 import { TeamsList } from "./TeamsList";
@@ -14,12 +16,7 @@ import { InviteSection } from "./invite-section";
 
 // Importações de dados e tipos
 import { TeamsManagementProps, Team, Member, Role } from "./types";
-import {
-  teamsData as initialTeamsData,
-  membersData as initialMembersData,
-  rolesData as initialRolesData,
-  permissionsData,
-} from "./data";
+import { teamsData as initialTeamsData, permissionsData } from "./data";
 
 // Definindo o tipo para as abas
 type TabType = "todas" | "membros" | "permissoes" | "funcoes";
@@ -29,11 +26,48 @@ export function TeamsManagement({
 }: TeamsManagementProps) {
   // Estados para armazenar os dados
   const [teams, setTeams] = React.useState(initialTeamsData);
-  const [members, setMembers] = React.useState(initialMembersData);
-  const [roles, setRoles] = React.useState(initialRolesData);
+  const [members, setMembers] = React.useState<Member[]>([]);
+  const [roles, setRoles] = React.useState<Role[]>([]);
   const [activeTab, setActiveTab] = React.useState<TabType>(
     defaultTab as TabType
   );
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  // Buscar membros do projeto atual
+  const fetchMembers = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get("/api/projects/members");
+      setMembers(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar membros:", error);
+      toast.error("Não foi possível carregar os membros do projeto");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Buscar funções disponíveis
+  const fetchRoles = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get("/api/projects/roles");
+      setRoles(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar funções:", error);
+      toast.error("Não foi possível carregar as funções disponíveis");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Carregar dados quando a aba mudar para "membros"
+  React.useEffect(() => {
+    if (activeTab === "membros") {
+      fetchMembers();
+      fetchRoles();
+    }
+  }, [activeTab, fetchMembers, fetchRoles]);
 
   // Função para adicionar nova equipe
   const handleAddTeam = (name: string) => {
@@ -47,16 +81,24 @@ export function TeamsManagement({
   };
 
   // Função para adicionar novo membro
-  const handleAddMember = (name: string, email: string, role: string) => {
-    const newMember: Member = {
-      id: `member-${Date.now()}`,
-      name,
-      email,
-      role,
-      status: "Ativo",
-      lastActive: "Agora",
-    };
-    setMembers([...members, newMember]);
+  const handleAddMember = async (name: string, email: string, role: string) => {
+    try {
+      setIsLoading(true);
+      const response = await api.post("/api/projects/members", {
+        name,
+        email,
+        role,
+      });
+
+      // Adicionar o novo membro ao estado
+      setMembers([...members, response.data]);
+      toast.success("Membro adicionado com sucesso!");
+    } catch (error: any) {
+      console.error("Erro ao adicionar membro:", error);
+      toast.error(error.response?.data?.error || "Erro ao adicionar membro");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Função para adicionar nova função
@@ -178,7 +220,15 @@ export function TeamsManagement({
         </Button>
       </div>
 
-      <div className="space-y-4">{renderContent()}</div>
+      <div className="space-y-4">
+        {isLoading && activeTab === "membros" ? (
+          <div className="flex justify-center p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          renderContent()
+        )}
+      </div>
     </div>
   );
 }

@@ -70,9 +70,25 @@ export function MembersList({ members, roles, onAddMember }: MemberListProps) {
     {
       accessorKey: "role",
       header: "Função",
-      cell: ({ row }) => (
-        <Badge variant="outline">{row.getValue("role")}</Badge>
-      ),
+      cell: ({ row }) => {
+        const role = row.getValue("role") as string;
+        return (
+          <Badge
+            variant="outline"
+            className={role === "owner" ? "bg-blue-100 text-blue-800" : ""}
+          >
+            {role === "owner"
+              ? "Proprietário"
+              : role === "admin"
+              ? "Administrador"
+              : role === "member"
+              ? "Membro"
+              : role === "viewer"
+              ? "Visualizador"
+              : role}
+          </Badge>
+        );
+      },
     },
     {
       accessorKey: "status",
@@ -92,36 +108,67 @@ export function MembersList({ members, roles, onAddMember }: MemberListProps) {
     },
     {
       id: "acoes",
-      cell: ({ row }) => (
-        <RowActions
-          row={row}
-          actions={[
-            {
-              label: "Enviar Email",
-              onClick: () =>
-                console.log("Enviar email para", row.original.email),
-              icon: <Mail className="h-4 w-4" />,
-            },
-            {
-              label: "Editar Função",
-              onClick: () =>
-                console.log("Editar função do membro", row.original.id),
-              icon: <UserCog className="h-4 w-4" />,
-            },
-            {
-              label: "Editar Membro",
-              onClick: () => console.log("Editar membro", row.original.id),
-              icon: <Settings className="h-4 w-4" />,
-            },
-            {
-              label: "Remover Membro",
-              onClick: () => console.log("Remover membro", row.original.id),
-              icon: <Trash2 className="h-4 w-4" />,
-              destructive: true,
-            },
-          ]}
-        />
-      ),
+      cell: ({ row }) => {
+        const role = row.getValue("role") as string;
+        // Se for o proprietário, mostrar menos ações
+        if (role === "owner") {
+          return (
+            <RowActions
+              row={row}
+              actions={[
+                {
+                  label: "Enviar Email",
+                  onClick: () =>
+                    console.log("Enviar email para", row.original.email),
+                  icon: <Mail className="h-4 w-4" />,
+                },
+              ]}
+            />
+          );
+        }
+
+        return (
+          <RowActions
+            row={row}
+            actions={[
+              {
+                label: "Enviar Email",
+                onClick: () =>
+                  console.log("Enviar email para", row.original.email),
+                icon: <Mail className="h-4 w-4" />,
+              },
+              {
+                label: "Editar Função",
+                onClick: () =>
+                  console.log(
+                    "Editar função do membro",
+                    row.original.userId || row.original.id
+                  ),
+                icon: <UserCog className="h-4 w-4" />,
+              },
+              {
+                label: "Editar Membro",
+                onClick: () =>
+                  console.log(
+                    "Editar membro",
+                    row.original.userId || row.original.id
+                  ),
+                icon: <Settings className="h-4 w-4" />,
+              },
+              {
+                label: "Remover Membro",
+                onClick: () =>
+                  console.log(
+                    "Remover membro",
+                    row.original.userId || row.original.id
+                  ),
+                icon: <Trash2 className="h-4 w-4" />,
+                destructive: true,
+              },
+            ]}
+          />
+        );
+      },
     },
   ];
 
@@ -179,11 +226,13 @@ export function MembersList({ members, roles, onAddMember }: MemberListProps) {
                       <SelectValue placeholder="Selecione uma função" />
                     </SelectTrigger>
                     <SelectContent>
-                      {roles.map((role) => (
-                        <SelectItem key={role.id} value={role.name}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
+                      {roles
+                        .filter((role) => role.id !== "owner") // Filtrar o papel de proprietário
+                        .map((role) => (
+                          <SelectItem key={role.id} value={role.id}>
+                            {role.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>

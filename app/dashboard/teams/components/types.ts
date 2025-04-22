@@ -9,7 +9,8 @@ export interface Team {
 }
 
 export interface Member {
-  id: string;
+  id: string; // ID único para a lista (pode ser um formato especial como "member-123")
+  userId?: string; // ID real do usuário para referência
   name: string;
   email: string;
   role: string;

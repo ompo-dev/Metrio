@@ -360,6 +360,69 @@ export const getApiDocs = () => {
               },
             },
           },
+          Member: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                format: "uuid",
+              },
+              name: {
+                type: "string",
+              },
+              email: {
+                type: "string",
+                format: "email",
+              },
+              role: {
+                type: "string",
+              },
+              status: {
+                type: "string",
+              },
+              lastActive: {
+                type: "string",
+              },
+            },
+          },
+          Role: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+              },
+              name: {
+                type: "string",
+              },
+              description: {
+                type: "string",
+              },
+              members: {
+                type: "integer",
+              },
+            },
+          },
+          MemberRequest: {
+            type: "object",
+            required: ["name", "email", "role"],
+            properties: {
+              name: {
+                type: "string",
+              },
+              email: {
+                type: "string",
+                format: "email",
+              },
+              role: {
+                type: "string",
+              },
+              projectId: {
+                type: "string",
+                description:
+                  "ID do projeto (opcional, usa o projeto ativo se não fornecido)",
+              },
+            },
+          },
         },
       },
       security: [
@@ -1290,6 +1353,155 @@ export const getApiDocs = () => {
               },
               401: {
                 description: "Não autorizado",
+              },
+            },
+          },
+        },
+        "/api/projects/members": {
+          get: {
+            tags: ["Membros"],
+            summary: "Listar membros do projeto",
+            description:
+              "Obtém a lista de membros do projeto atual ou do projeto especificado",
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              {
+                name: "projectId",
+                in: "query",
+                description:
+                  "ID do projeto (opcional, usa o projeto ativo se não fornecido)",
+                required: false,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              200: {
+                description: "Lista de membros do projeto",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/Member",
+                      },
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              404: {
+                description: "Projeto não encontrado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          post: {
+            tags: ["Membros"],
+            summary: "Adicionar membro ao projeto",
+            description:
+              "Adiciona um novo membro ao projeto atual ou ao projeto especificado",
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/MemberRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              201: {
+                description: "Membro adicionado com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/Member",
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "Dados inválidos",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              404: {
+                description: "Projeto não encontrado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/api/projects/roles": {
+          get: {
+            tags: ["Funções"],
+            summary: "Listar funções disponíveis",
+            description:
+              "Obtém a lista de funções disponíveis para membros de projetos",
+            security: [{ BearerAuth: [] }],
+            responses: {
+              200: {
+                description: "Lista de funções",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/Role",
+                      },
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
               },
             },
           },
