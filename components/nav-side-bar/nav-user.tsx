@@ -26,6 +26,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Notifications } from "@/components/notifications";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -100,10 +101,17 @@ export function NavUser() {
                 <CreditCard />
                 Faturamento
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notificações
-              </DropdownMenuItem>
+              <div
+                className="relative text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Notifications>
+                  <div className="flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
+                    <Bell className="mr-2 h-4 w-4" />
+                    <span>Notificações</span>
+                  </div>
+                </Notifications>
+              </div>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>
