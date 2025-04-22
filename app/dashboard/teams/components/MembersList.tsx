@@ -262,74 +262,10 @@ export function MembersList() {
       <Card>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Membros</CardTitle>
-              <CardDescription>
-                Gerencie os membros da sua organização
-              </CardDescription>
-            </div>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <UserPlusIcon className="h-4 w-4" />
-                  Adicionar Membro
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Adicionar Novo Membro</DialogTitle>
-                  <DialogDescription>
-                    Adicione um novo membro à sua organização
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="member-name">Nome</Label>
-                    <Input
-                      id="member-name"
-                      placeholder="Nome completo"
-                      value={newMemberName}
-                      onChange={(e) => setNewMemberName(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="member-email">Email</Label>
-                    <Input
-                      id="member-email"
-                      placeholder="email@example.com"
-                      type="email"
-                      value={newMemberEmail}
-                      onChange={(e) => setNewMemberEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="member-role">Função</Label>
-                    <Select
-                      value={newMemberRole}
-                      onValueChange={setNewMemberRole}
-                    >
-                      <SelectTrigger id="member-role">
-                        <SelectValue placeholder="Selecione uma função" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles
-                          .filter((role) => role.id !== "owner") // Filtrar o papel de proprietário
-                          .map((role) => (
-                            <SelectItem key={role.id} value={role.id}>
-                              {role.name}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" onClick={handleAddMember}>
-                    Adicionar
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <CardTitle>Membros</CardTitle>
+            <CardDescription>
+              Gerencie os membros da sua organização
+            </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -340,7 +276,6 @@ export function MembersList() {
             searchPlaceholder="Buscar por nome, email ou função..."
             statusColumn="status"
             onAddItem={() => setOpen(true)}
-            addButtonLabel="Adicionar Membro"
             enableRowSelection={true}
             onDeleteRows={handleRemoveSelectedMembers}
           />

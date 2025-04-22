@@ -108,7 +108,7 @@ export type DataTableProps<TData> = {
   onRowAction?: (row: TData) => void;
   onDeleteRows?: (rows: TData[]) => void;
   onAddItem?: () => void;
-  addButtonLabel?: string;
+  addButtonLabel?: string | null;
   filterFn?: FilterFn<any>;
   initialSorting?: SortingState;
   statusColumn?: string;
@@ -186,7 +186,7 @@ export function DataTable<TData extends { id: string }>({
   onRowAction,
   onDeleteRows,
   onAddItem,
-  addButtonLabel = "Adicionar item",
+  addButtonLabel,
   filterFn = multiColumnFilterFn,
   initialSorting = [{ id: "name", desc: false }],
   statusColumn,
@@ -534,7 +534,7 @@ export function DataTable<TData extends { id: string }>({
             )}
 
           {/* Botão de adição */}
-          {onAddItem && (
+          {onAddItem && addButtonLabel && (
             <Button className="ml-auto" variant="outline" onClick={onAddItem}>
               <PlusIcon
                 className="-ms-1 opacity-60"

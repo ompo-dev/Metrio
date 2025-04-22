@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { DataTable, RowActions } from "@/components/data-table/Table";
 import { ColumnDef } from "@tanstack/react-table";
-import { toast } from "sonner";
 import { useToast } from "@/components/ui/use-toast";
 
 // Interface para o modelo de convite
@@ -356,10 +355,10 @@ export function InviteSection() {
         <TabsContent value="email">
           <Card>
             <CardHeader>
-              <CardTitle>Convidar por Email</CardTitle>
+              <CardTitle>Convidar Direto</CardTitle>
               <CardDescription>
-                Envie um convite para um email específico. Se o usuário já
-                estiver registrado, ele receberá uma notificação.
+                Envie um convite para um email específico dentro do Metrio. Se o
+                usuário já estiver registrado, ele receberá uma notificação.
               </CardDescription>
             </CardHeader>
             <CardContent>

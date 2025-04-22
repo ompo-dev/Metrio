@@ -76,82 +76,82 @@ type Notification =
   | DefaultNotification
   | InviteNotification;
 
-const initialNotifications: Notification[] = [
-  {
-    id: 1,
-    type: "mention",
-    image: "",
-    initials: "MP",
-    user: "Mary Palmer",
-    action: "mencionou você em",
-    target: "project-campaign-02",
-    timestamp: "2 minutos atrás",
-    unread: true,
-    needsAction: true,
-  },
-  {
-    id: 2,
-    type: "event",
-    title: "Ao vivo em 27 horas",
-    scheduledTime: "20 de Novembro às 20:00",
-    eventDate: "Nov 20",
-    timestamp: "5 minutos atrás",
-    unread: true,
-  },
-  {
-    id: 3,
-    type: "update",
-    title: "Versão 1.4 já está disponível!",
-    description:
-      "Esta atualização contém várias correções de bugs e melhorias de desempenho.",
-    timestamp: "30 minutos atrás",
-    unread: true,
-  },
-  {
-    id: 4,
-    type: "default",
-    image: "",
-    initials: "ED",
-    user: "Emma Davis",
-    action: "compartilhou",
-    target: "Nova biblioteca de componentes",
-    timestamp: "45 minutos atrás",
-    unread: true,
-  },
-  {
-    id: 5,
-    type: "default",
-    image: "",
-    initials: "JW",
-    user: "James Wilson",
-    action: "atribuiu você a",
-    target: "Tarefa de integração de API",
-    timestamp: "4 horas atrás",
-    unread: false,
-  },
-  {
-    id: 6,
-    type: "default",
-    image: "",
-    initials: "AM",
-    user: "Alex Morgan",
-    action: "respondeu seu comentário em",
-    target: "Fluxo de autenticação",
-    timestamp: "12 horas atrás",
-    unread: false,
-  },
-  {
-    id: 7,
-    type: "default",
-    image: "",
-    initials: "SC",
-    user: "Sarah Chen",
-    action: "comentou em",
-    target: "Redesign do Dashboard",
-    timestamp: "2 dias atrás",
-    unread: false,
-  },
-];
+// const initialNotifications: Notification[] = [
+//   {
+//     id: 1,
+//     type: "mention",
+//     image: "",
+//     initials: "MP",
+//     user: "Mary Palmer",
+//     action: "mencionou você em",
+//     target: "project-campaign-02",
+//     timestamp: "2 minutos atrás",
+//     unread: true,
+//     needsAction: true,
+//   },
+//   {
+//     id: 2,
+//     type: "event",
+//     title: "Ao vivo em 27 horas",
+//     scheduledTime: "20 de Novembro às 20:00",
+//     eventDate: "Nov 20",
+//     timestamp: "5 minutos atrás",
+//     unread: true,
+//   },
+//   {
+//     id: 3,
+//     type: "update",
+//     title: "Versão 1.4 já está disponível!",
+//     description:
+//       "Esta atualização contém várias correções de bugs e melhorias de desempenho.",
+//     timestamp: "30 minutos atrás",
+//     unread: true,
+//   },
+//   {
+//     id: 4,
+//     type: "default",
+//     image: "",
+//     initials: "ED",
+//     user: "Emma Davis",
+//     action: "compartilhou",
+//     target: "Nova biblioteca de componentes",
+//     timestamp: "45 minutos atrás",
+//     unread: true,
+//   },
+//   {
+//     id: 5,
+//     type: "default",
+//     image: "",
+//     initials: "JW",
+//     user: "James Wilson",
+//     action: "atribuiu você a",
+//     target: "Tarefa de integração de API",
+//     timestamp: "4 horas atrás",
+//     unread: false,
+//   },
+//   {
+//     id: 6,
+//     type: "default",
+//     image: "",
+//     initials: "AM",
+//     user: "Alex Morgan",
+//     action: "respondeu seu comentário em",
+//     target: "Fluxo de autenticação",
+//     timestamp: "12 horas atrás",
+//     unread: false,
+//   },
+//   {
+//     id: 7,
+//     type: "default",
+//     image: "",
+//     initials: "SC",
+//     user: "Sarah Chen",
+//     action: "comentou em",
+//     target: "Redesign do Dashboard",
+//     timestamp: "2 dias atrás",
+//     unread: false,
+//   },
+// ];
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -170,8 +170,7 @@ function Dot({ className }: { className?: string }) {
 }
 
 export function Notifications({ children }: { children?: React.ReactNode }) {
-  const [notifications, setNotifications] =
-    useState<Notification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => n.unread).length;
@@ -206,10 +205,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
         );
 
         // Combinar convites com outras notificações (mantendo as notificações mockadas por enquanto)
-        setNotifications([
-          ...inviteNotifications,
-          ...initialNotifications.filter((n) => n.type !== "invite"),
-        ]);
+        setNotifications([...inviteNotifications]);
       } else {
         console.error("Erro ao buscar convites:", await response.json());
       }

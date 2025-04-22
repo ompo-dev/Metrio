@@ -76,12 +76,6 @@ export function TeamsList({ teams, onAddTeam }: TeamListProps) {
               icon: <Users className="h-4 w-4" />,
             },
             {
-              label: "Adicionar Membros",
-              onClick: () =>
-                console.log("Adicionar membros à equipe", row.original.id),
-              icon: <UserPlus className="h-4 w-4" />,
-            },
-            {
               label: "Excluir Equipe",
               onClick: () => console.log("Excluir equipe", row.original.id),
               icon: <Trash2 className="h-4 w-4" />,
@@ -126,21 +120,6 @@ export function TeamsList({ teams, onAddTeam }: TeamListProps) {
                     value={newTeamName}
                     onChange={(e) => setNewTeamName(e.target.value)}
                   />
-                </div>
-                <div className="grid gap-2">
-                  <Label>Adicionar Membros</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione os membros" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {membersData.map((member) => (
-                        <SelectItem key={member.id} value={member.id}>
-                          {member.name} ({member.role})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
               <DialogFooter>
