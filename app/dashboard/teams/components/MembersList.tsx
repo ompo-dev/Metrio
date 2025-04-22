@@ -37,14 +37,20 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-import { MemberListProps, Member } from "./types";
+import { Member } from "./types";
+import { useMemberStore } from "@/lib/store/member-store";
 
-export function MembersList({
-  members,
-  roles,
-  onAddMember,
-  onUpdateRole,
-}: MemberListProps) {
+export function MembersList() {
+  // Usar diretamente o store Zustand em vez de receber props
+  const {
+    members,
+    roles,
+    addMember,
+    updateMemberRole,
+    removeMember,
+    removeManyMembers,
+  } = useMemberStore();
+
   const [newMemberName, setNewMemberName] = React.useState("");
   const [newMemberEmail, setNewMemberEmail] = React.useState("");
   const [newMemberRole, setNewMemberRole] = React.useState("");
@@ -56,11 +62,16 @@ export function MembersList({
     null
   );
   const [newRole, setNewRole] = React.useState("");
-  const [isUpdating, setIsUpdating] = React.useState(false);
+
+  // Estado para confirmação de remoção
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
+  const [memberToDelete, setMemberToDelete] = React.useState<Member | null>(
+    null
+  );
 
   const handleAddMember = () => {
     if (newMemberName.trim() && newMemberEmail.trim() && newMemberRole) {
-      onAddMember(newMemberName.trim(), newMemberEmail.trim(), newMemberRole);
+      addMember(newMemberName.trim(), newMemberEmail.trim(), newMemberRole);
       setNewMemberName("");
       setNewMemberEmail("");
       setNewMemberRole("");
@@ -82,16 +93,37 @@ export function MembersList({
       return;
     }
 
-    setIsUpdating(true);
-
     try {
-      await onUpdateRole(selectedMember.id, newRole);
+      // Atualiza a função através da store Zustand
+      await updateMemberRole(selectedMember.id, newRole);
+
+      // Fechar o modal e mostrar mensagem de sucesso
       toast.success("Função do membro atualizada com sucesso");
       setEditRoleOpen(false);
     } catch (error: any) {
       toast.error(error.message || "Erro ao atualizar função do membro");
-    } finally {
-      setIsUpdating(false);
+    }
+  };
+
+  // Função para abrir confirmação de remoção
+  const handleOpenDeleteConfirm = (member: Member) => {
+    setMemberToDelete(member);
+    setDeleteConfirmOpen(true);
+  };
+
+  // Função para remover um membro
+  const handleRemoveMember = async () => {
+    if (!memberToDelete) {
+      setDeleteConfirmOpen(false);
+      return;
+    }
+
+    try {
+      await removeMember(memberToDelete.id);
+      toast.success(`Membro ${memberToDelete.name} removido com sucesso`);
+      setDeleteConfirmOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao remover membro");
     }
   };
 
@@ -194,11 +226,7 @@ export function MembersList({
               },
               {
                 label: "Remover Membro",
-                onClick: () =>
-                  console.log(
-                    "Remover membro",
-                    row.original.userId || row.original.id
-                  ),
+                onClick: () => handleOpenDeleteConfirm(row.original),
                 icon: <Trash2 className="h-4 w-4" />,
                 destructive: true,
               },
@@ -208,6 +236,26 @@ export function MembersList({
       },
     },
   ];
+
+  // Função para remover múltiplos membros
+  const handleRemoveSelectedMembers = async (selectedRows: Member[]) => {
+    if (selectedRows.length === 0) return;
+
+    // Verificar se há membros proprietários na seleção
+    const hasOwners = selectedRows.some((member) => member.role === "owner");
+    if (hasOwners) {
+      toast.error("Você não pode remover membros com função de Proprietário");
+      return;
+    }
+
+    try {
+      const memberIds = selectedRows.map((member) => member.id);
+      const result = await removeManyMembers(memberIds);
+      toast.success(`${result.removedCount} membros removidos com sucesso`);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao remover membros selecionados");
+    }
+  };
 
   return (
     <>
@@ -293,6 +341,8 @@ export function MembersList({
             statusColumn="status"
             onAddItem={() => setOpen(true)}
             addButtonLabel="Adicionar Membro"
+            enableRowSelection={true}
+            onDeleteRows={handleRemoveSelectedMembers}
           />
         </CardContent>
       </Card>
@@ -309,11 +359,7 @@ export function MembersList({
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="edit-role">Nova Função</Label>
-              <Select
-                value={newRole}
-                onValueChange={setNewRole}
-                disabled={isUpdating}
-              >
+              <Select value={newRole} onValueChange={setNewRole}>
                 <SelectTrigger id="edit-role">
                   <SelectValue placeholder="Selecione uma função" />
                 </SelectTrigger>
@@ -330,19 +376,35 @@ export function MembersList({
             </div>
           </div>
           <DialogFooter>
+            <Button variant="outline" onClick={() => setEditRoleOpen(false)}>
+              Cancelar
+            </Button>
+            <Button type="submit" onClick={handleUpdateRole}>
+              Atualizar Função
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para confirmar remoção de membro */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remover Membro</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja remover {memberToDelete?.name} da sua
+              organização? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setEditRoleOpen(false)}
-              disabled={isUpdating}
+              onClick={() => setDeleteConfirmOpen(false)}
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              onClick={handleUpdateRole}
-              disabled={isUpdating || newRole === selectedMember?.role}
-            >
-              {isUpdating ? "Atualizando..." : "Atualizar Função"}
+            <Button variant="destructive" onClick={handleRemoveMember}>
+              Remover
             </Button>
           </DialogFooter>
         </DialogContent>

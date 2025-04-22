@@ -44,8 +44,10 @@ export interface TeamListProps {
 export interface MemberListProps {
   members: Member[];
   roles: Role[];
-  onAddMember: (name: string, email: string, role: string) => void;
+  onAddMember: (name: string, email: string, role: string) => Promise<void>;
   onUpdateRole: (memberId: string, newRole: string) => Promise<void>;
+  onRemoveMember: (memberId: string) => Promise<void>;
+  onRemoveMembers: (memberIds: string[]) => Promise<{ removedCount: number }>;
 }
 
 export interface PermissionListProps {

@@ -156,7 +156,9 @@ export async function DELETE(
     }
 
     // Extrair o ID do membro a ser removido e o projectId opcional
-    const [memberId, projectIdParam] = params.params;
+    const paramsArray = params.params;
+    const memberId = paramsArray[0];
+    const projectIdParam = paramsArray[1];
 
     if (!memberId) {
       return NextResponse.json(
@@ -297,7 +299,9 @@ export async function PATCH(
     }
 
     // Extrair o ID do membro
-    const [memberId, projectIdParam] = params.params;
+    const paramsArray = params.params;
+    const memberId = paramsArray[0];
+    const projectIdParam = paramsArray[1];
 
     if (!memberId) {
       return NextResponse.json(
@@ -531,7 +535,7 @@ export async function POST(request: NextRequest) {
 
     // Limpar os IDs (remover prefixos como 'member-')
     const cleanMemberIds = memberIds.map((id: string) =>
-      id.startsWith("member-") ? id.substring(7) : id
+      typeof id === "string" && id.startsWith("member-") ? id.substring(7) : id
     );
 
     // Buscar todos os membros a serem removidos

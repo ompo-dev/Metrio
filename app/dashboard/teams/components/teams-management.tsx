@@ -17,6 +17,7 @@ import { InviteSection } from "./invite-section";
 // Importações de dados e tipos
 import { TeamsManagementProps, Team, Member, Role } from "./types";
 import { teamsData as initialTeamsData, permissionsData } from "./data";
+import { useMemberStore } from "@/lib/store/member-store";
 
 // Definindo o tipo para as abas
 type TabType = "todas" | "membros" | "permissoes" | "funcoes";
@@ -26,48 +27,54 @@ export function TeamsManagement({
 }: TeamsManagementProps) {
   // Estados para armazenar os dados
   const [teams, setTeams] = React.useState(initialTeamsData);
-  const [members, setMembers] = React.useState<Member[]>([]);
-  const [roles, setRoles] = React.useState<Role[]>([]);
   const [activeTab, setActiveTab] = React.useState<TabType>(
     defaultTab as TabType
   );
-  const [isLoading, setIsLoading] = React.useState(false);
 
-  // Buscar membros do projeto atual
-  const fetchMembers = React.useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get("/api/projects/members");
-      setMembers(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar membros:", error);
-      toast.error("Não foi possível carregar os membros do projeto");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // Obter estado e ações do Zustand store para membros
+  const {
+    members,
+    roles,
+    fetchMembers,
+    fetchRoles,
+    addMember,
+    updateMemberRole,
+    removeMember,
+    removeManyMembers,
+    addRole,
+  } = useMemberStore();
 
-  // Buscar funções disponíveis
-  const fetchRoles = React.useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get("/api/projects/roles");
-      setRoles(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar funções:", error);
-      toast.error("Não foi possível carregar as funções disponíveis");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // Estado local para controlar carregamento inicial
+  const [isInitialLoading, setIsInitialLoading] = React.useState(false);
 
-  // Carregar dados quando a aba mudar para "membros"
+  // Carregar dados quando a aba mudar para "membros" ou "funcoes"
   React.useEffect(() => {
-    if (activeTab === "membros") {
-      fetchMembers();
-      fetchRoles();
+    if (activeTab === "membros" || activeTab === "funcoes") {
+      const needsLoading = members.length === 0 || roles.length === 0;
+
+      if (needsLoading) {
+        setIsInitialLoading(true);
+
+        const loadData = async () => {
+          try {
+            if (members.length === 0) {
+              await fetchMembers();
+            }
+            if (roles.length === 0) {
+              await fetchRoles();
+            }
+          } catch (error) {
+            console.error("Erro ao carregar dados:", error);
+            toast.error("Não foi possível carregar os dados necessários");
+          } finally {
+            setIsInitialLoading(false);
+          }
+        };
+
+        loadData();
+      }
     }
-  }, [activeTab, fetchMembers, fetchRoles]);
+  }, [activeTab, fetchMembers, fetchRoles, members.length, roles.length]);
 
   // Função para adicionar nova equipe
   const handleAddTeam = (name: string) => {
@@ -80,81 +87,17 @@ export function TeamsManagement({
     setTeams([...teams, newTeam]);
   };
 
-  // Função para adicionar novo membro
-  const handleAddMember = async (name: string, email: string, role: string) => {
-    try {
-      setIsLoading(true);
-      const response = await api.post("/api/projects/members", {
-        name,
-        email,
-        role,
-      });
-
-      // Adicionar o novo membro ao estado
-      setMembers([...members, response.data]);
-      toast.success("Membro adicionado com sucesso!");
-    } catch (error: any) {
-      console.error("Erro ao adicionar membro:", error);
-      toast.error(error.response?.data?.error || "Erro ao adicionar membro");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Função para atualizar a função de um membro
-  const handleUpdateRole = async (
-    memberId: string,
-    newRole: string
-  ): Promise<void> => {
-    try {
-      setIsLoading(true);
-
-      // Extrair memberId limpo se estiver no formato "member-xyz"
-      const cleanMemberId = memberId.startsWith("member-")
-        ? memberId.substring(7)
-        : memberId;
-
-      // Chamar API para atualizar a função do membro
-      const response = await api.patch(`/api/projects/members/${memberId}`, {
-        role: newRole,
-      });
-
-      // Atualizar o estado local
-      setMembers((prevMembers) =>
-        prevMembers.map((member) =>
-          member.id === memberId ? { ...member, role: newRole } : member
-        )
-      );
-
-      return Promise.resolve();
-    } catch (error: any) {
-      console.error("Erro ao atualizar função do membro:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        (Array.isArray(error.response?.data?.errors)
-          ? error.response.data.errors.join(", ")
-          : "Erro ao atualizar função do membro");
-
-      toast.error(errorMessage);
-      return Promise.reject(new Error(errorMessage));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Função para adicionar nova função
+  // Função para adicionar nova função/role
   const handleAddRole = (
     name: string,
     description: string,
     permissions: string[]
   ) => {
-    const newRole: Role = {
-      id: `role-${Date.now()}`,
-      name,
-      description,
-      members: 0,
-    };
-    setRoles([...roles, newRole]);
+    // No futuro, implementaremos isso na store Zustand
+    console.log("Adicionando nova função:", name, description, permissions);
+
+    // Essa implementação não usa mais setRoles, pois roles vem da store Zustand
+    // Para implementar completamente, precisaríamos adicionar uma função addRole na store
   };
 
   // Renderiza o conteúdo com base na tab ativa
@@ -163,14 +106,7 @@ export function TeamsManagement({
       case "todas":
         return <TeamsList teams={teams} onAddTeam={handleAddTeam} />;
       case "membros":
-        return (
-          <MembersList
-            members={members}
-            roles={roles}
-            onAddMember={handleAddMember}
-            onUpdateRole={handleUpdateRole}
-          />
-        );
+        return <MembersList />;
       case "permissoes":
         return <PermissionsList permissions={permissionsData} />;
       case "funcoes":
@@ -178,7 +114,7 @@ export function TeamsManagement({
           <RolesList
             roles={roles}
             permissions={permissionsData}
-            onAddRole={handleAddRole}
+            onAddRole={addRole}
           />
         );
       default:
@@ -263,7 +199,7 @@ export function TeamsManagement({
       </div>
 
       <div className="space-y-4">
-        {isLoading && activeTab === "membros" ? (
+        {isInitialLoading ? (
           <div className="flex justify-center p-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
