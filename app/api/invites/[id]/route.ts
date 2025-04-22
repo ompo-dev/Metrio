@@ -2,33 +2,55 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
+import { prisma } from "../../../../lib/prisma";
+
+// Interface para tipar corretamente a sessão
+interface SessionUser {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+}
 
 // Endpoint para responder um convite (aceitar/rejeitar)
 export async function PATCH(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const inviteId = params.id;
+    if (!inviteId) {
+      return NextResponse.json(
+        { error: "ID do convite é obrigatório" },
+        { status: 400 }
+      );
+    }
 
-    if (!session?.user?.id) {
+    // Verificar autenticação
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const { action } = await req.json();
+    // Tipagem segura do usuário da sessão
+    const user = session.user as SessionUser;
 
-    if (!action || !["accept", "reject"].includes(action)) {
+    // Obter ação do corpo da requisição
+    const body = await request.json();
+    const { action } = body;
+
+    if (!action || (action !== "accept" && action !== "reject")) {
       return NextResponse.json(
         { error: "Ação inválida. Use 'accept' ou 'reject'" },
         { status: 400 }
       );
     }
 
-    // Buscar o convite
-    const invite = await db.invite.findUnique({
+    // Verificar se o convite existe e é para o usuário atual
+    const invite = await prisma.invite.findFirst({
       where: {
-        id: params.id,
-        recipientId: session.user.id,
+        id: inviteId,
+        OR: [{ email: user.email || "" }, { recipientId: user.id }],
         status: "pending",
       },
       include: {
@@ -38,59 +60,65 @@ export async function PATCH(
 
     if (!invite) {
       return NextResponse.json(
-        { error: "Convite não encontrado ou já respondido" },
+        { error: "Convite não encontrado ou já processado" },
         { status: 404 }
       );
     }
 
-    // Verificar se o convite não expirou
-    if (new Date() > invite.expiresAt) {
-      await db.invite.update({
-        where: { id: params.id },
-        data: { status: "expired" },
-      });
-
-      return NextResponse.json({ error: "Convite expirado" }, { status: 410 });
-    }
-
     if (action === "accept") {
-      // Adicionar usuário como membro do projeto
-      await db.projectMember.create({
-        data: {
-          userId: session.user.id,
+      // Verificar se o usuário já é membro do projeto
+      const existingMember = await prisma.projectMember.findFirst({
+        where: {
           projectId: invite.projectId,
-          role: "member",
+          userId: user.id,
         },
       });
 
-      // Atualizar status do convite
-      await db.invite.update({
-        where: { id: params.id },
-        data: { status: "accepted" },
+      if (!existingMember) {
+        // Adicionar usuário ao projeto
+        await prisma.projectMember.create({
+          data: {
+            projectId: invite.projectId,
+            userId: user.id,
+            role: "member", // Papel padrão
+          },
+        });
+      }
+
+      // Atualizar o status do convite para 'accepted'
+      await prisma.invite.update({
+        where: {
+          id: inviteId,
+        },
+        data: {
+          status: "accepted",
+          recipientId: user.id, // Garantir que o usuário está vinculado
+        },
       });
 
       return NextResponse.json({
-        success: true,
-        message: "Convite aceito com sucesso",
-        projectId: invite.projectId,
-        projectName: invite.project.name,
+        message: `Você foi adicionado ao projeto ${invite.project.name}`,
       });
     } else {
-      // Rejeitar convite
-      await db.invite.update({
-        where: { id: params.id },
-        data: { status: "rejected" },
+      // Rejeitar o convite (atualizar status para 'rejected')
+      await prisma.invite.update({
+        where: {
+          id: inviteId,
+        },
+        data: {
+          status: "rejected",
+          recipientId: user.id, // Garantir que o usuário está vinculado
+        },
       });
 
       return NextResponse.json({
-        success: true,
-        message: "Convite rejeitado",
+        message: `Convite para o projeto ${invite.project.name} foi rejeitado`,
       });
     }
   } catch (error) {
     console.error("Erro ao processar convite:", error);
     return NextResponse.json(
-      { error: "Erro ao processar a solicitação" },
+      { error: "Erro ao processar convite" },
       { status: 500 }
     );
   }

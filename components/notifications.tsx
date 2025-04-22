@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Bell,
   BellIcon,
@@ -172,8 +172,60 @@ function Dot({ className }: { className?: string }) {
 export function Notifications({ children }: { children?: React.ReactNode }) {
   const [notifications, setNotifications] =
     useState<Notification[]>(initialNotifications);
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => n.unread).length;
+
+  // Função para buscar convites pendentes
+  const fetchInvites = async () => {
+    try {
+      setLoading(true);
+      // Buscar convites pendentes da API
+      const response = await fetch("/api/invites/pending");
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Transformar os convites no formato de notificações
+        const inviteNotifications: InviteNotification[] = data.invites.map(
+          (invite: any, index: number) => ({
+            id: Number(`100${index}`), // IDs únicos começando com 100
+            type: "invite",
+            inviteId: invite.id,
+            projectName: invite.project.name,
+            senderName: invite.sender.name || "Um usuário",
+            projectId: invite.projectId,
+            timestamp: new Date(invite.createdAt).toLocaleDateString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            unread: true,
+          })
+        );
+
+        // Combinar convites com outras notificações (mantendo as notificações mockadas por enquanto)
+        setNotifications([
+          ...inviteNotifications,
+          ...initialNotifications.filter((n) => n.type !== "invite"),
+        ]);
+      } else {
+        console.error("Erro ao buscar convites:", await response.json());
+      }
+    } catch (error) {
+      console.error("Erro ao buscar convites:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Buscar convites quando o componente montar ou quando o popover abrir
+  useEffect(() => {
+    if (open) {
+      fetchInvites();
+    }
+  }, [open]);
 
   const handleMarkAllAsRead = () => {
     setNotifications(
@@ -201,8 +253,6 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
   };
 
   const handleAcceptInvite = async (notification: Notification) => {
-    handleNotificationClick(notification.id);
-
     // Verificar se é uma notificação de convite
     if (notification.type !== "invite") return;
 
@@ -226,9 +276,11 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
         setNotifications(notifications.filter((n) => n.id !== notification.id));
 
         // Feedback para o usuário
-        console.log(
-          `Convite para ${inviteNotification.projectName} aceito com sucesso!`
-        );
+        const data = await response.json();
+        console.log(data.message);
+
+        // Recarregar a página para mostrar o novo projeto
+        window.location.reload();
       } else {
         console.error("Erro ao aceitar convite:", await response.json());
       }
@@ -238,8 +290,6 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
   };
 
   const handleDeclineInvite = async (notification: Notification) => {
-    handleDismissNotification(notification.id);
-
     // Verificar se é uma notificação de convite
     if (notification.type !== "invite") return;
 
@@ -259,7 +309,12 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
       );
 
       if (response.ok) {
-        console.log(`Convite para ${inviteNotification.projectName} recusado.`);
+        // Remover a notificação da lista
+        setNotifications(notifications.filter((n) => n.id !== notification.id));
+
+        // Feedback para o usuário
+        const data = await response.json();
+        console.log(data.message);
       } else {
         console.error("Erro ao recusar convite:", await response.json());
       }
@@ -281,7 +336,12 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
   };
 
   const handleToggle = () => {
-    setOpen(!open);
+    const newState = !open;
+    setOpen(newState);
+    // Se estiver abrindo o popover, buscar os convites
+    if (newState) {
+      fetchInvites();
+    }
   };
 
   const handleClose = () => {
