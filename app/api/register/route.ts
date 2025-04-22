@@ -1,14 +1,14 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
-import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { db } from "@/lib/db";
-
-// Esquema de validação para registro
+// Schema de validação para o corpo da requisição
 const registerSchema = z.object({
-  name: z.string().min(1, "Nome é obrigatório"),
+  name: z.string().min(2, "Nome precisa ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+  password: z.string().min(6, "Senha precisa ter pelo menos 6 caracteres"),
+  inviteToken: z.string().optional(),
 });
 
 /**
@@ -49,54 +49,117 @@ const registerSchema = z.object({
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await req.json();
 
-    // Validação do corpo da requisição
-    const result = registerSchema.safeParse(body);
+    // Validar os dados
+    const validatedData = registerSchema.parse(body);
 
-    if (!result.success) {
-      return NextResponse.json(
-        { error: "Dados de entrada inválidos", details: result.error.format() },
-        { status: 400 }
-      );
-    }
-
-    const { name, email, password } = result.data;
-
-    // Verifica se o email já está em uso
+    // Verificar se o email já está em uso
     const existingUser = await db.user.findUnique({
-      where: { email },
+      where: { email: validatedData.email },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Email já está em uso" },
+        { error: "Este email já está em uso" },
         { status: 409 }
       );
     }
 
     // Hash da senha
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
-    // Cria o usuário no banco de dados
+    // Buscar o convite, se fornecido
+    let invite = null;
+    if (validatedData.inviteToken) {
+      invite = await db.invite.findUnique({
+        where: {
+          inviteToken: validatedData.inviteToken,
+          status: "pending",
+        },
+        include: {
+          project: true,
+        },
+      });
+
+      // Verificar se o convite é válido
+      if (!invite) {
+        return NextResponse.json(
+          { error: "Convite inválido ou expirado" },
+          { status: 400 }
+        );
+      }
+
+      // Verificar se o convite não expirou
+      if (new Date() > invite.expiresAt) {
+        await db.invite.update({
+          where: { id: invite.id },
+          data: { status: "expired" },
+        });
+
+        return NextResponse.json(
+          { error: "Este convite expirou" },
+          { status: 410 }
+        );
+      }
+    }
+
+    // Criar o usuário
     const user = await db.user.create({
       data: {
-        name,
-        email,
+        name: validatedData.name,
+        email: validatedData.email,
         password: hashedPassword,
       },
     });
 
-    // Remove a senha do objeto retornado
-    const { password: _, ...userWithoutPassword } = user;
+    // Se houver um convite, associar o usuário ao projeto
+    if (invite) {
+      // Atualizar o convite com o ID do usuário
+      await db.invite.update({
+        where: { id: invite.id },
+        data: {
+          recipientId: user.id,
+          status: "accepted",
+        },
+      });
 
-    return NextResponse.json(userWithoutPassword, { status: 201 });
-  } catch (error) {
-    console.error("[REGISTER_ERROR]", error);
+      // Adicionar o usuário como membro do projeto
+      await db.projectMember.create({
+        data: {
+          userId: user.id,
+          projectId: invite.projectId,
+          role: "member",
+        },
+      });
+
+      // Definir o projeto como ativo para o usuário
+      await db.user.update({
+        where: { id: user.id },
+        data: {
+          activeProjectId: invite.projectId,
+        },
+      });
+    }
+
     return NextResponse.json(
-      { error: "Erro interno do servidor" },
+      { success: true, userId: user.id },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Erro ao registrar usuário:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Dados de registro inválidos", details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Erro ao processar a solicitação" },
       { status: 500 }
     );
   }

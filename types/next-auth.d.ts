@@ -1,28 +1,28 @@
-import { DefaultSession } from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 
-// Estenda o tipo User do NextAuth
+// Interface para estender o tipo User
+interface IUser {
+  id: string;
+}
+
+// Interface para projeto
+interface Project {
+  id: string;
+  name: string;
+}
+
 declare module "next-auth" {
   /**
-   * Estendendo o tipo User do NextAuth
+   * Extensão do tipo User
    */
-  interface User {
-    id: string;
-    activeProject?: {
-      id: string;
-      name: string;
-    } | null;
-  }
+  interface User extends IUser {}
 
   /**
-   * Estendendo o tipo Session
+   * Extensão do tipo Session
    */
   interface Session {
     user: {
       id: string;
-      activeProject?: {
-        id: string;
-        name: string;
-      } | null;
     } & DefaultSession["user"];
   }
 }

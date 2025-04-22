@@ -10,6 +10,7 @@ import { TeamsList } from "./TeamsList";
 import { MembersList } from "./MembersList";
 import { PermissionsList } from "./PermissionsList";
 import { RolesList } from "./RolesList";
+import { InviteSection } from "./invite-section";
 
 // Importações de dados e tipos
 import { TeamsManagementProps, Team, Member, Role } from "./types";
@@ -103,6 +104,9 @@ export function TeamsManagement({
 
   return (
     <div className="space-y-6">
+      {/* Seção de Convites */}
+      <InviteSection />
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold">Gerenciamento de Equipes</h2>

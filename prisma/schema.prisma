@@ -29,6 +29,12 @@ model User {
   activeProject  Project?  @relation("ActiveProject", fields: [activeProjectId], references: [id])
   activeProjectId String?
   webhooks       Webhook[]  // Webhooks criados pelo usuário
+  
+  // Novos relacionamentos
+  projectMembers ProjectMember[] // Projetos em que o usuário é membro
+  sentInvites    Invite[]        // Convites enviados pelo usuário
+  receivedInvites Invite[]       @relation("InviteRecipient") // Convites recebidos pelo usuário
+  notifications  Notification[]  // Notificações do usuário
 }
 
 model Account {
@@ -79,6 +85,10 @@ model Project {
   
   activeFor   User[]   @relation("ActiveProject")
   webhooks    Webhook[] // Webhooks associados ao projeto
+  
+  // Novos campos e relacionamentos
+  members     ProjectMember[] // Membros do projeto
+  invites     Invite[]       // Convites para este projeto
 }
 
 // Modelo para Webhooks personalizados
@@ -122,4 +132,60 @@ model DataWebhook {
   
   // Relação com o webhook
   webhook       Webhook   @relation(fields: [id], references: [id], onDelete: Cascade)
+}
+
+// Modelo para Membros do Projeto (relacionamento muitos-para-muitos)
+model ProjectMember {
+  id        String   @id @default(cuid())
+  role      String   @default("member") // Função do usuário: admin, member, etc.
+  joinedAt  DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, projectId]) // Um usuário só pode ser membro uma vez
+  @@index([userId])
+  @@index([projectId])
+}
+
+// Modelo para Convites
+model Invite {
+  id          String    @id @default(cuid())
+  email       String    // Email do destinatário
+  status      String    @default("pending") // pending, accepted, rejected
+  inviteToken String    @unique // Token para convites por link
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime  // Data de expiração do convite
+  
+  // Relações
+  senderId    String
+  sender      User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  recipientId String?   // Pode ser nulo se o destinatário ainda não tiver conta
+  recipient   User?     @relation("InviteRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([senderId])
+  @@index([recipientId])
+  @@index([projectId])
+  @@index([inviteToken])
+}
+
+// Modelo para Notificações
+model Notification {
+  id          String    @id @default(cuid())
+  type        String    // Tipo de notificação: invite, mention, etc.
+  content     Json      // Conteúdo da notificação em formato JSON
+  read        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
 }

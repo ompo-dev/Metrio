@@ -1,215 +1,193 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { z } from "zod";
-import api from "@/lib/api";
-import { AxiosError } from "axios";
-
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 
-// Esquema de validação
-const registerSchema = z.object({
-  name: z.string().min(1, "Nome é obrigatório"),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+// Schema de validação do formulário
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Nome precisa ter pelo menos 2 caracteres.",
+  }),
+  email: z.string().email({
+    message: "Email inválido.",
+  }),
+  password: z.string().min(6, {
+    message: "Senha precisa ter pelo menos 6 caracteres.",
+  }),
 });
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("inviteToken");
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [formValues, setFormValues] = useState<RegisterFormValues>({
-    name: "",
-    email: "",
-    password: "",
+
+  // Configuração do formulário
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
   });
-  const [errors, setErrors] = useState<Partial<RegisterFormValues>>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
-    // Limpa o erro quando o usuário começa a digitar
-    if (errors[name as keyof RegisterFormValues]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
-    }
-  };
-
-  const validate = () => {
-    try {
-      registerSchema.parse(formValues);
-      setErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: Partial<RegisterFormValues> = {};
-        error.errors.forEach((err) => {
-          if (err.path[0]) {
-            newErrors[err.path[0] as keyof RegisterFormValues] = err.message;
-          }
-        });
-        setErrors(newErrors);
-      }
-      return false;
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validate()) return;
-
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
     try {
-      await api.post("/api/register", formValues);
-
-      toast.success("Conta criada com sucesso!");
-
-      // Login automático após registro
-      const result = await signIn("credentials", {
-        email: formValues.email,
-        password: formValues.password,
-        redirect: false,
+      // Registrar usuário
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          password: values.password,
+          inviteToken: inviteToken || undefined,
+        }),
       });
 
-      if (result?.error) {
-        throw new Error("Erro ao fazer login automático");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erro ao registrar usuário");
       }
 
-      // Redirecionar para página de onboarding para criar o primeiro projeto
-      router.push("/onboarding/create-team");
-      router.refresh();
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Você será redirecionado para o login.",
+      });
+
+      // Se tiver um token de convite, redirecionar para a página de convite após o login
+      if (inviteToken) {
+        // Fazer login automaticamente
+        const loginResponse = await fetch("/api/auth/callback/credentials", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: values.email,
+            password: values.password,
+            redirect: false,
+          }),
+        });
+
+        if (loginResponse.ok) {
+          router.push(`/join/${inviteToken}`);
+        } else {
+          router.push(`/auth/login?inviteToken=${inviteToken}`);
+        }
+      } else {
+        // Redirecionar para a página de login
+        router.push("/auth/login");
+      }
     } catch (error) {
       console.error("Erro no registro:", error);
-
-      // Verificar se é um erro do Axios com resposta
-      if (error instanceof AxiosError && error.response?.data?.error) {
-        toast.error(error.response.data.error);
-      } else {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Ocorreu um erro durante o registro"
-        );
-      }
+      toast({
+        variant: "destructive",
+        title: "Erro no registro",
+        description:
+          error instanceof Error ? error.message : "Ocorreu um erro inesperado",
+      });
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit}>
-        <CardHeader>
-          <CardTitle>Criar conta</CardTitle>
-          <CardDescription>
-            Preencha os dados abaixo para criar sua conta
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="Seu nome"
-              required
-              value={formValues.name}
-              onChange={handleChange}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name}</p>
+    <div className="mx-auto grid w-full max-w-md gap-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome</FormLabel>
+                <FormControl>
+                  <Input placeholder="Seu nome completo" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="seu@email.com"
-              required
-              value={formValues.email}
-              onChange={handleChange}
-            />
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email}</p>
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="seu.email@exemplo.com"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                required
-                value={formValues.password}
-                onChange={handleChange}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="sr-only">
-                  {showPassword ? "Esconder senha" : "Mostrar senha"}
-                </span>
-              </Button>
-            </div>
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password}</p>
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Senha</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="******" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
+          />
+
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Criando conta...
+                Registrando...
               </>
             ) : (
-              "Criar conta"
+              "Criar Conta"
             )}
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
-            Já tem uma conta?{" "}
-            <Link
-              href="/auth/login"
-              className="font-medium text-primary hover:underline"
-            >
-              Faça login
-            </Link>
-          </div>
-        </CardFooter>
-      </form>
-    </Card>
+        </form>
+      </Form>
+
+      <div className="text-center text-sm">
+        Já tem uma conta?{" "}
+        <Link
+          href={
+            inviteToken
+              ? `/auth/login?inviteToken=${inviteToken}`
+              : "/auth/login"
+          }
+          className="font-medium text-primary hover:underline"
+        >
+          Entrar
+        </Link>
+      </div>
+    </div>
   );
 }

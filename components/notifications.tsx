@@ -7,6 +7,7 @@ import {
   Radio as RadioIcon,
   RefreshCw as RefreshCwIcon,
   X,
+  UserPlus,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/popover";
 
 // Tipos de notificações
-type NotificationType = "mention" | "event" | "update" | "default";
+type NotificationType = "mention" | "event" | "update" | "default" | "invite";
 
 interface BaseNotification {
   id: number;
@@ -60,11 +61,20 @@ interface DefaultNotification extends BaseNotification {
   target: string;
 }
 
+interface InviteNotification extends BaseNotification {
+  type: "invite";
+  inviteId: string;
+  projectName: string;
+  senderName: string;
+  projectId: string;
+}
+
 type Notification =
   | MentionNotification
   | EventNotification
   | UpdateNotification
-  | DefaultNotification;
+  | DefaultNotification
+  | InviteNotification;
 
 const initialNotifications: Notification[] = [
   {
@@ -190,16 +200,72 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
     );
   };
 
-  const handleAcceptInvite = (id: number) => {
-    handleNotificationClick(id);
-    // Lógica para aceitar o convite iria aqui
-    console.log(`Convite ${id} aceito`);
+  const handleAcceptInvite = async (notification: Notification) => {
+    handleNotificationClick(notification.id);
+
+    // Verificar se é uma notificação de convite
+    if (notification.type !== "invite") return;
+
+    try {
+      const inviteNotification = notification as InviteNotification;
+      const response = await fetch(
+        `/api/invites/${inviteNotification.inviteId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "accept",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        // Remover a notificação da lista
+        setNotifications(notifications.filter((n) => n.id !== notification.id));
+
+        // Feedback para o usuário
+        console.log(
+          `Convite para ${inviteNotification.projectName} aceito com sucesso!`
+        );
+      } else {
+        console.error("Erro ao aceitar convite:", await response.json());
+      }
+    } catch (error) {
+      console.error("Erro ao aceitar convite:", error);
+    }
   };
 
-  const handleDeclineInvite = (id: number) => {
-    handleDismissNotification(id);
-    // Lógica para recusar o convite iria aqui
-    console.log(`Convite ${id} recusado`);
+  const handleDeclineInvite = async (notification: Notification) => {
+    handleDismissNotification(notification.id);
+
+    // Verificar se é uma notificação de convite
+    if (notification.type !== "invite") return;
+
+    try {
+      const inviteNotification = notification as InviteNotification;
+      const response = await fetch(
+        `/api/invites/${inviteNotification.inviteId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            action: "reject",
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log(`Convite para ${inviteNotification.projectName} recusado.`);
+      } else {
+        console.error("Erro ao recusar convite:", await response.json());
+      }
+    } catch (error) {
+      console.error("Erro ao recusar convite:", error);
+    }
   };
 
   const handleNotifyMe = (id: number) => {
@@ -251,14 +317,14 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
                 <div className="flex gap-2 mt-2">
                   <Button
                     size="sm"
-                    onClick={() => handleAcceptInvite(notification.id)}
+                    onClick={() => handleAcceptInvite(notification)}
                   >
                     Aceitar
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => handleDeclineInvite(notification.id)}
+                    onClick={() => handleDeclineInvite(notification)}
                   >
                     Recusar
                   </Button>
@@ -333,6 +399,53 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
                   onClick={() => handleDismissNotification(notification.id)}
                 >
                   Depois
+                </Button>
+              </div>
+            </div>
+            {hasUnread && (
+              <div className="absolute end-0 self-center">
+                <Dot />
+              </div>
+            )}
+          </div>
+        );
+
+      case "invite":
+        return (
+          <div className="relative flex items-start gap-3 pe-3">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true"
+            >
+              <UserPlus className="opacity-60" size={16} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-foreground/80">
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.senderName}
+                </span>{" "}
+                convidou você para fazer parte do projeto{" "}
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.projectName}
+                </span>
+                .
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {notification.timestamp}
+              </div>
+              <div className="flex gap-2 mt-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleAcceptInvite(notification)}
+                >
+                  Aceitar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDeclineInvite(notification)}
+                >
+                  Recusar
                 </Button>
               </div>
             </div>
