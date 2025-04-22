@@ -8,6 +8,7 @@ export interface Project {
   name: string;
   logoIcon: string;
   type: string | null;
+  role?: "owner" | "member" | "admin"; // Papel do usuário no projeto
 }
 
 // Interface da store

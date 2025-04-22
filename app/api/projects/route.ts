@@ -13,12 +13,41 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const projects = await db.project.findMany({
+    // Buscar projetos onde o usuário é dono
+    const ownedProjects = await db.project.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(projects);
+    // Buscar projetos onde o usuário é membro
+    const memberProjects = await db.projectMember.findMany({
+      where: { userId: session.user.id },
+      include: {
+        project: true,
+      },
+    });
+
+    // Converter os resultados de memberProjects para o formato de projeto
+    const memberProjectsFormatted = memberProjects.map((pm) => ({
+      id: pm.project.id,
+      name: pm.project.name,
+      logoIcon: pm.project.logoIcon,
+      type: pm.project.type,
+      role: pm.role, // Adicionar o papel do usuário neste projeto
+    }));
+
+    // Filtrar para remover duplicatas (caso o usuário seja dono e membro do mesmo projeto)
+    const memberOnlyProjects = memberProjectsFormatted.filter(
+      (mp) => !ownedProjects.some((op) => op.id === mp.id)
+    );
+
+    // Combinar projetos onde é dono com projetos onde é apenas membro
+    const allProjects = [
+      ...ownedProjects.map((p) => ({ ...p, role: "owner" })), // Marcar como dono
+      ...memberOnlyProjects,
+    ];
+
+    return NextResponse.json(allProjects);
   } catch (error) {
     console.error("Erro ao listar projetos:", error);
     return NextResponse.json(
@@ -63,7 +92,7 @@ export async function POST(req: NextRequest) {
       data: { activeProjectId: project.id },
     });
 
-    return NextResponse.json(project, { status: 201 });
+    return NextResponse.json({ ...project, role: "owner" }, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar projeto:", error);
     return NextResponse.json(

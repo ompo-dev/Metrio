@@ -17,6 +17,7 @@ import {
   Smartphone,
   Globe,
   Loader2,
+  Users,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -104,6 +105,21 @@ export function TeamSwitcher() {
   const [teamName, setTeamName] = React.useState("");
   const [projectType, setProjectType] = React.useState("");
   const [selectedIcon, setSelectedIcon] = React.useState(PROJECT_ICONS[0].name);
+
+  // Separar projetos em dois grupos: os que sou dono e os que sou membro
+  const ownedProjects = React.useMemo(
+    () =>
+      projects.filter((project) => project.role === "owner" || !project.role),
+    [projects]
+  );
+
+  const memberProjects = React.useMemo(
+    () =>
+      projects.filter(
+        (project) => project.role === "member" || project.role === "admin"
+      ),
+    [projects]
+  );
 
   // Carregar projetos ao iniciar
   React.useEffect(() => {
@@ -230,25 +246,63 @@ export function TeamSwitcher() {
               side={isMobile ? "bottom" : "right"}
               sideOffset={4}
             >
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Projetos
-              </DropdownMenuLabel>
-              {projects.map((project, index) => {
-                const ProjectIconComponent = getIconComponent(project.logoIcon);
-                return (
-                  <DropdownMenuItem
-                    key={project.id}
-                    onClick={() => setActiveProject(project)}
-                    className="gap-2 p-2"
-                  >
-                    <div className="flex size-6 items-center justify-center rounded-sm border">
-                      <ProjectIconComponent className="size-4 shrink-0" />
-                    </div>
-                    {project.name}
-                    <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                );
-              })}
+              {ownedProjects.length > 0 && (
+                <>
+                  <DropdownMenuLabel className="text-xs text-muted-foreground">
+                    Meus Projetos
+                  </DropdownMenuLabel>
+                  {ownedProjects.map((project, index) => {
+                    const ProjectIconComponent = getIconComponent(
+                      project.logoIcon
+                    );
+                    return (
+                      <DropdownMenuItem
+                        key={project.id}
+                        onClick={() => setActiveProject(project)}
+                        className="gap-2 p-2"
+                      >
+                        <div className="flex size-6 items-center justify-center rounded-sm border">
+                          <ProjectIconComponent className="size-4 shrink-0" />
+                        </div>
+                        {project.name}
+                        <DropdownMenuShortcut>
+                          ⌘{index + 1}
+                        </DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </>
+              )}
+
+              {memberProjects.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Users className="h-3 w-3" /> Projetos Compartilhados
+                  </DropdownMenuLabel>
+                  {memberProjects.map((project) => {
+                    const ProjectIconComponent = getIconComponent(
+                      project.logoIcon
+                    );
+                    return (
+                      <DropdownMenuItem
+                        key={project.id}
+                        onClick={() => setActiveProject(project)}
+                        className="gap-2 p-2"
+                      >
+                        <div className="flex size-6 items-center justify-center rounded-sm border">
+                          <ProjectIconComponent className="size-4 shrink-0" />
+                        </div>
+                        {project.name}
+                        <span className="ml-auto text-xs text-muted-foreground">
+                          {project.role === "admin" ? "Admin" : "Membro"}
+                        </span>
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </>
+              )}
+
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="gap-2 p-2"
