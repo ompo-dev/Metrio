@@ -289,6 +289,77 @@ export const getApiDocs = () => {
               },
             },
           },
+          Invite: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                format: "uuid",
+              },
+              email: {
+                type: "string",
+                format: "email",
+              },
+              status: {
+                type: "string",
+                enum: ["pending", "accepted", "rejected", "expired"],
+              },
+              inviteToken: {
+                type: "string",
+              },
+              createdAt: {
+                type: "string",
+                format: "date-time",
+              },
+              expiresAt: {
+                type: "string",
+                format: "date-time",
+              },
+              senderId: {
+                type: "string",
+              },
+              recipientId: {
+                type: "string",
+                nullable: true,
+              },
+              projectId: {
+                type: "string",
+              },
+              sender: {
+                $ref: "#/components/schemas/User",
+              },
+              recipient: {
+                $ref: "#/components/schemas/User",
+                nullable: true,
+              },
+              project: {
+                $ref: "#/components/schemas/Project",
+              },
+            },
+          },
+          InviteRequest: {
+            type: "object",
+            required: ["email", "projectId"],
+            properties: {
+              email: {
+                type: "string",
+                format: "email",
+              },
+              projectId: {
+                type: "string",
+              },
+            },
+          },
+          InviteActionRequest: {
+            type: "object",
+            required: ["action"],
+            properties: {
+              action: {
+                type: "string",
+                enum: ["accept", "reject"],
+              },
+            },
+          },
         },
       },
       security: [
@@ -982,6 +1053,141 @@ export const getApiDocs = () => {
                     },
                   },
                 },
+              },
+            },
+          },
+        },
+        "/api/projects/invite": {
+          post: {
+            tags: ["Convites"],
+            summary: "Criar um novo convite",
+            description:
+              "Cria um novo convite para um usuário participar de um projeto",
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              required: true,
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/InviteRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              201: {
+                description: "Convite criado com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        invite: {
+                          $ref: "#/components/schemas/Invite",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "Dados inválidos ou convite já existente",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        error: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              403: {
+                description: "Sem permissão para convidar para este projeto",
+              },
+              500: {
+                description: "Erro interno do servidor",
+              },
+            },
+          },
+          get: {
+            tags: ["Convites"],
+            summary: "Listar convites de um projeto",
+            description: "Retorna todos os convites de um projeto específico",
+            security: [{ BearerAuth: [] }],
+            parameters: [
+              {
+                name: "projectId",
+                in: "query",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              200: {
+                description: "Lista de convites",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        invites: {
+                          type: "array",
+                          items: {
+                            $ref: "#/components/schemas/Invite",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "ID do projeto não fornecido",
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              403: {
+                description: "Sem permissão para acessar este projeto",
+              },
+              500: {
+                description: "Erro interno do servidor",
+              },
+            },
+          },
+        },
+        "/api/invites/pending": {
+          get: {
+            tags: ["Convites"],
+            summary: "Listar convites pendentes do usuário atual",
+            description:
+              "Retorna todos os convites pendentes do usuário autenticado",
+            security: [{ BearerAuth: [] }],
+            responses: {
+              200: {
+                description: "Lista de convites pendentes",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "array",
+                      items: {
+                        $ref: "#/components/schemas/Invite",
+                      },
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
               },
             },
           },
