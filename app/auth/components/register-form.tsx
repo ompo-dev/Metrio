@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { signIn } from "next-auth/react";
 
 // Schema de validação do formulário
 const formSchema = z.object({
@@ -32,10 +33,22 @@ const formSchema = z.object({
   }),
 });
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  inviteToken?: string;
+  inviteProjectId?: string;
+}
+
+export function RegisterForm({
+  inviteToken,
+  inviteProjectId,
+}: RegisterFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const inviteToken = searchParams.get("inviteToken");
+  // Usar parâmetros passados como props ou do URL se não for passado como prop
+  const inviteTokenParam = inviteToken || searchParams.get("inviteToken");
+  const inviteProjectIdParam =
+    inviteProjectId || searchParams.get("inviteProjectId");
+
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,6 +61,27 @@ export function RegisterForm() {
       password: "",
     },
   });
+
+  // Função para fazer login automático
+  const handleAutoLogin = async (email: string, password: string) => {
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        console.error("Erro ao fazer login automático:", result.error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Erro ao fazer login automático:", error);
+      return false;
+    }
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -63,7 +97,8 @@ export function RegisterForm() {
           name: values.name,
           email: values.email,
           password: values.password,
-          inviteToken: inviteToken || undefined,
+          inviteToken: inviteTokenParam || undefined,
+          inviteProjectId: inviteProjectIdParam || undefined,
         }),
       });
 
@@ -74,31 +109,27 @@ export function RegisterForm() {
 
       toast({
         title: "Conta criada com sucesso!",
-        description: "Você será redirecionado para o login.",
+        description: inviteTokenParam
+          ? "Você está sendo conectado ao projeto."
+          : "Você será redirecionado para o login.",
       });
 
-      // Se tiver um token de convite, redirecionar para a página de convite após o login
-      if (inviteToken) {
-        // Fazer login automaticamente
-        const loginResponse = await fetch("/api/auth/callback/credentials", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: values.email,
-            password: values.password,
-            redirect: false,
-          }),
-        });
+      // Se tiver um token de convite, fazer login automático
+      if (inviteTokenParam) {
+        const loginSuccess = await handleAutoLogin(
+          values.email,
+          values.password
+        );
 
-        if (loginResponse.ok) {
-          router.push(`/join/${inviteToken}`);
+        if (loginSuccess) {
+          // Redirecionar para o dashboard, já que o usuário já foi vinculado ao projeto
+          router.push("/dashboard");
         } else {
-          router.push(`/auth/login?inviteToken=${inviteToken}`);
+          // Fallback: redirecionar para login se o auto-login falhar
+          router.push(`/auth/login?inviteToken=${inviteTokenParam}`);
         }
       } else {
-        // Redirecionar para a página de login
+        // Redirecionar para a página de login normal
         router.push("/auth/login");
       }
     } catch (error) {
@@ -179,8 +210,8 @@ export function RegisterForm() {
         Já tem uma conta?{" "}
         <Link
           href={
-            inviteToken
-              ? `/auth/login?inviteToken=${inviteToken}`
+            inviteTokenParam
+              ? `/auth/login?inviteToken=${inviteTokenParam}`
               : "/auth/login"
           }
           className="font-medium text-primary hover:underline"

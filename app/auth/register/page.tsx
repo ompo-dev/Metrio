@@ -1,7 +1,14 @@
 import { RegisterForm } from "@/app/auth/components/register-form";
 import { Logo } from "@/components/logo";
 
-export default function RegisterPage() {
+export default function RegisterPage({
+  searchParams,
+}: {
+  searchParams: {
+    inviteToken?: string;
+    inviteProjectId?: string;
+  };
+}) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
       <div className="w-full max-w-md">
@@ -12,7 +19,10 @@ export default function RegisterPage() {
             Crie sua conta para acessar o dashboard
           </p>
         </div>
-        <RegisterForm />
+        <RegisterForm
+          inviteToken={searchParams.inviteToken}
+          inviteProjectId={searchParams.inviteProjectId}
+        />
       </div>
     </div>
   );

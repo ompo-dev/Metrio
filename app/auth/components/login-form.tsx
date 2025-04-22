@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -25,6 +25,8 @@ import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("inviteToken");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -48,6 +50,12 @@ export function LoginForm() {
       }
 
       toast.success("Login realizado com sucesso!");
+
+      // Se tiver um token de convite, vá diretamente para a página de processamento do convite
+      if (inviteToken) {
+        router.push(`/join/${inviteToken}`);
+        return;
+      }
 
       // Verificar se o usuário já tem projetos
       try {
@@ -157,7 +165,11 @@ export function LoginForm() {
           <div className="text-center text-sm text-muted-foreground">
             Não tem uma conta?{" "}
             <Link
-              href="/auth/register"
+              href={
+                inviteToken
+                  ? `/auth/register?inviteToken=${inviteToken}`
+                  : "/auth/register"
+              }
               className="font-medium text-primary hover:underline"
             >
               Registre-se

@@ -9,6 +9,7 @@ const registerSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha precisa ter pelo menos 6 caracteres"),
   inviteToken: z.string().optional(),
+  inviteProjectId: z.string().optional(),
 });
 
 /**
@@ -73,6 +74,8 @@ export async function POST(req: NextRequest) {
 
     // Buscar o convite, se fornecido
     let invite = null;
+    let projectId = null;
+
     if (validatedData.inviteToken) {
       invite = await db.invite.findUnique({
         where: {
@@ -104,6 +107,24 @@ export async function POST(req: NextRequest) {
           { status: 410 }
         );
       }
+
+      projectId = invite.projectId;
+    }
+    // Se não tiver convite mas tiver projectId, usar esse
+    else if (validatedData.inviteProjectId) {
+      // Verificar se o projeto existe
+      const project = await db.project.findUnique({
+        where: { id: validatedData.inviteProjectId },
+      });
+
+      if (!project) {
+        return NextResponse.json(
+          { error: "Projeto não encontrado" },
+          { status: 400 }
+        );
+      }
+
+      projectId = validatedData.inviteProjectId;
     }
 
     // Criar o usuário
@@ -112,6 +133,7 @@ export async function POST(req: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
+        activeProjectId: projectId, // Definir o projeto como ativo já no registro
       },
     });
 
@@ -134,12 +156,15 @@ export async function POST(req: NextRequest) {
           role: "member",
         },
       });
-
-      // Definir o projeto como ativo para o usuário
-      await db.user.update({
-        where: { id: user.id },
+    }
+    // Se tiver projectId mas não tem convite (link direto)
+    else if (projectId) {
+      // Adicionar o usuário como membro do projeto
+      await db.projectMember.create({
         data: {
-          activeProjectId: invite.projectId,
+          userId: user.id,
+          projectId: projectId,
+          role: "member",
         },
       });
     }

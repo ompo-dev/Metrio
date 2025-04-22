@@ -212,7 +212,8 @@ export function InviteSection() {
         const data = await safeJsonParse(response);
         if (data && data.invite) {
           const baseUrl = window.location.origin;
-          const link = `${baseUrl}/join/${data.invite.inviteToken}`;
+          // Novo formato do link de convite que aponta para a página de registro
+          const link = `${baseUrl}/auth/register?inviteToken=${data.invite.inviteToken}&inviteProjectId=${activeProject.id}`;
           setInviteLink(link);
           toast({
             title: "Sucesso",
