@@ -113,6 +113,11 @@ export type DataTableProps<TData> = {
   initialSorting?: SortingState;
   statusColumn?: string;
   className?: string;
+  extraBulkActions?: Array<{
+    label: string;
+    onClick: (rows: TData[]) => void;
+    icon?: React.ReactNode;
+  }>;
 };
 
 // Custom filter function for multi-column searching
@@ -191,6 +196,7 @@ export function DataTable<TData extends { id: string }>({
   initialSorting = [{ id: "name", desc: false }],
   statusColumn,
   className,
+  extraBulkActions,
 }: DataTableProps<TData>) {
   const id = useId();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -355,6 +361,83 @@ export function DataTable<TData extends { id: string }>({
   // Verificar se searchColumn é válido
   const searchColumnObj = table.getColumn(searchColumn);
 
+  // Toolbar com ações de seleção em massa
+  const SelectionToolbar = () => {
+    const hasSelection = Object.keys(rowSelection).length > 0;
+    const selectedRows = table
+      .getSelectedRowModel()
+      .rows.map((row) => row.original);
+
+    if (!hasSelection) return null;
+
+    return (
+      <div className="mb-4 flex items-center gap-2 rounded-md border border-yellow-200 bg-yellow-50 p-2">
+        <CircleAlertIcon className="h-4 w-4 text-yellow-500" />
+        <span className="text-sm">
+          {Object.keys(rowSelection).length} item(s) selecionado(s)
+        </span>
+        <div className="flex-1" />
+
+        {extraBulkActions && extraBulkActions.length > 0 && (
+          <>
+            {extraBulkActions.map((action, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={() => action.onClick(selectedRows)}
+                className="ml-2"
+              >
+                {action.icon && <div className="mr-2">{action.icon}</div>}
+                {action.label}
+              </Button>
+            ))}
+          </>
+        )}
+
+        {onDeleteRows && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="ml-2">
+                <TrashIcon className="mr-2 h-4 w-4" />
+                Excluir
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Excluir {Object.keys(rowSelection).length} item(s)
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tem certeza que deseja excluir os itens selecionados? Esta
+                  ação não poderá ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteRows}>
+                  Excluir
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            table.toggleAllRowsSelected(false);
+          }}
+          className="ml-2"
+        >
+          <CircleXIcon className="mr-2 h-4 w-4" />
+          Cancelar
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className={cn("space-y-4", className)}>
       {/* Filtros e Ações */}
@@ -485,54 +568,6 @@ export function DataTable<TData extends { id: string }>({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Botão de exclusão */}
-          {enableRowSelection &&
-            table.getSelectedRowModel().rows.length > 0 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button className="ml-auto" variant="outline">
-                    <TrashIcon
-                      className="-ms-1 opacity-60"
-                      size={16}
-                      aria-hidden="true"
-                    />
-                    Excluir
-                    <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
-                      {table.getSelectedRowModel().rows.length}
-                    </span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
-                    <div
-                      className="flex size-9 shrink-0 items-center justify-center rounded-full border"
-                      aria-hidden="true"
-                    >
-                      <CircleAlertIcon className="opacity-80" size={16} />
-                    </div>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Esta ação não pode ser desfeita. Isso excluirá
-                        permanentemente{" "}
-                        {table.getSelectedRowModel().rows.length}{" "}
-                        {table.getSelectedRowModel().rows.length === 1
-                          ? "item selecionado"
-                          : "itens selecionados"}
-                        .
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                  </div>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteRows}>
-                      Excluir
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-
           {/* Botão de adição */}
           {onAddItem && addButtonLabel && (
             <Button className="ml-auto" variant="outline" onClick={onAddItem}>
@@ -797,6 +832,9 @@ export function DataTable<TData extends { id: string }>({
           </div>
         </div>
       )}
+
+      {/* Toolbar com ações de seleção em massa */}
+      <SelectionToolbar />
     </div>
   );
 }

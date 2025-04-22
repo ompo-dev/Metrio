@@ -64,6 +64,11 @@ interface TeamState {
     projectMemberId: string,
     role?: string
   ) => Promise<void>;
+  addManyTeamMembers: (
+    teamId: string,
+    projectMemberIds: string[],
+    role?: string
+  ) => Promise<{ addedCount: number }>;
   updateTeamMemberRole: (
     teamId: string,
     memberId: string,
@@ -302,6 +307,89 @@ export const useTeamStore = create<TeamState>()(
 
           set((state) => ({ ...state, error: errorMessage }));
           toast.error(errorMessage);
+        }
+      },
+
+      // Adicionar múltiplos membros a uma equipe
+      addManyTeamMembers: async (
+        teamId: string,
+        projectMemberIds: string[],
+        role: string = "member"
+      ) => {
+        try {
+          // Não definimos isLoading como true para evitar recarregamento da tabela
+
+          // Como a API atual não suporta adição em massa, vamos fazer chamadas sequenciais
+          const results: TeamMember[] = [];
+          const errors: any[] = [];
+
+          for (const projectMemberId of projectMemberIds) {
+            try {
+              const response = await api.post(
+                `/api/projects/teams/${teamId}/members`,
+                {
+                  projectMemberId,
+                  role,
+                }
+              );
+
+              if (response.data.member) {
+                results.push(response.data.member);
+              }
+            } catch (error) {
+              errors.push(error);
+            }
+          }
+
+          // Atualizar o estado com os membros adicionados com sucesso
+          if (results.length > 0) {
+            set((state) => ({
+              ...state,
+              teamMembers: [...state.teamMembers, ...results],
+              // Atualizar a contagem de membros na equipe ativa
+              activeTeam:
+                state.activeTeam?.id === teamId
+                  ? {
+                      ...state.activeTeam,
+                      memberCount:
+                        (state.activeTeam.memberCount || 0) + results.length,
+                    }
+                  : state.activeTeam,
+              // Atualizar a contagem de membros na lista de equipes
+              teams: state.teams.map((team) =>
+                team.id === teamId
+                  ? {
+                      ...team,
+                      memberCount: (team.memberCount || 0) + results.length,
+                    }
+                  : team
+              ),
+              error: null,
+            }));
+          }
+
+          // Mensagem de feedback para o usuário
+          if (errors.length === 0) {
+            toast.success(
+              `${results.length} membros adicionados à equipe com sucesso`
+            );
+          } else if (results.length > 0) {
+            toast.warning(
+              `${results.length} membros adicionados, mas houve problemas com ${errors.length} membro(s)`
+            );
+          } else {
+            toast.error("Não foi possível adicionar os membros à equipe");
+          }
+
+          return { addedCount: results.length };
+        } catch (error: any) {
+          console.error("Erro ao adicionar membros à equipe:", error);
+          const errorMessage =
+            error.response?.data?.error || "Erro ao adicionar membros à equipe";
+
+          set((state) => ({ ...state, error: errorMessage }));
+          toast.error(errorMessage);
+          return { addedCount: 0 };
         }
       },
 

@@ -190,6 +190,111 @@ export async function POST(
 
     const { projectMemberId, role } = validationResult.data;
 
+    // Caso especial para o proprietário do projeto
+    if (projectMemberId.startsWith("owner-")) {
+      // Extrair o userId do formato "owner-[userId]"
+      const userId = projectMemberId.replace("owner-", "");
+
+      // Verificar se esse usuário realmente é o proprietário do projeto
+      const projectOwner = await prisma.project.findFirst({
+        where: {
+          id: team.projectId,
+          userId: userId,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      });
+
+      if (!projectOwner) {
+        return NextResponse.json(
+          { error: "Proprietário do projeto não encontrado" },
+          { status: 404 }
+        );
+      }
+
+      // Verificar se o proprietário já está na equipe
+      // Primeiro, procurar se ele já tem um ProjectMember
+      let ownerProjectMember = await prisma.projectMember.findUnique({
+        where: {
+          userId_projectId: {
+            userId: userId,
+            projectId: team.projectId,
+          },
+        },
+      });
+
+      // Se não existe, criar um ProjectMember para o proprietário
+      if (!ownerProjectMember) {
+        ownerProjectMember = await prisma.projectMember.create({
+          data: {
+            userId: userId,
+            projectId: team.projectId,
+            role: "owner", // Proprietário sempre tem o papel de "owner"
+          },
+        });
+      }
+
+      // Verificar se já existe membro na equipe
+      const existingTeamMember = await prisma.teamMember.findUnique({
+        where: {
+          teamId_projectMemberId: {
+            teamId,
+            projectMemberId: ownerProjectMember.id,
+          },
+        },
+      });
+
+      if (existingTeamMember) {
+        return NextResponse.json(
+          { error: "Membro já pertence a esta equipe" },
+          { status: 409 }
+        );
+      }
+
+      // Adicionar o proprietário à equipe
+      const newTeamMember = await prisma.teamMember.create({
+        data: {
+          teamId,
+          projectMemberId: ownerProjectMember.id,
+          role, // Usar o papel especificado na requisição
+        },
+        include: {
+          projectMember: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // Formatar a resposta
+      const formattedMember = {
+        id: newTeamMember.id,
+        role: newTeamMember.role,
+        joinedAt: newTeamMember.joinedAt,
+        projectMemberId: newTeamMember.projectMemberId,
+        user: newTeamMember.projectMember.user,
+      };
+
+      return NextResponse.json({ member: formattedMember }, { status: 201 });
+    }
+
+    // Caso padrão para membros regulares (não proprietários)
     // Verificar se o membro que será adicionado pertence ao mesmo projeto
     const memberToAdd = await prisma.projectMember.findUnique({
       where: {

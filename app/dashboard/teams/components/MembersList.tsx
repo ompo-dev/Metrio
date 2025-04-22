@@ -1,7 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { UserPlusIcon, Settings, Trash2, Mail, UserCog } from "lucide-react";
+import {
+  UserPlusIcon,
+  Settings,
+  Trash2,
+  Mail,
+  UserCog,
+  Users,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -39,6 +46,8 @@ import { toast } from "sonner";
 
 import { Member } from "./types";
 import { useMemberStore } from "@/lib/store/member-store";
+import { useTeamStore, Team } from "@/lib/store/team-store";
+import { useProjectStore } from "@/lib/store/project-store";
 
 export function MembersList() {
   // Usar diretamente o store Zustand em vez de receber props
@@ -50,6 +59,10 @@ export function MembersList() {
     removeMember,
     removeManyMembers,
   } = useMemberStore();
+
+  const { activeProject } = useProjectStore();
+  const { teams, fetchTeams, addTeamMember, addManyTeamMembers } =
+    useTeamStore();
 
   const [newMemberName, setNewMemberName] = React.useState("");
   const [newMemberEmail, setNewMemberEmail] = React.useState("");
@@ -68,6 +81,21 @@ export function MembersList() {
   const [memberToDelete, setMemberToDelete] = React.useState<Member | null>(
     null
   );
+
+  // Estado para adição de membros à equipe
+  const [addToTeamOpen, setAddToTeamOpen] = React.useState(false);
+  const [selectedTeamId, setSelectedTeamId] = React.useState("");
+  const [memberToAddToTeam, setMemberToAddToTeam] =
+    React.useState<Member | null>(null);
+  const [selectedMembers, setSelectedMembers] = React.useState<Member[]>([]);
+  const [isAddingToTeam, setIsAddingToTeam] = React.useState(false);
+
+  // Carregar as equipes quando o componente montar
+  React.useEffect(() => {
+    if (activeProject?.id) {
+      fetchTeams(activeProject.id);
+    }
+  }, [activeProject, fetchTeams]);
 
   const handleAddMember = () => {
     if (newMemberName.trim() && newMemberEmail.trim() && newMemberRole) {
@@ -195,6 +223,11 @@ export function MembersList() {
                     console.log("Enviar email para", row.original.email),
                   icon: <Mail className="h-4 w-4" />,
                 },
+                {
+                  label: "Adicionar à Equipe",
+                  onClick: () => handleOpenAddToTeam(row.original),
+                  icon: <Users className="h-4 w-4" />,
+                },
               ]}
             />
           );
@@ -209,6 +242,11 @@ export function MembersList() {
                 onClick: () =>
                   console.log("Enviar email para", row.original.email),
                 icon: <Mail className="h-4 w-4" />,
+              },
+              {
+                label: "Adicionar à Equipe",
+                onClick: () => handleOpenAddToTeam(row.original),
+                icon: <Users className="h-4 w-4" />,
               },
               {
                 label: "Editar Função",
@@ -257,6 +295,76 @@ export function MembersList() {
     }
   };
 
+  // Função para abrir o modal de adicionar à equipe (membro individual)
+  const handleOpenAddToTeam = (member: Member) => {
+    setMemberToAddToTeam(member);
+    setSelectedTeamId("");
+    setAddToTeamOpen(true);
+  };
+
+  // Função para adicionar membro à equipe selecionada
+  const handleAddMemberToTeam = async () => {
+    if (!selectedTeamId || !memberToAddToTeam) {
+      setAddToTeamOpen(false);
+      return;
+    }
+
+    try {
+      setIsAddingToTeam(true);
+      // Usar o ID do membro conforme está, seja um ID de ProjectMember ou um ID especial de proprietário
+      // O backend já foi modificado para lidar com o formato "owner-[userId]"
+      await addTeamMember(selectedTeamId, memberToAddToTeam.id);
+      toast.success(`Membro adicionado à equipe com sucesso`);
+      setAddToTeamOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao adicionar membro à equipe");
+    } finally {
+      setIsAddingToTeam(false);
+    }
+  };
+
+  // Função para adicionar múltiplos membros à equipe
+  const handleAddSelectedMembersToTeam = async (selectedRows: Member[]) => {
+    if (selectedRows.length === 0) {
+      return;
+    }
+
+    setSelectedMembers(selectedRows);
+    setSelectedTeamId("");
+    setAddToTeamOpen(true);
+  };
+
+  // Função para confirmar a adição de múltiplos membros
+  const handleAddMultipleMembersToTeam = async () => {
+    if (!selectedTeamId || selectedMembers.length === 0) {
+      setAddToTeamOpen(false);
+      return;
+    }
+
+    try {
+      setIsAddingToTeam(true);
+      // Usamos os IDs dos membros como estão, incluindo formatos especiais como "owner-[userId]"
+      // O backend já foi modificado para lidar com esses casos
+      const memberIds = selectedMembers.map((member) => member.id);
+      const result = await addManyTeamMembers(selectedTeamId, memberIds);
+
+      if (result.addedCount > 0) {
+        toast.success(
+          `${result.addedCount} membros adicionados à equipe com sucesso`
+        );
+      } else {
+        toast.error("Não foi possível adicionar os membros à equipe");
+      }
+
+      setAddToTeamOpen(false);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao adicionar membros à equipe");
+    } finally {
+      setIsAddingToTeam(false);
+      setSelectedMembers([]);
+    }
+  };
+
   return (
     <>
       <Card>
@@ -278,6 +386,13 @@ export function MembersList() {
             onAddItem={() => setOpen(true)}
             enableRowSelection={true}
             onDeleteRows={handleRemoveSelectedMembers}
+            extraBulkActions={[
+              {
+                label: "Adicionar à Equipe",
+                icon: <Users className="h-4 w-4" />,
+                onClick: handleAddSelectedMembersToTeam,
+              },
+            ]}
           />
         </CardContent>
       </Card>
@@ -340,6 +455,59 @@ export function MembersList() {
             </Button>
             <Button variant="destructive" onClick={handleRemoveMember}>
               Remover
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para adicionar membros a uma equipe */}
+      <Dialog open={addToTeamOpen} onOpenChange={setAddToTeamOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar à Equipe</DialogTitle>
+            <DialogDescription>
+              {selectedMembers.length > 0
+                ? `Selecione a equipe para adicionar ${selectedMembers.length} membro(s)`
+                : `Selecione a equipe para adicionar ${
+                    memberToAddToTeam?.name || "o membro"
+                  }`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="team-selection">Equipe</Label>
+              <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+                <SelectTrigger id="team-selection">
+                  <SelectValue placeholder="Selecione uma equipe" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.map((team) => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAddToTeamOpen(false)}
+              disabled={isAddingToTeam}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              onClick={
+                selectedMembers.length > 0
+                  ? handleAddMultipleMembersToTeam
+                  : handleAddMemberToTeam
+              }
+              disabled={!selectedTeamId || isAddingToTeam}
+            >
+              {isAddingToTeam ? "Adicionando..." : "Adicionar à Equipe"}
             </Button>
           </DialogFooter>
         </DialogContent>
