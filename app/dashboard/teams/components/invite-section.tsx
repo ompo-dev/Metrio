@@ -27,6 +27,8 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
+import { DataTable, RowActions } from "@/components/data-table/Table";
+import { ColumnDef } from "@tanstack/react-table";
 
 // Interface para o modelo de convite
 interface Invite {
@@ -317,6 +319,22 @@ export function InviteSection() {
     }
   }
 
+  // Função para renderizar o Avatar do convite com base no status e receptor
+  function renderAvatar(invite: Invite) {
+    return (
+      <Avatar className="size-9">
+        <AvatarImage src={invite.recipient?.image || undefined} />
+        <AvatarFallback>
+          {invite.status === "pending" ? (
+            <Clock className="h-4 w-4" />
+          ) : (
+            invite.email.substring(0, 2).toUpperCase()
+          )}
+        </AvatarFallback>
+      </Avatar>
+    );
+  }
+
   // Render status badge
   function renderStatusBadge(status: string) {
     switch (status) {
@@ -360,6 +378,145 @@ export function InviteSection() {
         return <Badge variant="outline">{status}</Badge>;
     }
   }
+
+  // Definição das colunas para a tabela de convites
+  const columns: ColumnDef<Invite>[] = [
+    {
+      header: "Usuário",
+      id: "user",
+      accessorKey: "email",
+      cell: ({ row }) => {
+        const invite = row.original;
+        const displayEmail =
+          invite.recipient?.email && invite.email.startsWith("temp_")
+            ? invite.recipient.email
+            : invite.email;
+
+        return (
+          <div className="flex items-center gap-3">
+            {renderAvatar(invite)}
+            <div>
+              <div className="font-medium flex items-center gap-2">
+                {displayEmail}
+              </div>
+              {invite.email.startsWith("temp_") &&
+                invite.status === "pending" && (
+                  <div className="text-xs italic text-muted-foreground">
+                    O email será exibido quando o convite for aceito
+                  </div>
+                )}
+            </div>
+          </div>
+        );
+      },
+      size: 250,
+    },
+    {
+      header: "Método",
+      id: "method",
+      cell: ({ row }) => {
+        const invite = row.original;
+        return (
+          <Badge
+            variant={
+              invite.email.startsWith("temp_") ||
+              invite.email === "Aguardando uso do link de convite"
+                ? "outline"
+                : "secondary"
+            }
+          >
+            {invite.email.startsWith("temp_") ||
+            invite.email === "Aguardando uso do link de convite" ? (
+              <>
+                <LinkIcon className="h-3 w-3 mr-1" /> Link
+              </>
+            ) : (
+              <>
+                <Send className="h-3 w-3 mr-1" /> Email
+              </>
+            )}
+          </Badge>
+        );
+      },
+      size: 100,
+    },
+    {
+      header: "Data de Envio",
+      accessorKey: "createdAt",
+      cell: ({ row }) => {
+        const date = new Date(row.original.createdAt);
+        return (
+          <div className="text-sm">
+            {date.toLocaleDateString()}{" "}
+            {date.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </div>
+        );
+      },
+      size: 150,
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      cell: ({ row }) => renderStatusBadge(row.original.status),
+      size: 120,
+    },
+    {
+      header: "Expiração",
+      accessorKey: "expiresAt",
+      cell: ({ row }) => {
+        const date = new Date(row.original.expiresAt);
+        return <div className="text-sm">{date.toLocaleDateString()}</div>;
+      },
+      size: 120,
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <RowActions
+          row={row}
+          actions={[
+            {
+              label: "Excluir convite",
+              onClick: () => handleDeleteInvite(row.original.id),
+              icon: <Trash2 className="h-4 w-4" />,
+              destructive: true,
+            },
+          ]}
+        />
+      ),
+      size: 70,
+    },
+  ];
+
+  // Handler para excluir múltiplos convites
+  const handleDeleteMultipleInvites = (selectedInvites: Invite[]) => {
+    // Usamos Promise.all para excluir todos os convites selecionados em paralelo
+    Promise.all(
+      selectedInvites.map((invite) =>
+        fetch(`/api/projects/invite?inviteId=${invite.id}`, {
+          method: "DELETE",
+        })
+      )
+    )
+      .then(() => {
+        toast({
+          title: "Sucesso",
+          description: `${selectedInvites.length} convites excluídos com sucesso!`,
+        });
+        fetchInvites();
+      })
+      .catch((error) => {
+        console.error("Erro ao excluir convites:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível excluir alguns convites.",
+          variant: "destructive",
+        });
+      });
+  };
 
   return (
     <div className="space-y-6">
@@ -461,91 +618,25 @@ export function InviteSection() {
         </TabsContent>
       </Tabs>
 
-      {/* Lista de convites enviados */}
+      {/* Lista de convites enviados com DataTable */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium">Convites Enviados</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchInvites}
-            disabled={isLoading}
-          >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
-            Atualizar
-          </Button>
         </div>
 
-        {invites.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground">
-            {isLoading
-              ? "Carregando convites..."
-              : "Nenhum convite enviado ainda."}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {invites.map((invite) => (
-              <Card key={invite.id} className="group relative">
-                <CardContent className="p-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-8 w-8 text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    onClick={() => handleDeleteInvite(invite.id)}
-                    disabled={isLoading}
-                    title="Excluir convite"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Excluir convite</span>
-                  </Button>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage
-                          src={invite.recipient?.image || undefined}
-                        />
-                        <AvatarFallback>
-                          {invite.status === "pending" ? (
-                            <Clock className="h-4 w-4" />
-                          ) : (
-                            invite.email.substring(0, 2).toUpperCase()
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {invite.recipient?.email &&
-                          invite.email.startsWith("temp_")
-                            ? invite.recipient.email
-                            : invite.email}
-                          {invite.email.startsWith("temp_") && (
-                            <Badge variant="secondary" className="ml-2 text-xs">
-                              <LinkIcon className="h-3 w-3 mr-1" /> Convite por
-                              Link
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Convite enviado em{" "}
-                          {new Date(invite.createdAt).toLocaleDateString()}
-                          {invite.email.startsWith("temp_") &&
-                            invite.status === "pending" && (
-                              <div className="mt-1 italic">
-                                O email será exibido quando o convite for aceito
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                    </div>
-                    <div>{renderStatusBadge(invite.status)}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        <DataTable
+          data={invites}
+          columns={columns}
+          searchColumn="user"
+          searchPlaceholder="Filtrar convites..."
+          statusColumn="status"
+          onDeleteRows={handleDeleteMultipleInvites}
+          enableRowSelection
+          pageSize={5}
+          pageSizeOptions={[5, 10, 20]}
+          initialSorting={[{ id: "createdAt", desc: true }]}
+          className={isLoading ? "opacity-70 pointer-events-none" : ""}
+        />
       </div>
     </div>
   );
