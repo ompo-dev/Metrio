@@ -423,6 +423,191 @@ export const getApiDocs = () => {
               },
             },
           },
+          Team: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                description: "ID único da equipe",
+              },
+              name: {
+                type: "string",
+                description: "Nome da equipe",
+              },
+              description: {
+                type: "string",
+                description: "Descrição da equipe",
+                nullable: true,
+              },
+              iconColor: {
+                type: "string",
+                description: "Cor do ícone da equipe",
+                nullable: true,
+              },
+              isActive: {
+                type: "boolean",
+                description: "Status de ativação da equipe",
+              },
+              createdAt: {
+                type: "string",
+                format: "date-time",
+                description: "Data de criação da equipe",
+              },
+              updatedAt: {
+                type: "string",
+                format: "date-time",
+                description: "Data da última atualização da equipe",
+              },
+              projectId: {
+                type: "string",
+                description: "ID do projeto ao qual a equipe pertence",
+              },
+              memberCount: {
+                type: "integer",
+                description: "Número de membros na equipe",
+              },
+            },
+            required: [
+              "id",
+              "name",
+              "isActive",
+              "createdAt",
+              "updatedAt",
+              "projectId",
+            ],
+          },
+          TeamMember: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                description: "ID único do membro na equipe",
+              },
+              role: {
+                type: "string",
+                description: "Função do membro na equipe (lead, member, etc.)",
+              },
+              joinedAt: {
+                type: "string",
+                format: "date-time",
+                description: "Data em que o membro entrou na equipe",
+              },
+              teamId: {
+                type: "string",
+                description: "ID da equipe",
+              },
+              projectMemberId: {
+                type: "string",
+                description: "ID do membro do projeto",
+              },
+              user: {
+                $ref: "#/components/schemas/User",
+                description: "Informações do usuário",
+              },
+            },
+            required: ["id", "role", "joinedAt", "teamId", "projectMemberId"],
+          },
+          CreateTeamRequest: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+                description: "Nome da equipe",
+              },
+              description: {
+                type: "string",
+                description: "Descrição da equipe",
+                nullable: true,
+              },
+              iconColor: {
+                type: "string",
+                description: "Cor do ícone da equipe",
+                nullable: true,
+              },
+              projectId: {
+                type: "string",
+                description: "ID do projeto ao qual a equipe pertence",
+              },
+            },
+            required: ["name", "projectId"],
+          },
+          UpdateTeamRequest: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+                description: "Nome da equipe",
+              },
+              description: {
+                type: "string",
+                description: "Descrição da equipe",
+                nullable: true,
+              },
+              iconColor: {
+                type: "string",
+                description: "Cor do ícone da equipe",
+                nullable: true,
+              },
+              isActive: {
+                type: "boolean",
+                description: "Status de ativação da equipe",
+              },
+            },
+          },
+          AddTeamMemberRequest: {
+            type: "object",
+            properties: {
+              projectMemberId: {
+                type: "string",
+                description:
+                  "ID do membro do projeto a ser adicionado à equipe",
+              },
+              role: {
+                type: "string",
+                description: "Função do membro na equipe (lead, member, etc.)",
+                default: "member",
+              },
+            },
+            required: ["projectMemberId"],
+          },
+          TeamsResponse: {
+            type: "object",
+            properties: {
+              teams: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/Team",
+                },
+              },
+            },
+          },
+          TeamResponse: {
+            type: "object",
+            properties: {
+              team: {
+                $ref: "#/components/schemas/Team",
+              },
+            },
+          },
+          TeamMembersResponse: {
+            type: "object",
+            properties: {
+              members: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/TeamMember",
+                },
+              },
+            },
+          },
+          TeamMemberResponse: {
+            type: "object",
+            properties: {
+              member: {
+                $ref: "#/components/schemas/TeamMember",
+              },
+            },
+          },
         },
       },
       security: [
@@ -1495,6 +1680,623 @@ export const getApiDocs = () => {
               },
               401: {
                 description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/api/projects/teams": {
+          post: {
+            summary: "Criar uma nova equipe",
+            tags: ["Teams"],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/CreateTeamRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              "201": {
+                description: "Equipe criada com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/TeamResponse",
+                    },
+                  },
+                },
+              },
+              "400": {
+                description: "Requisição inválida",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          get: {
+            summary: "Listar equipes de um projeto",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "projectId",
+                in: "query",
+                description: "ID do projeto para filtrar equipes",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "Lista de equipes do projeto",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/TeamsResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/api/projects/teams/{teamId}": {
+          get: {
+            summary: "Obter detalhes de uma equipe",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "teamId",
+                in: "path",
+                description: "ID da equipe a ser consultada",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "Detalhes da equipe",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/TeamResponse",
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "Equipe não encontrada",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          patch: {
+            summary: "Atualizar uma equipe",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "teamId",
+                in: "path",
+                description: "ID da equipe a ser atualizada",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/UpdateTeamRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              "200": {
+                description: "Equipe atualizada com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/TeamResponse",
+                    },
+                  },
+                },
+              },
+              "400": {
+                description: "Requisição inválida",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "Equipe não encontrada",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          delete: {
+            summary: "Remover uma equipe",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "teamId",
+                in: "path",
+                description: "ID da equipe a ser removida",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "Equipe removida com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        success: {
+                          type: "boolean",
+                        },
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "Equipe não encontrada",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/api/projects/teams/{teamId}/members": {
+          post: {
+            summary: "Adicionar membro a uma equipe",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "teamId",
+                in: "path",
+                description: "ID da equipe",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/AddTeamMemberRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              "201": {
+                description: "Membro adicionado com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/TeamMemberResponse",
+                    },
+                  },
+                },
+              },
+              "400": {
+                description: "Requisição inválida",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "Equipe ou membro não encontrado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "409": {
+                description: "Membro já existe na equipe",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          get: {
+            summary: "Listar membros de uma equipe",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "teamId",
+                in: "path",
+                description: "ID da equipe",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "Lista de membros da equipe",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/TeamMembersResponse",
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "Equipe não encontrada",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "/api/projects/teams/{teamId}/members/{memberId}": {
+          delete: {
+            summary: "Remover membro de uma equipe",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "teamId",
+                in: "path",
+                description: "ID da equipe",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+              {
+                name: "memberId",
+                in: "path",
+                description: "ID do membro da equipe a ser removido",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "Membro removido com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        success: {
+                          type: "boolean",
+                        },
+                        message: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "Equipe ou membro não encontrado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          patch: {
+            summary: "Atualizar função de um membro na equipe",
+            tags: ["Teams"],
+            parameters: [
+              {
+                name: "teamId",
+                in: "path",
+                description: "ID da equipe",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+              {
+                name: "memberId",
+                in: "path",
+                description: "ID do membro da equipe a ser atualizado",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      role: {
+                        type: "string",
+                        description: "Nova função do membro na equipe",
+                      },
+                    },
+                    required: ["role"],
+                  },
+                },
+              },
+            },
+            responses: {
+              "200": {
+                description: "Membro atualizado com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/TeamMemberResponse",
+                    },
+                  },
+                },
+              },
+              "400": {
+                description: "Requisição inválida",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "404": {
+                description: "Equipe ou membro não encontrado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "401": {
+                description: "Não autorizado",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/ErrorResponse",
+                    },
+                  },
+                },
+              },
+              "403": {
+                description: "Acesso negado",
                 content: {
                   "application/json": {
                     schema: {

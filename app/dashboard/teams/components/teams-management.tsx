@@ -13,97 +13,79 @@ import { PermissionsList } from "./PermissionsList";
 import { RolesList } from "./RolesList";
 import { InviteSection } from "./invite-section";
 
-// Importações de dados e tipos
-import { TeamsManagementProps, Team, Member, Role } from "./types";
-import { teamsData as initialTeamsData, permissionsData } from "./data";
+// Importações de stores e tipos
 import { useMemberStore } from "@/lib/store/member-store";
+import { useTeamStore } from "@/lib/store/team-store";
+import { useProjectStore } from "@/lib/store/project-store";
+import { permissionsData } from "./data";
 
 // Definindo o tipo para as abas
 type TabType = "todas" | "membros" | "permissoes" | "funcoes";
 
 export function TeamsManagement({
   defaultTab = "todas",
-}: TeamsManagementProps) {
-  // Estados para armazenar os dados
-  const [teams, setTeams] = React.useState(initialTeamsData);
+}: {
+  defaultTab?: TabType;
+}) {
+  // Estado para o controle de abas
   const [activeTab, setActiveTab] = React.useState<TabType>(
     defaultTab as TabType
   );
 
-  // Obter estado e ações do Zustand store para membros
-  const {
-    members,
-    roles,
-    fetchMembers,
-    fetchRoles,
-    addMember,
-    updateMemberRole,
-    removeMember,
-    removeManyMembers,
-    addRole,
-  } = useMemberStore();
+  // Obter estado e ações das stores
+  const { members, roles, fetchMembers, fetchRoles, addRole } =
+    useMemberStore();
+
+  const { teams, fetchTeams, isLoading: isTeamsLoading } = useTeamStore();
+
+  const { activeProject } = useProjectStore();
 
   // Estado local para controlar carregamento inicial
   const [isInitialLoading, setIsInitialLoading] = React.useState(false);
 
-  // Carregar dados quando a aba mudar para "membros" ou "funcoes"
+  // Carregar dados quando o componente montar
   React.useEffect(() => {
-    if (activeTab === "membros" || activeTab === "funcoes") {
-      const needsLoading = members.length === 0 || roles.length === 0;
+    const loadData = async () => {
+      setIsInitialLoading(true);
+      try {
+        if (activeProject?.id) {
+          if (activeTab === "todas") {
+            await fetchTeams(activeProject.id);
+          }
 
-      if (needsLoading) {
-        setIsInitialLoading(true);
-
-        const loadData = async () => {
-          try {
+          if (activeTab === "membros" || activeTab === "funcoes") {
             if (members.length === 0) {
               await fetchMembers();
             }
             if (roles.length === 0) {
               await fetchRoles();
             }
-          } catch (error) {
-            console.error("Erro ao carregar dados:", error);
-            toast.error("Não foi possível carregar os dados necessários");
-          } finally {
-            setIsInitialLoading(false);
           }
-        };
-
-        loadData();
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        toast.error("Não foi possível carregar os dados necessários");
+      } finally {
+        setIsInitialLoading(false);
       }
-    }
-  }, [activeTab, fetchMembers, fetchRoles, members.length, roles.length]);
-
-  // Função para adicionar nova equipe
-  const handleAddTeam = (name: string) => {
-    const newTeam: Team = {
-      id: `team-${Date.now()}`,
-      name,
-      members: 0,
-      lastActive: "Agora",
     };
-    setTeams([...teams, newTeam]);
-  };
 
-  // Função para adicionar nova função/role
-  const handleAddRole = (
-    name: string,
-    description: string,
-    permissions: string[]
-  ) => {
-    // No futuro, implementaremos isso na store Zustand
-    console.log("Adicionando nova função:", name, description, permissions);
-
-    // Essa implementação não usa mais setRoles, pois roles vem da store Zustand
-    // Para implementar completamente, precisaríamos adicionar uma função addRole na store
-  };
+    loadData();
+  }, [
+    activeTab,
+    activeProject,
+    fetchTeams,
+    fetchMembers,
+    fetchRoles,
+    members.length,
+    roles.length,
+  ]);
 
   // Renderiza o conteúdo com base na tab ativa
   const renderContent = () => {
     switch (activeTab) {
       case "todas":
-        return <TeamsList teams={teams} onAddTeam={handleAddTeam} />;
+        return <TeamsList />;
       case "membros":
         return <MembersList />;
       case "permissoes":
@@ -117,7 +99,7 @@ export function TeamsManagement({
           />
         );
       default:
-        return <TeamsList teams={teams} onAddTeam={handleAddTeam} />;
+        return <TeamsList />;
     }
   };
 

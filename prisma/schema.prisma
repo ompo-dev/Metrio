@@ -89,6 +89,7 @@ model Project {
   // Novos campos e relacionamentos
   members     ProjectMember[] // Membros do projeto
   invites     Invite[]       // Convites para este projeto
+  teams       Team[]         // Equipes do projeto
 }
 
 // Modelo para Webhooks personalizados
@@ -146,6 +147,9 @@ model ProjectMember {
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
+  // Relação com TeamMember - um membro de projeto pode estar em várias equipes
+  teamMembers TeamMember[]
+  
   @@unique([userId, projectId]) // Um usuário só pode ser membro uma vez
   @@index([userId])
   @@index([projectId])
@@ -188,4 +192,45 @@ model Notification {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@index([userId])
+}
+
+// Modelo para Equipes
+model Team {
+  id            String     @id @default(cuid())
+  name          String     // Nome da equipe
+  description   String?    // Descrição opcional da equipe
+  iconColor     String?    // Cor do ícone da equipe (para UI)
+  isActive      Boolean    @default(true)
+  
+  // Campos de auditoria
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  // Relação com o projeto
+  projectId     String
+  project       Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Membros da equipe
+  members       TeamMember[]
+  
+  @@index([projectId])
+}
+
+// Modelo para Membros da Equipe
+model TeamMember {
+  id            String     @id @default(cuid())
+  role          String     @default("member") // Papel na equipe: lead, member, etc.
+  joinedAt      DateTime   @default(now())
+  
+  // Relação com a equipe
+  teamId        String
+  team          Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  // Relação com o membro do projeto
+  projectMemberId String
+  projectMember   ProjectMember @relation(fields: [projectMemberId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, projectMemberId]) // Um membro só pode estar uma vez na mesma equipe
+  @@index([teamId])
+  @@index([projectMemberId])
 }
