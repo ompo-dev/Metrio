@@ -16,7 +16,14 @@ export async function GET(
   { params }: { params: { teamId: string } }
 ) {
   try {
-    const { teamId } = params;
+    // Extrair e validar parâmetros
+    if (!params || !params.teamId) {
+      return NextResponse.json(
+        { error: "ID da equipe não fornecido" },
+        { status: 400 }
+      );
+    }
+    const teamId = params.teamId;
 
     // Verificar autenticação
     const session = await getServerSession(authOptions);
@@ -104,7 +111,14 @@ export async function POST(
   { params }: { params: { teamId: string } }
 ) {
   try {
-    const { teamId } = params;
+    // Extrair e validar parâmetros
+    if (!params || !params.teamId) {
+      return NextResponse.json(
+        { error: "ID da equipe não fornecido" },
+        { status: 400 }
+      );
+    }
+    const teamId = params.teamId;
 
     // Verificar autenticação
     const session = await getServerSession(authOptions);
@@ -294,11 +308,18 @@ export async function POST(
       return NextResponse.json({ member: formattedMember }, { status: 201 });
     }
 
-    // Caso padrão para membros regulares (não proprietários)
+    // Caso para membros regulares (com formato "member-xyz")
+    let projectMemberIdClean = projectMemberId;
+
+    // Se o ID vier no formato "member-xyz", extrair apenas a parte "xyz"
+    if (projectMemberId.startsWith("member-")) {
+      projectMemberIdClean = projectMemberId.substring(7);
+    }
+
     // Verificar se o membro que será adicionado pertence ao mesmo projeto
     const memberToAdd = await prisma.projectMember.findUnique({
       where: {
-        id: projectMemberId,
+        id: projectMemberIdClean,
       },
     });
 
@@ -314,7 +335,7 @@ export async function POST(
       where: {
         teamId_projectMemberId: {
           teamId,
-          projectMemberId,
+          projectMemberId: memberToAdd.id, // Usar o ID limpo, sem prefixo
         },
       },
     });
@@ -330,7 +351,7 @@ export async function POST(
     const newTeamMember = await prisma.teamMember.create({
       data: {
         teamId,
-        projectMemberId,
+        projectMemberId: memberToAdd.id, // Usar o ID limpo, sem prefixo
         role,
       },
       include: {

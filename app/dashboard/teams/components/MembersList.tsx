@@ -302,6 +302,23 @@ export function MembersList() {
     setAddToTeamOpen(true);
   };
 
+  // Função para extrair o userId real do membro
+  const extractRealUserId = (member: Member): string | null => {
+    // Se houver um userId explícito, use-o
+    if (member.userId) {
+      return member.userId;
+    }
+
+    // Tenta extrair o userId do formato especial "owner-userId" ou "member-userId"
+    const idMatch = member.id.match(/^(owner|member)-(.+)$/);
+    if (idMatch && idMatch[2]) {
+      return idMatch[2];
+    }
+
+    // Se não conseguir extrair, retorna null
+    return null;
+  };
+
   // Função para adicionar membro à equipe selecionada
   const handleAddMemberToTeam = async () => {
     if (!selectedTeamId || !memberToAddToTeam) {
@@ -314,6 +331,31 @@ export function MembersList() {
       // Usar o ID do membro conforme está, seja um ID de ProjectMember ou um ID especial de proprietário
       // O backend já foi modificado para lidar com o formato "owner-[userId]"
       await addTeamMember(selectedTeamId, memberToAddToTeam.id);
+
+      // Buscar informações da equipe para a notificação
+      const selectedTeam = teams.find((team) => team.id === selectedTeamId);
+
+      // Extrair o userId real para enviar a notificação
+      const targetUserId = extractRealUserId(memberToAddToTeam);
+
+      // Enviar notificação para o membro adicionado
+      if (selectedTeam && targetUserId && activeProject) {
+        // Enviar notificação
+        await fetch("/api/notifications/team-added", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: targetUserId,
+            teamId: selectedTeamId,
+            teamName: selectedTeam.name,
+            projectId: activeProject.id,
+            projectName: activeProject.name,
+          }),
+        });
+      }
+
       toast.success(`Membro adicionado à equipe com sucesso`);
       setAddToTeamOpen(false);
     } catch (error: any) {
@@ -349,6 +391,34 @@ export function MembersList() {
       const result = await addManyTeamMembers(selectedTeamId, memberIds);
 
       if (result.addedCount > 0) {
+        // Buscar informações da equipe para a notificação
+        const selectedTeam = teams.find((team) => team.id === selectedTeamId);
+
+        // Enviar notificação para cada membro adicionado
+        if (selectedTeam && activeProject) {
+          const notificationPromises = selectedMembers
+            .map(extractRealUserId) // Extrair os userIds reais
+            .filter((userId) => userId !== null) // Filtrar os nulos
+            .map(async (userId) => {
+              // Enviar notificação
+              return fetch("/api/notifications/team-added", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  userId,
+                  teamId: selectedTeamId,
+                  teamName: selectedTeam.name,
+                  projectId: activeProject.id,
+                  projectName: activeProject.name,
+                }),
+              });
+            });
+
+          await Promise.all(notificationPromises);
+        }
+
         toast.success(
           `${result.addedCount} membros adicionados à equipe com sucesso`
         );

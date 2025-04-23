@@ -50,16 +50,6 @@ interface Invite {
   } | null;
 }
 
-// Função auxiliar para leitura segura de JSON de responses
-async function safeJsonParse(response: Response) {
-  try {
-    return await response.json();
-  } catch (error) {
-    console.error("Erro ao processar resposta JSON:", error);
-    return null;
-  }
-}
-
 export function InviteSection() {
   const { toast: uiToast } = useToast();
   const [activeTab, setActiveTab] = useState("email");

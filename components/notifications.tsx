@@ -8,6 +8,7 @@ import {
   RefreshCw as RefreshCwIcon,
   X,
   UserPlus,
+  Users,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -20,7 +21,13 @@ import {
 } from "@/components/ui/popover";
 
 // Tipos de notificações
-type NotificationType = "mention" | "event" | "update" | "default" | "invite";
+type NotificationType =
+  | "mention"
+  | "event"
+  | "update"
+  | "default"
+  | "invite"
+  | "team_added";
 
 interface BaseNotification {
   id: number;
@@ -69,12 +76,22 @@ interface InviteNotification extends BaseNotification {
   projectId: string;
 }
 
+interface TeamAddedNotification extends BaseNotification {
+  type: "team_added";
+  teamId: string;
+  teamName: string;
+  projectName: string;
+  senderName: string;
+  projectId: string;
+}
+
 type Notification =
   | MentionNotification
   | EventNotification
   | UpdateNotification
   | DefaultNotification
-  | InviteNotification;
+  | InviteNotification
+  | TeamAddedNotification;
 
 // const initialNotifications: Notification[] = [
 //   {
@@ -175,51 +192,30 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const unreadCount = notifications.filter((n) => n.unread).length;
 
-  // Função para buscar convites pendentes
-  const fetchInvites = async () => {
+  // Função para buscar todas as notificações do usuário
+  const fetchNotifications = async () => {
     try {
       setLoading(true);
-      // Buscar convites pendentes da API
-      const response = await fetch("/api/invites/pending");
+      // Buscar todas as notificações pendentes, incluindo convites e notificações de equipe
+      const response = await fetch("/api/notifications");
 
       if (response.ok) {
         const data = await response.json();
-
-        // Transformar os convites no formato de notificações
-        const inviteNotifications: InviteNotification[] = data.invites.map(
-          (invite: any, index: number) => ({
-            id: Number(`100${index}`), // IDs únicos começando com 100
-            type: "invite",
-            inviteId: invite.id,
-            projectName: invite.project.name,
-            senderName: invite.sender.name || "Um usuário",
-            projectId: invite.projectId,
-            timestamp: new Date(invite.createdAt).toLocaleDateString("pt-BR", {
-              day: "2-digit",
-              month: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            unread: true,
-          })
-        );
-
-        // Combinar convites com outras notificações (mantendo as notificações mockadas por enquanto)
-        setNotifications([...inviteNotifications]);
+        setNotifications(data.notifications);
       } else {
-        console.error("Erro ao buscar convites:", await response.json());
+        console.error("Erro ao buscar notificações:", await response.json());
       }
     } catch (error) {
-      console.error("Erro ao buscar convites:", error);
+      console.error("Erro ao buscar notificações:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Buscar convites quando o componente montar ou quando o popover abrir
+  // Buscar notificações quando o componente montar ou quando o popover abrir
   useEffect(() => {
     if (open) {
-      fetchInvites();
+      fetchNotifications();
     }
   }, [open]);
 
@@ -336,7 +332,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
     setOpen(newState);
     // Se estiver abrindo o popover, buscar os convites
     if (newState) {
-      fetchInvites();
+      fetchNotifications();
     }
   };
 
@@ -503,6 +499,42 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
                 >
                   Recusar
                 </Button>
+              </div>
+            </div>
+            {hasUnread && (
+              <div className="absolute end-0 self-center">
+                <Dot />
+              </div>
+            )}
+          </div>
+        );
+
+      case "team_added":
+        return (
+          <div className="relative flex items-start gap-3 pe-3">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true"
+            >
+              <Users className="opacity-60" size={16} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-foreground/80">
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.senderName}
+                </span>{" "}
+                adicionou você à equipe{" "}
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.teamName}
+                </span>{" "}
+                no projeto{" "}
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.projectName}
+                </span>
+                .
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {notification.timestamp}
               </div>
             </div>
             {hasUnread && (
