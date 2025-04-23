@@ -768,6 +768,7 @@ export function TeamsList() {
                 enableRowSelection={true}
                 enablePagination={true}
                 pageSize={5}
+                initialSorting={[{ id: "nome", desc: false }]}
                 onDeleteRows={(selectedMembers) => {
                   if (selectedMembers.length === 0) return;
 

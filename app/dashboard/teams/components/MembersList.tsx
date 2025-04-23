@@ -8,6 +8,23 @@ import {
   Mail,
   UserCog,
   Users,
+  Code,
+  Briefcase,
+  Database,
+  Pencil,
+  LucideIcon,
+  Figma,
+  LineChart,
+  Search,
+  Megaphone,
+  Bot,
+  UsersRound,
+  User,
+  UserCheck,
+  Loader2,
+  ChevronDown,
+  Check,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -44,7 +61,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-import { Member } from "./types";
+import { Member, getTeamIcon } from "./types";
 import { useMemberStore } from "@/lib/store/member-store";
 import { useTeamStore, Team } from "@/lib/store/team-store";
 import { useProjectStore } from "@/lib/store/project-store";
@@ -84,7 +101,7 @@ export function MembersList() {
 
   // Estado para adição de membros à equipe
   const [addToTeamOpen, setAddToTeamOpen] = React.useState(false);
-  const [selectedTeamId, setSelectedTeamId] = React.useState("");
+  const [selectedTeamIds, setSelectedTeamIds] = React.useState<string[]>([]);
   const [memberToAddToTeam, setMemberToAddToTeam] =
     React.useState<Member | null>(null);
   const [selectedMembers, setSelectedMembers] = React.useState<Member[]>([]);
@@ -277,7 +294,7 @@ export function MembersList() {
   // Função para abrir o modal de adicionar à equipe (membro individual)
   const handleOpenAddToTeam = (member: Member) => {
     setMemberToAddToTeam(member);
-    setSelectedTeamId("");
+    setSelectedTeamIds([]);
     setAddToTeamOpen(true);
   };
 
@@ -298,120 +315,69 @@ export function MembersList() {
     return null;
   };
 
-  // Função para adicionar membro à equipe selecionada
-  const handleAddMemberToTeam = async () => {
-    if (!selectedTeamId || !memberToAddToTeam) {
-      setAddToTeamOpen(false);
-      return;
-    }
-
-    try {
+  // Função para adicionar um membro a equipes
+  const handleAddMemberToTeam = () => {
+    if (memberToAddToTeam && selectedTeamIds.length > 0) {
       setIsAddingToTeam(true);
-      // Usar o ID do membro conforme está, seja um ID de ProjectMember ou um ID especial de proprietário
-      // O backend já foi modificado para lidar com o formato "owner-[userId]"
-      await addTeamMember(selectedTeamId, memberToAddToTeam.id);
 
-      // Buscar informações da equipe para a notificação
-      const selectedTeam = teams.find((team) => team.id === selectedTeamId);
+      // Adicionar o membro a várias equipes
+      selectedTeamIds.forEach((teamId) => {
+        addTeamMember(teamId, memberToAddToTeam.id)
+          .then(() => {
+            toast.success(
+              `${memberToAddToTeam.name} adicionado às equipes selecionadas`
+            );
+            setAddToTeamOpen(false);
+            setMemberToAddToTeam(null);
+            setSelectedTeamIds([]);
+            setIsAddingToTeam(false);
+          })
+          .catch((error) => {
+            toast.error(`Erro ao adicionar membro à equipe: ${error.message}`);
+            setIsAddingToTeam(false);
+          });
+      });
+    }
+  };
 
-      // Extrair o userId real para enviar a notificação
-      const targetUserId = extractRealUserId(memberToAddToTeam);
+  // Função para adicionar vários membros a equipes
+  const handleAddMembersToTeams = () => {
+    if (selectedMembers.length > 0 && selectedTeamIds.length > 0) {
+      setIsAddingToTeam(true);
 
-      // Enviar notificação para o membro adicionado
-      if (selectedTeam && targetUserId && activeProject) {
-        // Enviar notificação
-        await fetch("/api/notifications/team-added", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: targetUserId,
-            teamId: selectedTeamId,
-            teamName: selectedTeam.name,
-            projectId: activeProject.id,
-            projectName: activeProject.name,
-          }),
+      // Criar array de IDs dos membros selecionados
+      const memberIds = selectedMembers.map((member) => member.id);
+
+      // Adicionar os membros às equipes selecionadas
+      Promise.all(
+        selectedTeamIds.map((teamId) => addManyTeamMembers(teamId, memberIds))
+      )
+        .then(() => {
+          toast.success(
+            `${selectedMembers.length} membros adicionados a ${selectedTeamIds.length} equipes`
+          );
+          setAddToTeamOpen(false);
+          setSelectedMembers([]);
+          setSelectedTeamIds([]);
+          setIsAddingToTeam(false);
+        })
+        .catch((error) => {
+          toast.error(`Erro ao adicionar membros às equipes: ${error.message}`);
+          setIsAddingToTeam(false);
         });
-      }
-
-      toast.success(`Membro adicionado à equipe com sucesso`);
-      setAddToTeamOpen(false);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao adicionar membro à equipe");
-    } finally {
-      setIsAddingToTeam(false);
     }
   };
 
   // Função para adicionar múltiplos membros à equipe
-  const handleAddSelectedMembersToTeam = async (selectedRows: Member[]) => {
+  const handleAddSelectedMembersToTeam = (selectedRows: Member[]) => {
     if (selectedRows.length === 0) {
       return;
     }
 
     setSelectedMembers(selectedRows);
-    setSelectedTeamId("");
+    setSelectedTeamIds([]);
+    setMemberToAddToTeam(null);
     setAddToTeamOpen(true);
-  };
-
-  // Função para confirmar a adição de múltiplos membros
-  const handleAddMultipleMembersToTeam = async () => {
-    if (!selectedTeamId || selectedMembers.length === 0) {
-      setAddToTeamOpen(false);
-      return;
-    }
-
-    try {
-      setIsAddingToTeam(true);
-      // Usamos os IDs dos membros como estão, incluindo formatos especiais como "owner-[userId]"
-      // O backend já foi modificado para lidar com esses casos
-      const memberIds = selectedMembers.map((member) => member.id);
-      const result = await addManyTeamMembers(selectedTeamId, memberIds);
-
-      if (result.addedCount > 0) {
-        // Buscar informações da equipe para a notificação
-        const selectedTeam = teams.find((team) => team.id === selectedTeamId);
-
-        // Enviar notificação para cada membro adicionado
-        if (selectedTeam && activeProject) {
-          const notificationPromises = selectedMembers
-            .map(extractRealUserId) // Extrair os userIds reais
-            .filter((userId) => userId !== null) // Filtrar os nulos
-            .map(async (userId) => {
-              // Enviar notificação
-              return fetch("/api/notifications/team-added", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  userId,
-                  teamId: selectedTeamId,
-                  teamName: selectedTeam.name,
-                  projectId: activeProject.id,
-                  projectName: activeProject.name,
-                }),
-              });
-            });
-
-          await Promise.all(notificationPromises);
-        }
-
-        toast.success(
-          `${result.addedCount} membros adicionados à equipe com sucesso`
-        );
-      } else {
-        toast.error("Não foi possível adicionar os membros à equipe");
-      }
-
-      setAddToTeamOpen(false);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao adicionar membros à equipe");
-    } finally {
-      setIsAddingToTeam(false);
-      setSelectedMembers([]);
-    }
   };
 
   return (
@@ -509,36 +475,92 @@ export function MembersList() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal para adicionar membros a uma equipe */}
+      {/* Modal para adicionar membro a equipes */}
       <Dialog open={addToTeamOpen} onOpenChange={setAddToTeamOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Adicionar à Equipe</DialogTitle>
+            <DialogTitle>Adicionar às Equipes</DialogTitle>
             <DialogDescription>
               {selectedMembers.length > 0
-                ? `Selecione a equipe para adicionar ${selectedMembers.length} membro(s)`
-                : `Selecione a equipe para adicionar ${
+                ? `Selecione as equipes para adicionar ${selectedMembers.length} membro(s)`
+                : `Selecione as equipes para adicionar ${
                     memberToAddToTeam?.name || "o membro"
                   }`}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="team-selection">Equipe</Label>
-              <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                <SelectTrigger id="team-selection">
-                  <SelectValue placeholder="Selecione uma equipe" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+          <div className="py-4">
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-muted-foreground">
+                Selecione uma ou mais equipes
+              </h3>
             </div>
+
+            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+              {teams.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <Users className="mb-2 h-10 w-10 text-muted-foreground/30" />
+                  <p className="text-sm text-muted-foreground">
+                    Não há equipes disponíveis
+                  </p>
+                </div>
+              ) : (
+                teams.map((team) => {
+                  const IconComponent = getTeamIcon(team.logoIcon || "users");
+                  const isSelected = selectedTeamIds.includes(team.id);
+
+                  return (
+                    <button
+                      key={team.id}
+                      type="button"
+                      onClick={() => {
+                        if (selectedTeamIds.includes(team.id)) {
+                          setSelectedTeamIds(
+                            selectedTeamIds.filter((id) => id !== team.id)
+                          );
+                        } else {
+                          setSelectedTeamIds([...selectedTeamIds, team.id]);
+                        }
+                      }}
+                      className={`w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted ${
+                        isSelected ? "bg-primary/10 text-primary" : ""
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <IconComponent className="size-4" />
+                        </div>
+                        <div className="grid flex-1 text-left text-sm leading-tight">
+                          <span className="truncate font-semibold">
+                            {team.name}
+                          </span>
+                          <span className="truncate text-xs text-muted-foreground">
+                            {team.memberCount || 0} membro(s)
+                          </span>
+                        </div>
+                        <div className="flex h-5 w-5 items-center justify-center rounded-md border">
+                          {isSelected ? (
+                            <Check className="h-3.5 w-3.5 text-primary" />
+                          ) : null}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Equipes selecionadas - contador */}
+            {selectedTeamIds.length > 0 && (
+              <div className="mt-3 text-sm">
+                <span className="font-medium text-primary">
+                  {selectedTeamIds.length}
+                </span>{" "}
+                equipe(s) selecionada(s)
+              </div>
+            )}
           </div>
+
           <DialogFooter>
             <Button
               variant="outline"
@@ -551,12 +573,19 @@ export function MembersList() {
               type="submit"
               onClick={
                 selectedMembers.length > 0
-                  ? handleAddMultipleMembersToTeam
+                  ? handleAddMembersToTeams
                   : handleAddMemberToTeam
               }
-              disabled={!selectedTeamId || isAddingToTeam}
+              disabled={selectedTeamIds.length === 0 || isAddingToTeam}
             >
-              {isAddingToTeam ? "Adicionando..." : "Adicionar à Equipe"}
+              {isAddingToTeam ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adicionando...
+                </>
+              ) : (
+                "Adicionar às Equipes"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
