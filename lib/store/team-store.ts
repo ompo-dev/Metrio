@@ -43,7 +43,7 @@ interface TeamState {
   // Ações
   fetchTeams: (projectId: string) => Promise<void>;
   fetchTeam: (teamId: string) => Promise<void>;
-  fetchTeamMembers: (teamId: string) => Promise<void>;
+  fetchTeamMembers: (teamId: string) => Promise<TeamMember[]>;
   createTeam: (
     name: string,
     projectId: string,
@@ -156,6 +156,8 @@ export const useTeamStore = create<TeamState>()(
             teamMembers: data.members || [],
             isLoading: false,
           }));
+
+          return data.members || [];
         } catch (error: any) {
           console.error("Erro ao buscar membros da equipe:", error);
           set((state) => ({
@@ -164,6 +166,7 @@ export const useTeamStore = create<TeamState>()(
             isLoading: false,
           }));
           toast.error("Não foi possível carregar os membros da equipe");
+          return [];
         }
       },
 
