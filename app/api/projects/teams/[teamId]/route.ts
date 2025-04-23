@@ -8,6 +8,7 @@ import { z } from "zod";
 const updateTeamSchema = z.object({
   name: z.string().min(1, "O nome da equipe é obrigatório").optional(),
   description: z.string().optional().nullable(),
+  logoIcon: z.string().optional().nullable(),
   iconColor: z.string().optional().nullable(),
   isActive: z.boolean().optional(),
 });

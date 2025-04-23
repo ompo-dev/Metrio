@@ -13414,6 +13414,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     description: string | null
+    logoIcon: string | null
     iconColor: string | null
     isActive: boolean | null
     createdAt: Date | null
@@ -13425,6 +13426,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     description: string | null
+    logoIcon: string | null
     iconColor: string | null
     isActive: boolean | null
     createdAt: Date | null
@@ -13436,6 +13438,7 @@ export namespace Prisma {
     id: number
     name: number
     description: number
+    logoIcon: number
     iconColor: number
     isActive: number
     createdAt: number
@@ -13449,6 +13452,7 @@ export namespace Prisma {
     id?: true
     name?: true
     description?: true
+    logoIcon?: true
     iconColor?: true
     isActive?: true
     createdAt?: true
@@ -13460,6 +13464,7 @@ export namespace Prisma {
     id?: true
     name?: true
     description?: true
+    logoIcon?: true
     iconColor?: true
     isActive?: true
     createdAt?: true
@@ -13471,6 +13476,7 @@ export namespace Prisma {
     id?: true
     name?: true
     description?: true
+    logoIcon?: true
     iconColor?: true
     isActive?: true
     createdAt?: true
@@ -13555,6 +13561,7 @@ export namespace Prisma {
     id: string
     name: string
     description: string | null
+    logoIcon: string | null
     iconColor: string | null
     isActive: boolean
     createdAt: Date
@@ -13583,6 +13590,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
+    logoIcon?: boolean
     iconColor?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -13597,6 +13605,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
+    logoIcon?: boolean
     iconColor?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -13609,6 +13618,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
+    logoIcon?: boolean
     iconColor?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -13621,6 +13631,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     description?: boolean
+    logoIcon?: boolean
     iconColor?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -13628,7 +13639,7 @@ export namespace Prisma {
     projectId?: boolean
   }
 
-  export type TeamOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "iconColor" | "isActive" | "createdAt" | "updatedAt" | "projectId", ExtArgs["result"]["team"]>
+  export type TeamOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "logoIcon" | "iconColor" | "isActive" | "createdAt" | "updatedAt" | "projectId", ExtArgs["result"]["team"]>
   export type TeamInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     project?: boolean | ProjectDefaultArgs<ExtArgs>
     members?: boolean | Team$membersArgs<ExtArgs>
@@ -13651,6 +13662,7 @@ export namespace Prisma {
       id: string
       name: string
       description: string | null
+      logoIcon: string | null
       iconColor: string | null
       isActive: boolean
       createdAt: Date
@@ -14084,6 +14096,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Team", 'String'>
     readonly name: FieldRef<"Team", 'String'>
     readonly description: FieldRef<"Team", 'String'>
+    readonly logoIcon: FieldRef<"Team", 'String'>
     readonly iconColor: FieldRef<"Team", 'String'>
     readonly isActive: FieldRef<"Team", 'Boolean'>
     readonly createdAt: FieldRef<"Team", 'DateTime'>
@@ -15743,6 +15756,7 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     description: 'description',
+    logoIcon: 'logoIcon',
     iconColor: 'iconColor',
     isActive: 'isActive',
     createdAt: 'createdAt',
@@ -16623,6 +16637,7 @@ export namespace Prisma {
     id?: StringFilter<"Team"> | string
     name?: StringFilter<"Team"> | string
     description?: StringNullableFilter<"Team"> | string | null
+    logoIcon?: StringNullableFilter<"Team"> | string | null
     iconColor?: StringNullableFilter<"Team"> | string | null
     isActive?: BoolFilter<"Team"> | boolean
     createdAt?: DateTimeFilter<"Team"> | Date | string
@@ -16636,6 +16651,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
+    logoIcon?: SortOrderInput | SortOrder
     iconColor?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -16652,6 +16668,7 @@ export namespace Prisma {
     NOT?: TeamWhereInput | TeamWhereInput[]
     name?: StringFilter<"Team"> | string
     description?: StringNullableFilter<"Team"> | string | null
+    logoIcon?: StringNullableFilter<"Team"> | string | null
     iconColor?: StringNullableFilter<"Team"> | string | null
     isActive?: BoolFilter<"Team"> | boolean
     createdAt?: DateTimeFilter<"Team"> | Date | string
@@ -16665,6 +16682,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
+    logoIcon?: SortOrderInput | SortOrder
     iconColor?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -16682,6 +16700,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Team"> | string
     name?: StringWithAggregatesFilter<"Team"> | string
     description?: StringNullableWithAggregatesFilter<"Team"> | string | null
+    logoIcon?: StringNullableWithAggregatesFilter<"Team"> | string | null
     iconColor?: StringNullableWithAggregatesFilter<"Team"> | string | null
     isActive?: BoolWithAggregatesFilter<"Team"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Team"> | Date | string
@@ -17513,6 +17532,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -17525,6 +17545,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -17537,6 +17558,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17549,6 +17571,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17561,6 +17584,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -17572,6 +17596,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -17582,6 +17607,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18363,6 +18389,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    logoIcon?: SortOrder
     iconColor?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -18374,6 +18401,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    logoIcon?: SortOrder
     iconColor?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -18385,6 +18413,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    logoIcon?: SortOrder
     iconColor?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -20511,6 +20540,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -20522,6 +20552,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -20690,6 +20721,7 @@ export namespace Prisma {
     id?: StringFilter<"Team"> | string
     name?: StringFilter<"Team"> | string
     description?: StringNullableFilter<"Team"> | string | null
+    logoIcon?: StringNullableFilter<"Team"> | string | null
     iconColor?: StringNullableFilter<"Team"> | string | null
     isActive?: BoolFilter<"Team"> | boolean
     createdAt?: DateTimeFilter<"Team"> | Date | string
@@ -21660,6 +21692,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -21671,6 +21704,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -21719,6 +21753,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21730,6 +21765,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22150,6 +22186,7 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
+    logoIcon?: string | null
     iconColor?: string | null
     isActive?: boolean
     createdAt?: Date | string
@@ -22312,6 +22349,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22323,6 +22361,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22334,6 +22373,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    logoIcon?: NullableStringFieldUpdateOperationsInput | string | null
     iconColor?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

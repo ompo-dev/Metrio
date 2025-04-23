@@ -8,6 +8,7 @@ export interface Team {
   id: string;
   name: string;
   description: string | null;
+  logoIcon: string;
   iconColor: string | null;
   isActive: boolean;
   createdAt: string;
@@ -47,6 +48,7 @@ interface TeamState {
     name: string,
     projectId: string,
     description?: string,
+    logoIcon?: string,
     iconColor?: string
   ) => Promise<void>;
   updateTeam: (
@@ -54,6 +56,7 @@ interface TeamState {
     data: {
       name?: string;
       description?: string;
+      logoIcon?: string;
       iconColor?: string;
       isActive?: boolean;
     }
@@ -169,12 +172,14 @@ export const useTeamStore = create<TeamState>()(
         name: string,
         projectId: string,
         description?: string,
+        logoIcon: string = "users",
         iconColor?: string
       ) => {
         try {
           const response = await api.post("/api/projects/teams", {
             name,
             description,
+            logoIcon,
             iconColor,
             projectId,
           });
@@ -203,6 +208,7 @@ export const useTeamStore = create<TeamState>()(
         data: {
           name?: string;
           description?: string;
+          logoIcon?: string;
           iconColor?: string;
           isActive?: boolean;
         }

@@ -2,7 +2,43 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Users,
+  UserCircle,
+  User,
+  UserPlus,
+  UserCog,
+  UserCheck,
+  UsersRound,
+  Building,
+  Briefcase,
+  LayoutGrid,
+  Code,
+  LucideIcon,
+  Loader2,
+  CodeXml,
+  Database,
+  LineChart,
+  PieChart,
+  Figma,
+  Paintbrush,
+  Search,
+  Megaphone,
+  Presentation,
+  HeartHandshake,
+  Brain,
+  Microscope,
+  BookOpen,
+  Lightbulb,
+  Bot,
+  ShieldCheck,
+  Coffee,
+  UserCog2,
+  Server,
+  FileCode,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ColumnDef } from "@tanstack/react-table";
@@ -40,6 +76,52 @@ import { DataTable, RowActions } from "@/components/data-table/Table";
 import { useTeamStore, Team } from "@/lib/store/team-store";
 import { useProjectStore } from "@/lib/store/project-store";
 
+// Lista de ícones para equipes
+const TEAM_ICONS = [
+  // Genéricos
+  { icon: Users, name: "users" },
+  { icon: UsersRound, name: "users-round" },
+  { icon: UserPlus, name: "user-plus" },
+
+  // Desenvolvimento e Tecnologia
+  { icon: Code, name: "code" },
+  { icon: CodeXml, name: "code-xml" },
+  { icon: FileCode, name: "file-code" },
+  { icon: Server, name: "server" },
+  { icon: Database, name: "database" },
+  { icon: Bot, name: "bot" },
+  { icon: ShieldCheck, name: "shield-check" },
+
+  // Design e UI/UX
+  { icon: Figma, name: "figma" },
+  { icon: Paintbrush, name: "paintbrush" },
+  { icon: LayoutGrid, name: "layout-grid" },
+
+  // Dados e Análise
+  { icon: LineChart, name: "line-chart" },
+  { icon: PieChart, name: "pie-chart" },
+  { icon: Search, name: "search" },
+  { icon: Brain, name: "brain" },
+  { icon: Microscope, name: "microscope" },
+
+  // Marketing, RH e Gestão
+  { icon: Megaphone, name: "megaphone" },
+  { icon: Presentation, name: "presentation" },
+  { icon: HeartHandshake, name: "heart-handshake" },
+  { icon: BookOpen, name: "book-open" },
+  { icon: Briefcase, name: "briefcase" },
+  { icon: UserCog, name: "user-cog" },
+  { icon: UserCog2, name: "user-cog-2" },
+  { icon: Lightbulb, name: "lightbulb" },
+
+  // Outros
+  { icon: Coffee, name: "coffee" },
+  { icon: Building, name: "building" },
+  { icon: User, name: "user" },
+  { icon: UserCheck, name: "user-check" },
+  { icon: UserCircle, name: "user-circle" },
+];
+
 export function TeamsList() {
   // Estados para modais
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
@@ -49,8 +131,11 @@ export function TeamsList() {
   // Estados de formulário
   const [newTeamName, setNewTeamName] = useState("");
   const [newTeamDescription, setNewTeamDescription] = useState("");
+  const [selectedIcon, setSelectedIcon] = useState(TEAM_ICONS[0].name);
   const [editTeamName, setEditTeamName] = useState("");
   const [editTeamDescription, setEditTeamDescription] = useState("");
+  const [editSelectedIcon, setEditSelectedIcon] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Obtendo estado e ações das stores
   const { teams, isLoading, fetchTeams, createTeam, updateTeam, deleteTeam } =
@@ -64,45 +149,63 @@ export function TeamsList() {
     }
   }, [activeProject, fetchTeams]);
 
+  // Função para obter o componente do ícone pelo nome
+  const getIconComponent = (iconName: string): LucideIcon => {
+    const iconItem = TEAM_ICONS.find((item) => item.name === iconName);
+    return iconItem?.icon || Users;
+  };
+
   // Manipuladores de eventos
   const handleCreateTeam = async () => {
     if (!newTeamName.trim() || !activeProject?.id) return;
 
+    setIsSubmitting(true);
+
     await createTeam(
       newTeamName,
       activeProject.id,
-      newTeamDescription || undefined
+      newTeamDescription || undefined,
+      selectedIcon
     );
 
     // Resetar formulário e fechar modal
     setNewTeamName("");
     setNewTeamDescription("");
+    setSelectedIcon(TEAM_ICONS[0].name);
     setIsCreateTeamOpen(false);
+    setIsSubmitting(false);
   };
 
   const handleEditTeam = async () => {
     if (!editTeamName.trim() || !teamToEdit) return;
 
+    setIsSubmitting(true);
+
     await updateTeam(teamToEdit.id, {
       name: editTeamName,
       description: editTeamDescription || undefined,
+      logoIcon: editSelectedIcon,
     });
 
     // Resetar formulário e fechar modal
     setTeamToEdit(null);
+    setIsSubmitting(false);
   };
 
   const handleDeleteTeam = async () => {
     if (!teamToDelete) return;
 
+    setIsSubmitting(true);
     await deleteTeam(teamToDelete.id);
     setTeamToDelete(null);
+    setIsSubmitting(false);
   };
 
   const openEditModal = (team: Team) => {
     setTeamToEdit(team);
     setEditTeamName(team.name);
     setEditTeamDescription(team.description || "");
+    setEditSelectedIcon(team.logoIcon || TEAM_ICONS[0].name);
   };
 
   // Definição das colunas da tabela
@@ -110,10 +213,20 @@ export function TeamsList() {
     {
       accessorKey: "name",
       header: "Nome",
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
-      ),
-      size: 180,
+      cell: ({ row }) => {
+        const team = row.original;
+        const IconComponent = getIconComponent(team.logoIcon || "users");
+
+        return (
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <IconComponent className="size-4" />
+            </div>
+            <div className="font-medium">{team.name}</div>
+          </div>
+        );
+      },
+      size: 220,
     },
     {
       accessorKey: "description",
@@ -239,36 +352,75 @@ export function TeamsList() {
           <DialogHeader>
             <DialogTitle>Criar Nova Equipe</DialogTitle>
             <DialogDescription>
-              Informe os detalhes da equipe que deseja criar.
+              Configure as informações da equipe que deseja criar.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Nome
-              </Label>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome da Equipe</Label>
               <Input
                 id="name"
+                placeholder="Ex: Equipe de Desenvolvimento"
                 value={newTeamName}
                 onChange={(e) => setNewTeamName(e.target.value)}
-                className="col-span-3"
+                className="w-full"
+                required
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">
-                Descrição
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="description">Descrição</Label>
               <Textarea
                 id="description"
+                placeholder="Descreva a função desta equipe"
                 value={newTeamDescription}
                 onChange={(e) => setNewTeamDescription(e.target.value)}
-                className="col-span-3"
+                className="w-full"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Ícone da Equipe</Label>
+              <div className="flex flex-wrap gap-2">
+                {TEAM_ICONS.map((iconData) => {
+                  const IconComponent = iconData.icon;
+                  return (
+                    <Button
+                      key={iconData.name}
+                      type="button"
+                      variant={
+                        selectedIcon === iconData.name ? "default" : "outline"
+                      }
+                      size="icon"
+                      className="h-10 w-10"
+                      onClick={() => setSelectedIcon(iconData.name)}
+                    >
+                      <IconComponent className="size-5" />
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={handleCreateTeam}>
-              Criar Equipe
+            <Button
+              variant="outline"
+              onClick={() => setIsCreateTeamOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              onClick={handleCreateTeam}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                "Criar Equipe"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -286,33 +438,71 @@ export function TeamsList() {
               Atualize os detalhes da equipe selecionada.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">
-                Nome
-              </Label>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome da Equipe</Label>
               <Input
                 id="edit-name"
                 value={editTeamName}
                 onChange={(e) => setEditTeamName(e.target.value)}
-                className="col-span-3"
+                className="w-full"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-description" className="text-right">
-                Descrição
-              </Label>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Descrição</Label>
               <Textarea
                 id="edit-description"
                 value={editTeamDescription}
                 onChange={(e) => setEditTeamDescription(e.target.value)}
-                className="col-span-3"
+                className="w-full"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Ícone da Equipe</Label>
+              <div className="flex flex-wrap gap-2">
+                {TEAM_ICONS.map((iconData) => {
+                  const IconComponent = iconData.icon;
+                  return (
+                    <Button
+                      key={iconData.name}
+                      type="button"
+                      variant={
+                        editSelectedIcon === iconData.name
+                          ? "default"
+                          : "outline"
+                      }
+                      size="icon"
+                      className="h-10 w-10"
+                      onClick={() => setEditSelectedIcon(iconData.name)}
+                    >
+                      <IconComponent className="size-5" />
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={handleEditTeam}>
-              Salvar Alterações
+            <Button
+              variant="outline"
+              onClick={() => setTeamToEdit(null)}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              onClick={handleEditTeam}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar Alterações"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -332,9 +522,21 @@ export function TeamsList() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteTeam}>
-              Excluir
+            <AlertDialogCancel disabled={isSubmitting}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTeam}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                "Excluir"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

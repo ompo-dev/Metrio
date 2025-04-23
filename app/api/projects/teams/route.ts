@@ -8,6 +8,7 @@ import { z } from "zod";
 const createTeamSchema = z.object({
   name: z.string().min(1, "O nome da equipe é obrigatório"),
   description: z.string().optional(),
+  logoIcon: z.string().optional(),
   iconColor: z.string().optional(),
   projectId: z.string().min(1, "O ID do projeto é obrigatório"),
 });
@@ -104,7 +105,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, description, iconColor, projectId } = validationResult.data;
+    const { name, description, logoIcon, iconColor, projectId } =
+      validationResult.data;
 
     // 1. Verificar se o usuário é o proprietário direto do projeto
     const isProjectOwner = await prisma.project.findFirst({
@@ -150,6 +152,7 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         description,
+        logoIcon,
         iconColor,
         projectId,
       },

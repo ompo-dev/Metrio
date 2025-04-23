@@ -199,6 +199,7 @@ model Team {
   id          String  @id @default(cuid())
   name        String // Nome da equipe
   description String? // Descrição opcional da equipe
+  logoIcon    String? @default("users") // Ícone da equipe (nome do ícone do Lucide)
   iconColor   String? // Cor do ícone da equipe (para UI)
   isActive    Boolean @default(true)
 
