@@ -96,6 +96,29 @@ export async function GET() {
         };
       }
 
+      // Suporte para notificações de remoção de equipe
+      if (notification.type === "TEAM_REMOVED") {
+        return {
+          id: notification.id,
+          type: "team_removed",
+          teamId: content.teamId || "",
+          teamName: content.teamName || "Equipe",
+          projectName: content.projectName || "Projeto",
+          senderName: content.senderName || "Um usuário",
+          projectId: content.projectId || "",
+          timestamp: new Date(notification.createdAt).toLocaleDateString(
+            "pt-BR",
+            {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            }
+          ),
+          unread: !notification.read,
+        };
+      }
+
       // Por padrão, retorna uma notificação genérica
       return {
         id: notification.id,

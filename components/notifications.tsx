@@ -27,7 +27,8 @@ type NotificationType =
   | "update"
   | "default"
   | "invite"
-  | "team_added";
+  | "team_added"
+  | "team_removed";
 
 interface BaseNotification {
   id: number;
@@ -85,13 +86,23 @@ interface TeamAddedNotification extends BaseNotification {
   projectId: string;
 }
 
+interface TeamRemovedNotification extends BaseNotification {
+  type: "team_removed";
+  teamId: string;
+  teamName: string;
+  projectName: string;
+  senderName: string;
+  projectId: string;
+}
+
 type Notification =
   | MentionNotification
   | EventNotification
   | UpdateNotification
   | DefaultNotification
   | InviteNotification
-  | TeamAddedNotification;
+  | TeamAddedNotification
+  | TeamRemovedNotification;
 
 // const initialNotifications: Notification[] = [
 //   {
@@ -524,6 +535,42 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
                   {notification.senderName}
                 </span>{" "}
                 adicionou você à equipe{" "}
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.teamName}
+                </span>{" "}
+                no projeto{" "}
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.projectName}
+                </span>
+                .
+              </div>
+              <div className="text-muted-foreground text-xs">
+                {notification.timestamp}
+              </div>
+            </div>
+            {hasUnread && (
+              <div className="absolute end-0 self-center">
+                <Dot />
+              </div>
+            )}
+          </div>
+        );
+
+      case "team_removed":
+        return (
+          <div className="relative flex items-start gap-3 pe-3">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+              aria-hidden="true"
+            >
+              <Users className="opacity-60" size={16} />
+            </div>
+            <div className="flex-1 space-y-1">
+              <div className="text-foreground/80">
+                <span className="text-foreground font-medium hover:underline">
+                  {notification.senderName}
+                </span>{" "}
+                removeu você da equipe{" "}
                 <span className="text-foreground font-medium hover:underline">
                   {notification.teamName}
                 </span>{" "}

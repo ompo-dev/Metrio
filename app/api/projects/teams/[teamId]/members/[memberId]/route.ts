@@ -231,6 +231,57 @@ export async function DELETE(
       },
     });
 
+    // Buscar informações do usuário que foi removido
+    try {
+      // Buscar detalhes do projeto e equipe para a notificação
+      const projectDetails = await prisma.project.findUnique({
+        where: {
+          id: teamMember.team.projectId,
+        },
+        select: {
+          name: true,
+        },
+      });
+
+      // Obter informações do usuário que foi removido da equipe
+      const removedUserInfo = await prisma.projectMember.findUnique({
+        where: {
+          id: teamMember.projectMemberId,
+        },
+        select: {
+          userId: true,
+        },
+      });
+
+      if (removedUserInfo && removedUserInfo.userId) {
+        // Enviar notificação para o usuário que foi removido da equipe
+        await fetch(
+          `${process.env.NEXTAUTH_URL || ""}/api/notifications/team-removed`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // Passa o cookie de autenticação para manter a sessão
+              Cookie: request.headers.get("cookie") || "",
+            },
+            body: JSON.stringify({
+              userId: removedUserInfo.userId,
+              teamId: teamId,
+              teamName: teamMember.team.name,
+              projectId: teamMember.team.projectId,
+              projectName: projectDetails?.name || "Projeto",
+            }),
+          }
+        );
+      }
+    } catch (notificationError) {
+      console.error(
+        "Erro ao enviar notificação de remoção:",
+        notificationError
+      );
+      // Não interromper o fluxo principal se a notificação falhar
+    }
+
     return NextResponse.json({
       success: true,
       message: "Membro removido da equipe com sucesso",
