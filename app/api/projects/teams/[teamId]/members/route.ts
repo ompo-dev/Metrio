@@ -45,7 +45,15 @@ export async function GET(
       );
     }
 
-    // Verificar se o usuário tem acesso ao projeto
+    // 1. Verificar se o usuário é o proprietário direto do projeto
+    const isProjectOwner = await prisma.project.findFirst({
+      where: {
+        id: team.projectId,
+        userId: session.user.id,
+      },
+    });
+
+    // 2. Verificar se o usuário é um membro do projeto
     const projectMember = await prisma.projectMember.findUnique({
       where: {
         userId_projectId: {
@@ -55,7 +63,8 @@ export async function GET(
       },
     });
 
-    if (!projectMember) {
+    // Se não é proprietário direto e não é membro, não tem acesso
+    if (!isProjectOwner && !projectMember) {
       return NextResponse.json(
         { error: "Você não tem acesso a este projeto" },
         { status: 403 }
