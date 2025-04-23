@@ -314,6 +314,57 @@ export async function POST(
         user: newTeamMember.projectMember.user,
       };
 
+      // Tentar pegar o projeto específico para o membro
+      let projectName = "";
+      try {
+        // Buscar a equipe para obter os detalhes do projeto
+        const teamDetails = await prisma.team.findUnique({
+          where: { id: teamId },
+          include: {
+            project: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+
+        if (teamDetails) {
+          projectName = teamDetails.project.name;
+        }
+      } catch (teamError) {
+        console.error("Erro ao buscar detalhes da equipe:", teamError);
+      }
+
+      // Criar notificação para o usuário que foi adicionado à equipe
+      try {
+        // Chamada para a API de notificação
+        await fetch(
+          `${process.env.NEXTAUTH_URL || ""}/api/notifications/team-added`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // Passa o cookie de autenticação para manter a sessão
+              Cookie: request.headers.get("cookie") || "",
+            },
+            body: JSON.stringify({
+              userId: newTeamMember.projectMember.userId,
+              teamId: teamId,
+              teamName: team.name,
+              projectId: team.projectId,
+              projectName: projectName,
+            }),
+          }
+        );
+      } catch (notificationError) {
+        console.error(
+          "Erro ao enviar notificação de equipe:",
+          notificationError
+        );
+        // Não interromper o fluxo se a notificação falhar
+      }
+
       return NextResponse.json({ member: formattedMember }, { status: 201 });
     }
 
@@ -376,6 +427,17 @@ export async function POST(
             },
           },
         },
+        team: {
+          select: {
+            name: true,
+            projectId: true,
+            project: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -387,6 +449,54 @@ export async function POST(
       projectMemberId: newTeamMember.projectMemberId,
       user: newTeamMember.projectMember.user,
     };
+
+    // Tentar pegar o projeto específico para o membro
+    let projectName = "";
+    try {
+      // Buscar a equipe para obter os detalhes do projeto
+      const teamDetails = await prisma.team.findUnique({
+        where: { id: teamId },
+        include: {
+          project: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+
+      if (teamDetails) {
+        projectName = teamDetails.project.name;
+      }
+    } catch (teamError) {
+      console.error("Erro ao buscar detalhes da equipe:", teamError);
+    }
+
+    // Criar notificação para o usuário que foi adicionado à equipe
+    try {
+      // Chamada para a API de notificação
+      await fetch(
+        `${process.env.NEXTAUTH_URL || ""}/api/notifications/team-added`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Passa o cookie de autenticação para manter a sessão
+            Cookie: request.headers.get("cookie") || "",
+          },
+          body: JSON.stringify({
+            userId: memberToAdd.userId,
+            teamId: teamId,
+            teamName: team.name,
+            projectId: team.projectId,
+            projectName: projectName,
+          }),
+        }
+      );
+    } catch (notificationError) {
+      console.error("Erro ao enviar notificação de equipe:", notificationError);
+      // Não interromper o fluxo se a notificação falhar
+    }
 
     return NextResponse.json({ member: formattedMember }, { status: 201 });
   } catch (error) {
