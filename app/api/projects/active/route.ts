@@ -23,17 +23,24 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Verificar se o projeto pertence ao usuário
-    const project = await db.project.findFirst({
+    // Verificar se o usuário tem acesso ao projeto (é dono OU membro)
+    const projectAccess = await db.project.findFirst({
       where: {
         id: projectId,
-        userId: session.user.id,
+        OR: [
+          { userId: session.user.id }, // É o dono
+          {
+            members: {
+              some: { userId: session.user.id }, // É membro
+            },
+          },
+        ],
       },
     });
 
-    if (!project) {
+    if (!projectAccess) {
       return NextResponse.json(
-        { error: "Projeto não encontrado ou não pertence ao usuário" },
+        { error: "Projeto não encontrado ou você não tem acesso a ele" },
         { status: 404 }
       );
     }
