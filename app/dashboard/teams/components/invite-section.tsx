@@ -337,7 +337,7 @@ export function InviteSection() {
       {/* Tabs para convites */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="email">Convite por Email</TabsTrigger>
+          <TabsTrigger value="email">Convite Direto</TabsTrigger>
           <TabsTrigger value="link">Convite por Link</TabsTrigger>
         </TabsList>
 
@@ -345,7 +345,7 @@ export function InviteSection() {
         <TabsContent value="email">
           <Card>
             <CardHeader>
-              <CardTitle>Convidar Direto</CardTitle>
+              <CardTitle>Convite Direto</CardTitle>
               <CardDescription>
                 Envie um convite para um email específico dentro do Metrio. Se o
                 usuário já estiver registrado, ele receberá uma notificação.
@@ -433,25 +433,27 @@ export function InviteSection() {
       </Tabs>
 
       {/* Lista de convites enviados com DataTable */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Convites Enviados</h3>
-        </div>
+      {invites.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium">Convites Enviados</h3>
+          </div>
 
-        <DataTable
-          data={invites}
-          columns={columns}
-          searchColumn="user"
-          searchPlaceholder="Filtrar convites..."
-          statusColumn="status"
-          onDeleteRows={handleDeleteMultipleInvites}
-          enableRowSelection
-          pageSize={5}
-          pageSizeOptions={[5, 10, 20]}
-          initialSorting={[{ id: "createdAt", desc: true }]}
-          className={isLoading ? "opacity-70 pointer-events-none" : ""}
-        />
-      </div>
+          <DataTable
+            data={invites}
+            columns={columns}
+            searchColumn="user"
+            searchPlaceholder="Filtrar convites..."
+            statusColumn="status"
+            onDeleteRows={handleDeleteMultipleInvites}
+            enableRowSelection
+            pageSize={5}
+            pageSizeOptions={[5, 10, 20]}
+            initialSorting={[{ id: "createdAt", desc: true }]}
+            className={isLoading ? "opacity-70 pointer-events-none" : ""}
+          />
+        </div>
+      )}
     </div>
   );
 }

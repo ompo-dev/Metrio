@@ -2,50 +2,13 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import {
-  Users,
-  Plus,
-  Pencil,
-  Trash2,
-  MoreHorizontal,
-  ChevronsUpDown,
-  Check,
-} from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 
 // Componentes UI
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -53,7 +16,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -64,27 +26,23 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// Componente de tabela personalizado
+import { DataTable, RowActions } from "@/components/data-table/Table";
 
 // Store
 import { useTeamStore, Team } from "@/lib/store/team-store";
 import { useProjectStore } from "@/lib/store/project-store";
 
 export function TeamsList() {
-  // Estados de UI
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState({});
-
   // Estados para modais
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
-  const [isEditTeamOpen, setIsEditTeamOpen] = useState(false);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
 
@@ -132,7 +90,6 @@ export function TeamsList() {
 
     // Resetar formulário e fechar modal
     setTeamToEdit(null);
-    setIsEditTeamOpen(false);
   };
 
   const handleDeleteTeam = async () => {
@@ -146,47 +103,17 @@ export function TeamsList() {
     setTeamToEdit(team);
     setEditTeamName(team.name);
     setEditTeamDescription(team.description || "");
-    setIsEditTeamOpen(true);
   };
 
   // Definição das colunas da tabela
   const columns: ColumnDef<Team>[] = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Selecionar todas"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Selecionar linha"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       accessorKey: "name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Nome
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => <div>{row.getValue("name")}</div>,
+      header: "Nome",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("name")}</div>
+      ),
+      size: 180,
     },
     {
       accessorKey: "description",
@@ -196,21 +123,13 @@ export function TeamsList() {
           {row.original.description || "Sem descrição"}
         </div>
       ),
+      size: 220,
     },
     {
       accessorKey: "memberCount",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Membros
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: "Membros",
       cell: ({ row }) => <div>{row.original.memberCount || 0}</div>,
+      size: 100,
     },
     {
       accessorKey: "isActive",
@@ -230,20 +149,11 @@ export function TeamsList() {
           </Badge>
         );
       },
+      size: 100,
     },
     {
       accessorKey: "updatedAt",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Última Atualização
-            <ChevronsUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: "Última Atualização",
       cell: ({ row }) => {
         const updatedAt = new Date(row.original.updatedAt);
         const formatted = formatDistanceToNow(updatedAt, {
@@ -252,61 +162,33 @@ export function TeamsList() {
         });
         return <div>{formatted}</div>;
       },
+      size: 180,
     },
     {
       id: "actions",
+      header: () => <span className="sr-only">Ações</span>,
+      cell: ({ row }) => (
+        <RowActions
+          row={row}
+          actions={[
+            {
+              label: "Editar",
+              icon: <Pencil className="h-4 w-4" />,
+              onClick: () => openEditModal(row.original),
+            },
+            {
+              label: "Excluir",
+              icon: <Trash2 className="h-4 w-4" />,
+              onClick: () => setTeamToDelete(row.original),
+              destructive: true,
+            },
+          ]}
+        />
+      ),
+      size: 60,
       enableHiding: false,
-      cell: ({ row }) => {
-        const team = row.original;
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => openEditModal(team)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Editar
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-600"
-                onClick={() => setTeamToDelete(team)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Excluir
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
     },
   ];
-
-  // Configuração da tabela
-  const table = useReactTable({
-    data: teams,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  });
 
   if (isLoading && teams.length === 0) {
     return (
@@ -326,147 +208,77 @@ export function TeamsList() {
 
   return (
     <div className="space-y-4">
-      {/* Filtro e botão de adicionar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center py-4 gap-3 justify-between">
-        <Input
-          placeholder="Filtrar por nome..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+      {/* Tabela de equipes usando o componente DataTable */}
+      <DataTable
+        data={teams}
+        columns={columns}
+        searchColumn="name"
+        searchPlaceholder="Filtrar por nome..."
+        statusColumn="isActive"
+        enablePagination
+        enableRowSelection
+        enableColumnVisibility
+        onAddItem={() => setIsCreateTeamOpen(true)}
+        addButtonLabel="Nova Equipe"
+        onDeleteRows={(selectedTeams) => {
+          if (selectedTeams.length === 1) {
+            setTeamToDelete(selectedTeams[0]);
+          } else {
+            // Aqui você pode implementar a lógica para exclusão em massa
+            // ou apenas continuar usando a lógica de exclusão individual
+            console.log("Excluir múltiplas equipes", selectedTeams);
           }
-          className="max-w-sm"
-        />
-        <Dialog open={isCreateTeamOpen} onOpenChange={setIsCreateTeamOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Equipe
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Criar Nova Equipe</DialogTitle>
-              <DialogDescription>
-                Informe os detalhes da equipe que deseja criar.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Nome
-                </Label>
-                <Input
-                  id="name"
-                  value={newTeamName}
-                  onChange={(e) => setNewTeamName(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
-                  Descrição
-                </Label>
-                <Textarea
-                  id="description"
-                  value={newTeamDescription}
-                  onChange={(e) => setNewTeamDescription(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
+        }}
+        pageSize={10}
+        pageSizeOptions={[5, 10, 25, 50]}
+      />
+
+      {/* Modal de criação de equipe */}
+      <Dialog open={isCreateTeamOpen} onOpenChange={setIsCreateTeamOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Criar Nova Equipe</DialogTitle>
+            <DialogDescription>
+              Informe os detalhes da equipe que deseja criar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="name"
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                className="col-span-3"
+              />
             </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleCreateTeam}>
-                Criar Equipe
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Tabela de equipes */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {isLoading ? (
-                    <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                    </div>
-                  ) : (
-                    "Nenhuma equipe encontrada."
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Paginação */}
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-sm text-muted-foreground">
-          Página {table.getState().pagination.pageIndex + 1} de{" "}
-          {table.getPageCount()}
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Anterior
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Próxima
-        </Button>
-      </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="description" className="text-right">
+                Descrição
+              </Label>
+              <Textarea
+                id="description"
+                value={newTeamDescription}
+                onChange={(e) => setNewTeamDescription(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={handleCreateTeam}>
+              Criar Equipe
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de edição */}
-      <Dialog open={isEditTeamOpen} onOpenChange={setIsEditTeamOpen}>
+      <Dialog
+        open={!!teamToEdit}
+        onOpenChange={(open) => !open && setTeamToEdit(null)}
+      >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Editar Equipe</DialogTitle>

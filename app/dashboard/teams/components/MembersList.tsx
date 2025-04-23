@@ -218,12 +218,6 @@ export function MembersList() {
               row={row}
               actions={[
                 {
-                  label: "Enviar Email",
-                  onClick: () =>
-                    console.log("Enviar email para", row.original.email),
-                  icon: <Mail className="h-4 w-4" />,
-                },
-                {
                   label: "Adicionar à Equipe",
                   onClick: () => handleOpenAddToTeam(row.original),
                   icon: <Users className="h-4 w-4" />,
@@ -238,12 +232,6 @@ export function MembersList() {
             row={row}
             actions={[
               {
-                label: "Enviar Email",
-                onClick: () =>
-                  console.log("Enviar email para", row.original.email),
-                icon: <Mail className="h-4 w-4" />,
-              },
-              {
                 label: "Adicionar à Equipe",
                 onClick: () => handleOpenAddToTeam(row.original),
                 icon: <Users className="h-4 w-4" />,
@@ -252,15 +240,6 @@ export function MembersList() {
                 label: "Editar Função",
                 onClick: () => handleOpenEditRole(row.original),
                 icon: <UserCog className="h-4 w-4" />,
-              },
-              {
-                label: "Editar Membro",
-                onClick: () =>
-                  console.log(
-                    "Editar membro",
-                    row.original.userId || row.original.id
-                  ),
-                icon: <Settings className="h-4 w-4" />,
               },
               {
                 label: "Remover Membro",
