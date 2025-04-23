@@ -109,14 +109,17 @@ export function TeamSwitcher() {
   // Separar projetos em dois grupos: os que sou dono e os que sou membro
   const ownedProjects = React.useMemo(
     () =>
-      projects.filter((project) => project.role === "owner" || !project.role),
+      projects.filter(
+        (project: Project) => project.role === "owner" || !project.role
+      ),
     [projects]
   );
 
   const memberProjects = React.useMemo(
     () =>
       projects.filter(
-        (project) => project.role === "member" || project.role === "admin"
+        (project: Project) =>
+          project.role === "member" || project.role === "admin"
       ),
     [projects]
   );
@@ -251,7 +254,7 @@ export function TeamSwitcher() {
                   <DropdownMenuLabel className="text-xs text-muted-foreground">
                     Meus Projetos
                   </DropdownMenuLabel>
-                  {ownedProjects.map((project, index) => {
+                  {ownedProjects.map((project: Project, index: number) => {
                     const ProjectIconComponent = getIconComponent(
                       project.logoIcon
                     );
@@ -280,7 +283,7 @@ export function TeamSwitcher() {
                   <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-1">
                     <Users className="h-3 w-3" /> Projetos Compartilhados
                   </DropdownMenuLabel>
-                  {memberProjects.map((project) => {
+                  {memberProjects.map((project: Project) => {
                     const ProjectIconComponent = getIconComponent(
                       project.logoIcon
                     );

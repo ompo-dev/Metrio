@@ -19,6 +19,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useSocketContext } from "@/lib/providers/SocketProvider";
 
 // Tipos de notificações
 type NotificationType =
@@ -201,6 +202,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const { lastMessage } = useSocketContext();
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   // Função para buscar todas as notificações do usuário
@@ -230,23 +232,66 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
     }
   }, [open]);
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({
-        ...notification,
-        unread: false,
-      }))
-    );
+  // Adicionar novas notificações recebidas via WebSocket
+  useEffect(() => {
+    if (lastMessage) {
+      // Verificar se a notificação já existe para evitar duplicatas
+      const exists = notifications.some((n) => n.id === lastMessage.id);
+      if (!exists) {
+        setNotifications((prev) => [lastMessage, ...prev]);
+      }
+    }
+  }, [lastMessage, notifications]);
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      // Marcar todas as notificações como lidas no servidor
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          markAllAsRead: true,
+        }),
+      });
+
+      // Atualizar estado local
+      setNotifications(
+        notifications.map((notification) => ({
+          ...notification,
+          unread: false,
+        }))
+      );
+    } catch (error) {
+      console.error("Erro ao marcar notificações como lidas:", error);
+    }
   };
 
-  const handleNotificationClick = (id: number) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id
-          ? { ...notification, unread: false }
-          : notification
-      )
-    );
+  const handleNotificationClick = async (id: number) => {
+    try {
+      // Marcar a notificação como lida no servidor
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notificationId: id.toString(),
+        }),
+      });
+
+      // Atualizar estado local
+      setNotifications(
+        notifications.map((notification) =>
+          notification.id === id
+            ? { ...notification, unread: false }
+            : notification
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao marcar notificação como lida:", error);
+    }
   };
 
   const handleDismissNotification = (id: number) => {
@@ -513,7 +558,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
               </div>
             </div>
             {hasUnread && (
-              <div className="absolute end-0 self-center">
+              <div className="absolute end-0 self-center animate-pulse">
                 <Dot />
               </div>
             )}
@@ -549,7 +594,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
               </div>
             </div>
             {hasUnread && (
-              <div className="absolute end-0 self-center">
+              <div className="absolute end-0 self-center animate-pulse">
                 <Dot />
               </div>
             )}
@@ -585,7 +630,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
               </div>
             </div>
             {hasUnread && (
-              <div className="absolute end-0 self-center">
+              <div className="absolute end-0 self-center animate-pulse">
                 <Dot />
               </div>
             )}
@@ -644,7 +689,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
           <div className="relative flex items-center">
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <Badge className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px]">
+              <Badge className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full p-0 text-[10px] animate-pulse">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </Badge>
             )}
@@ -690,12 +735,18 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
           className="bg-border -mx-1 my-1 h-px"
         ></div>
         <div className="max-h-[400px] overflow-y-auto">
-          {notifications.length > 0 ? (
+          {loading ? (
+            <div className="p-4 text-center text-sm text-muted-foreground">
+              Carregando notificações...
+            </div>
+          ) : notifications.length > 0 ? (
             <div className="space-y-1">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className="hover:bg-accent group rounded-md px-3 py-2 text-sm transition-colors"
+                  className={`hover:bg-accent group rounded-md px-3 py-2 text-sm transition-colors ${
+                    notification.unread ? "bg-muted/40" : ""
+                  }`}
                   onClick={() => handleNotificationClick(notification.id)}
                 >
                   {renderNotificationItem(notification)}

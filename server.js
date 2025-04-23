@@ -1,0 +1,53 @@
+const { createServer } = require("http");
+const { parse } = require("url");
+const next = require("next");
+const { Server } = require("socket.io");
+
+const dev = process.env.NODE_ENV !== "production";
+const app = next({ dev });
+const handle = app.getRequestHandler();
+
+app.prepare().then(() => {
+  const server = createServer((req, res) => {
+    const parsedUrl = parse(req.url, true);
+    handle(req, res, parsedUrl);
+  });
+
+  // Inicializa o Socket.IO no servidor HTTP
+  const io = new Server(server, {
+    path: "/api/socketio",
+    addTrailingSlash: false,
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"],
+    },
+  });
+
+  // Configura o Socket.IO
+  io.on("connection", (socket) => {
+    console.log("Novo cliente conectado:", socket.id);
+
+    // Autenticar usuário
+    const userId = socket.handshake.query.userId;
+    if (!userId) {
+      console.log("Usuário não autenticado, desconectando...");
+      socket.disconnect();
+      return;
+    }
+
+    // Registrar conexão
+    console.log(`Usuário ${userId} conectado (socket: ${socket.id})`);
+
+    // Evento de desconexão
+    socket.on("disconnect", () => {
+      console.log(`Usuário ${userId} desconectado (socket: ${socket.id})`);
+    });
+  });
+
+  // Inicia o servidor
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, (err) => {
+    if (err) throw err;
+    console.log(`> Servidor pronto na porta ${PORT}`);
+  });
+});

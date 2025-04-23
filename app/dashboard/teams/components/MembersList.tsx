@@ -61,7 +61,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-import { Member, getTeamIcon } from "./types";
+import { Member, getTeamIcon, Role } from "./types";
 import { useMemberStore } from "@/lib/store/member-store";
 import { useTeamStore, Team } from "@/lib/store/team-store";
 import { useProjectStore } from "@/lib/store/project-store";
@@ -332,7 +332,7 @@ export function MembersList() {
             setSelectedTeamIds([]);
             setIsAddingToTeam(false);
           })
-          .catch((error) => {
+          .catch((error: Error) => {
             toast.error(`Erro ao adicionar membro à equipe: ${error.message}`);
             setIsAddingToTeam(false);
           });
@@ -430,8 +430,8 @@ export function MembersList() {
                 </SelectTrigger>
                 <SelectContent>
                   {roles
-                    .filter((role) => role.id !== "owner") // Não pode promover a proprietário
-                    .map((role) => (
+                    .filter((role: Role) => role.id !== "owner") // Não pode promover a proprietário
+                    .map((role: Role) => (
                       <SelectItem key={role.id} value={role.id}>
                         {role.name}
                       </SelectItem>
@@ -505,7 +505,7 @@ export function MembersList() {
                   </p>
                 </div>
               ) : (
-                teams.map((team) => {
+                teams.map((team: Team) => {
                   const IconComponent = getTeamIcon(team.logoIcon || "users");
                   const isSelected = selectedTeamIds.includes(team.id);
 

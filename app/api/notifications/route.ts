@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendNotificationToUser } from "@/lib/socketio";
 
 export async function GET() {
   try {
@@ -171,36 +172,125 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const { notificationId } = await request.json();
+    const userId = session.user.id;
+    const data = await request.json();
+    const { notificationId, markAllAsRead } = data;
 
-    // Verificar se o ID da notificação foi fornecido
-    if (!notificationId) {
+    if (markAllAsRead) {
+      // Marcar todas as notificações do usuário como lidas
+      await prisma.notification.updateMany({
+        where: {
+          userId,
+          read: false,
+        },
+        data: {
+          read: true,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Todas as notificações foram marcadas como lidas",
+      });
+    } else if (notificationId) {
+      // Marcar uma notificação específica como lida
+      await prisma.notification.updateMany({
+        where: {
+          id: notificationId,
+          userId,
+        },
+        data: {
+          read: true,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Notificação marcada como lida",
+      });
+    } else {
       return NextResponse.json(
-        { error: "ID da notificação é necessário" },
+        { error: "Parâmetros inválidos" },
         { status: 400 }
       );
     }
-
-    // Marcar a notificação como lida
-    await prisma.notification.update({
-      where: {
-        id: notificationId,
-        userId: session.user.id,
-      },
-      data: {
-        read: true,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "Notificação marcada como lida",
-    });
   } catch (error) {
     console.error("Erro ao atualizar notificação:", error);
     return NextResponse.json(
       { error: "Erro ao atualizar notificação" },
       { status: 500 }
     );
+  }
+}
+
+// Função para criar uma notificação e enviar via WebSocket
+export async function createAndSendNotification(
+  userId: string,
+  type: string,
+  content: any
+) {
+  try {
+    // Criar a notificação no banco de dados
+    const notification = await prisma.notification.create({
+      data: {
+        userId,
+        type,
+        content,
+        read: false,
+      },
+    });
+
+    // Formatar a notificação para o cliente
+    let formattedNotification: any = {
+      id: notification.id,
+      timestamp: new Date().toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      unread: true,
+    };
+
+    // Definir os campos específicos do tipo
+    if (type === "TEAM_ADDED") {
+      formattedNotification = {
+        ...formattedNotification,
+        type: "team_added",
+        teamId: content.teamId || "",
+        teamName: content.teamName || "Equipe",
+        projectName: content.projectName || "Projeto",
+        senderName: content.senderName || "Um usuário",
+        projectId: content.projectId || "",
+      };
+    } else if (type === "TEAM_REMOVED") {
+      formattedNotification = {
+        ...formattedNotification,
+        type: "team_removed",
+        teamId: content.teamId || "",
+        teamName: content.teamName || "Equipe",
+        projectName: content.projectName || "Projeto",
+        senderName: content.senderName || "Um usuário",
+        projectId: content.projectId || "",
+      };
+    } else {
+      formattedNotification = {
+        ...formattedNotification,
+        type: "default",
+        image: "",
+        initials: content.senderInitials || "NU",
+        user: content.senderName || "Um usuário",
+        action: content.action || "enviou uma notificação",
+        target: content.target || "",
+      };
+    }
+
+    // Enviar notificação via WebSocket
+    sendNotificationToUser(userId, formattedNotification);
+
+    return { success: true, notification: formattedNotification };
+  } catch (error) {
+    console.error("Erro ao criar notificação:", error);
+    return { success: false, error };
   }
 }
