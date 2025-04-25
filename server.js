@@ -2,10 +2,11 @@ const { createServer } = require("http");
 const { parse } = require("url");
 const next = require("next");
 const { Server } = require("socket.io");
+const path = require("path");
 
-// Importar o sistema de PG LISTEN
-// Nota: Usando require para compatibilidade com módulos CommonJS
-const { initPgListen } = require("./lib/pubsub");
+// Importar o sistema de PubSub
+// Comentando temporariamente para diagnóstico
+// const { initPubSub } = require(path.join(__dirname, "lib", "pubsub"));
 
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
@@ -48,10 +49,15 @@ app.prepare().then(() => {
     });
   });
 
-  // Inicializa o sistema de LISTEN do PostgreSQL
-  initPgListen().catch((err) => {
-    console.error("Erro ao inicializar PG LISTEN:", err);
-  });
+  // Armazenar a referência global para o servidor Socket.IO
+  // Isso é importante para que o sistema de socketio.ts possa acessar
+  global.socketIOInstance = io;
+
+  // Inicializa o sistema PubSub do PostgreSQL
+  // Comentando temporariamente para diagnóstico
+  // initPubSub().catch((err) => {
+  //   console.error("Erro ao inicializar PubSub:", err);
+  // });
 
   // Inicia o servidor
   const PORT = process.env.PORT || 3000;

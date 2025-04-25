@@ -1,99 +1,127 @@
-import { Pool } from "pg";
+import { Client } from "pg";
 import { FormattedNotification } from "@/types/notifications";
 import { sendNotificationToUser } from "./socketio";
 
-// Singleton para conexão PG LISTEN
-let pgListenConnection: Pool | null = null;
-let isListening = false;
+// Canal PostgreSQL para pub/sub
+const NOTIFICATION_CHANNEL = "server_notifications";
 
-interface NotificationPayload {
-  event: string;
+// Cliente PostgreSQL para pub/sub
+let client: Client | null = null;
+
+// Interface para mensagens publicadas no canal
+interface PubSubMessage {
   userId: string;
   notification: FormattedNotification;
 }
 
-// Interface para eventos de notificação do Postgres
-interface PgNotification {
-  channel: string;
-  payload?: string;
-  processId?: number;
-}
-
 /**
- * Inicializa a conexão para escutar notificações do PostgreSQL
+ * Inicializa o sistema PubSub com PostgreSQL LISTEN/NOTIFY
+ * Estabelece conexão com o banco e configura listeners
  */
-export const initPgListen = async () => {
-  if (isListening) return;
-
+export async function initPubSub() {
   try {
-    // Criar uma conexão dedicada para o LISTEN
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      max: 1, // Apenas uma conexão para o LISTEN
+    // Usar a mesma string de conexão da aplicação
+    const dbUrl = process.env.DATABASE_URL;
+    if (!dbUrl) {
+      throw new Error("DATABASE_URL não definida no ambiente");
+    }
+
+    // Criar cliente PostgreSQL dedicado para pub/sub
+    client = new Client({
+      connectionString: dbUrl,
     });
 
-    // Testar a conexão
-    const client = await pool.connect();
+    await client.connect();
+    console.log("PubSub: Conectado ao PostgreSQL");
 
-    // Configurar o cliente para escutar o canal de notificações
-    await client.query("LISTEN notifications_channel");
+    // Configurar listener para o canal de notificações
+    await client.query(`LISTEN ${NOTIFICATION_CHANNEL}`);
 
-    console.log("PG LISTEN conectado e escutando o canal de notificações");
-
-    // Configurar o handler para notificações
-    client.on("notification", (msg: PgNotification) => {
-      try {
-        if (!msg.payload) return;
-
-        const payload: NotificationPayload = JSON.parse(msg.payload);
-
-        if (payload.event === "new_notification") {
-          // Reenviar a notificação para o usuário via WebSocket (em outras instâncias)
-          sendNotificationToUser(payload.userId, payload.notification);
+    // Configurar handler para notificações recebidas
+    client.on("notification", async (msg) => {
+      if (msg.channel === NOTIFICATION_CHANNEL && msg.payload) {
+        try {
+          // Processar a mensagem recebida
+          const data: PubSubMessage = JSON.parse(msg.payload);
           console.log(
-            `[PG NOTIFY] Notificação recebida para usuário ${payload.userId}`
+            `PubSub: Notificação recebida para usuário ${data.userId}`
           );
+
+          // Tentar enviar via WebSocket
+          sendNotificationToUser(data.userId, data.notification);
+        } catch (err) {
+          console.error("PubSub: Erro ao processar notificação:", err);
         }
-      } catch (error) {
-        console.error("Erro ao processar notificação do PostgreSQL:", error);
       }
     });
 
-    // Configurar handlers de erro
-    client.on("error", (err: Error) => {
-      console.error("Erro na conexão LISTEN do PostgreSQL:", err);
-      // Tentar reconectar após um tempo
+    // Configurar handler para erros
+    client.on("error", (err) => {
+      console.error("PubSub: Erro na conexão PostgreSQL:", err);
+      // Tentar reconectar
       setTimeout(() => {
-        isListening = false;
-        initPgListen().catch(console.error);
+        if (client) {
+          client.end();
+          client = null;
+        }
+        initPubSub().catch(console.error);
       }, 5000);
     });
 
-    // Armazenar a conexão e marcar como conectado
-    pgListenConnection = pool;
-    isListening = true;
-
-    // Esta conexão não deve retornar ao pool
-    // Será dedicada para o LISTEN
-  } catch (error) {
-    console.error("Erro ao inicializar PG LISTEN:", error);
-
-    // Tentar reconectar após um tempo
-    setTimeout(() => {
-      isListening = false;
-      initPgListen().catch(console.error);
-    }, 5000);
+    return true;
+  } catch (err) {
+    console.error("PubSub: Falha ao inicializar:", err);
+    throw err;
   }
-};
+}
 
 /**
- * Encerra a conexão LISTEN
+ * Publica uma notificação no canal PubSub
+ * Primeiro tenta enviar diretamente via WebSocket, depois publica no canal
+ * para outras instâncias do servidor
  */
-export const closePgListen = async () => {
-  if (pgListenConnection) {
-    await pgListenConnection.end();
-    pgListenConnection = null;
-    isListening = false;
-    console.log("Conexão PG LISTEN encerrada");
+export async function publishNotification(
+  userId: string,
+  notification: FormattedNotification
+): Promise<boolean> {
+  try {
+    // Tentar enviar diretamente via WebSocket primeiro
+    const sent = sendNotificationToUser(userId, notification);
+
+    // Publicar no canal para outras instâncias do servidor
+    if (client) {
+      const message: PubSubMessage = { userId, notification };
+      await client.query(`NOTIFY ${NOTIFICATION_CHANNEL}, $1`, [
+        JSON.stringify(message),
+      ]);
+      console.log(`PubSub: Notificação publicada para usuário ${userId}`);
+      return true;
+    } else {
+      console.warn(
+        "PubSub: Cliente não inicializado, não foi possível publicar"
+      );
+      return sent; // Retorna se conseguiu enviar via WebSocket
+    }
+  } catch (err) {
+    console.error("PubSub: Erro ao publicar notificação:", err);
+    return false;
   }
-};
+}
+
+/**
+ * Fecha a conexão com o PostgreSQL
+ */
+export async function closePubSub() {
+  if (client) {
+    try {
+      await client.end();
+      client = null;
+      console.log("PubSub: Conexão encerrada");
+      return true;
+    } catch (err) {
+      console.error("PubSub: Erro ao fechar conexão:", err);
+      return false;
+    }
+  }
+  return true;
+}

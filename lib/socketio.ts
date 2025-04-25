@@ -1,100 +1,108 @@
 import { Server as SocketIOServer } from "socket.io";
+import { Server as HTTPServer } from "http";
+import type { FormattedNotification } from "@/types/notifications";
+import { publishNotification } from "@/lib/pubsub";
 
-// Variáveis globais para armazenar o servidor Socket.IO
-let socketIOInstance: SocketIOServer | null = null;
+// Acesso à instância global do Socket.IO definida no server.js
+declare global {
+  var socketIOInstance: SocketIOServer | null;
+}
 
 // Mapa de usuários conectados: userId -> socketId
 export const connectedUsers = new Map<string, string[]>();
 
-// Inicializa o servidor Socket.IO como um singleton
-export const getSocketIOInstance = (httpServer?: any) => {
-  if (socketIOInstance) {
-    return socketIOInstance;
-  }
+// Armazenamento de conexões de socket por usuário
+let io: SocketIOServer | null = null;
+const userSockets: Record<string, string[]> = {};
 
-  if (!httpServer) {
-    throw new Error("HTTP Server é necessário para inicializar o Socket.IO");
-  }
-
-  // Inicializa o servidor Socket.IO
-  socketIOInstance = new SocketIOServer(httpServer, {
-    path: "/api/socketio",
-    addTrailingSlash: false,
+// Inicializa o servidor Socket.IO
+export function initSocketIO(httpServer: HTTPServer) {
+  io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "*",
+      origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       methods: ["GET", "POST"],
+      credentials: true,
     },
+    path: "/api/socketio",
   });
 
-  // Configura o evento de conexão
-  socketIOInstance.on("connection", async (socket) => {
-    console.log("Novo cliente conectado:", socket.id);
+  io.on("connection", (socket) => {
+    console.log("Nova conexão socket:", socket.id);
 
-    // Autenticar usuário
-    const userId = socket.handshake.query.userId as string;
-    if (!userId) {
-      console.log("Usuário não autenticado, desconectando...");
-      socket.disconnect();
-      return;
-    }
-
-    // Registrar socket na lista de usuários conectados
-    if (connectedUsers.has(userId)) {
-      connectedUsers.get(userId)?.push(socket.id);
-    } else {
-      connectedUsers.set(userId, [socket.id]);
-    }
-
-    // Enviar confirmação de conexão ao cliente
-    socket.emit("connected", { success: true, userId });
-
-    console.log("Usuário conectado:", userId);
-    console.log("Usuários conectados:", connectedUsers.size);
-
-    // Evento de desconexão
-    socket.on("disconnect", () => {
-      console.log("Cliente desconectado:", socket.id);
-
-      // Remover socket da lista de usuários conectados
-      if (connectedUsers.has(userId)) {
-        const userSockets = connectedUsers.get(userId) || [];
-        const updatedSockets = userSockets.filter((id) => id !== socket.id);
-
-        if (updatedSockets.length === 0) {
-          connectedUsers.delete(userId);
-        } else {
-          connectedUsers.set(userId, updatedSockets);
-        }
+    // Autenticar e registrar usuário
+    socket.on("authenticate", (userId: string) => {
+      if (!userId) {
+        socket.disconnect();
+        return;
       }
 
-      console.log("Usuários conectados após desconexão:", connectedUsers.size);
+      console.log(`Usuário ${userId} autenticado no socket ${socket.id}`);
+
+      // Registrar o socket para este usuário
+      if (!userSockets[userId]) {
+        userSockets[userId] = [];
+      }
+      userSockets[userId].push(socket.id);
+
+      // Remover socket quando o usuário desconectar
+      socket.on("disconnect", () => {
+        console.log(`Socket ${socket.id} desconectado`);
+        if (userSockets[userId]) {
+          userSockets[userId] = userSockets[userId].filter(
+            (id) => id !== socket.id
+          );
+          if (userSockets[userId].length === 0) {
+            delete userSockets[userId];
+          }
+        }
+      });
     });
   });
 
-  console.log("Socket.IO inicializado com sucesso");
+  console.log("Servidor Socket.IO inicializado");
+  return io;
+}
 
-  return socketIOInstance;
-};
-
-// Função para enviar notificação para um usuário específico
-export const sendNotificationToUser = (userId: string, notification: any) => {
-  if (!socketIOInstance) {
-    console.log("Socket.IO não está inicializado");
+// Função para enviar notificação para um usuário
+export function sendNotificationToUser(
+  userId: string,
+  notification: FormattedNotification
+): boolean {
+  if (!io) {
+    console.warn("Socket.IO não inicializado");
     return false;
   }
 
-  // Busca os sockets do usuário
-  const userSockets = connectedUsers.get(userId);
-  if (!userSockets || userSockets.length === 0) {
+  const userSocketIds = userSockets[userId];
+  if (!userSocketIds || userSocketIds.length === 0) {
     console.log(`Usuário ${userId} não está conectado`);
     return false;
   }
 
-  // Envia a notificação para todos os sockets do usuário
-  for (const socketId of userSockets) {
-    socketIOInstance.to(socketId).emit("notification", notification);
-    console.log(`Notificação enviada para ${userId} (socket: ${socketId})`);
-  }
+  // Enviar para todos os sockets do usuário
+  userSocketIds.forEach((socketId) => {
+    io!.to(socketId).emit("notification", notification);
+  });
 
+  console.log(`Notificação enviada para usuário ${userId}`);
   return true;
-};
+}
+
+// Função para enviar e publicar notificação (combina WebSocket + PubSub)
+export async function sendAndPublishNotification(
+  userId: string,
+  notification: FormattedNotification
+) {
+  try {
+    // Publicar a notificação (isso também tentará enviá-la via WebSocket)
+    return await publishNotification(userId, notification);
+  } catch (error) {
+    console.error("Erro ao enviar e publicar notificação:", error);
+    return false;
+  }
+}
+
+// Função para obter o servidor Socket.IO
+export function getSocketIO() {
+  return io;
+}

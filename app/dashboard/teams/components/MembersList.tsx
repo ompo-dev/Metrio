@@ -25,6 +25,7 @@ import {
   ChevronDown,
   Check,
   X,
+  RefreshCw,
 } from "lucide-react";
 import {
   Card,
@@ -65,12 +66,14 @@ import { Member, getTeamIcon, Role } from "./types";
 import { useMemberStore } from "@/lib/store/member-store";
 import { useTeamStore, Team } from "@/lib/store/team-store";
 import { useProjectStore } from "@/lib/store/project-store";
+import { useSocketContext } from "@/lib/providers/SocketProvider";
 
 export function MembersList() {
   // Usar diretamente o store Zustand em vez de receber props
   const {
     members,
     roles,
+    fetchMembers,
     addMember,
     updateMemberRole,
     removeMember,
@@ -80,6 +83,13 @@ export function MembersList() {
   const { activeProject } = useProjectStore();
   const { teams, fetchTeams, addTeamMember, addManyTeamMembers } =
     useTeamStore();
+
+  // Usar o contexto de socket para notificações em tempo real
+  const { socket, notifications } = useSocketContext();
+
+  // Estado para controlar carregamento de membros
+  const [isLoadingMembers, setIsLoadingMembers] = React.useState(false);
+  const [lastRefresh, setLastRefresh] = React.useState<Date>(new Date());
 
   const [newMemberName, setNewMemberName] = React.useState("");
   const [newMemberEmail, setNewMemberEmail] = React.useState("");
@@ -107,12 +117,105 @@ export function MembersList() {
   const [selectedMembers, setSelectedMembers] = React.useState<Member[]>([]);
   const [isAddingToTeam, setIsAddingToTeam] = React.useState(false);
 
-  // Carregar as equipes quando o componente montar
+  // Função para atualizar os membros
+  const refreshMembers = React.useCallback(async () => {
+    if (activeProject?.id) {
+      setIsLoadingMembers(true);
+      try {
+        console.log("[MembersList] Atualizando lista de membros...");
+        // Chamando fetchMembers sem argumentos, pois ele deve usar o projeto ativo do store
+        await fetchMembers();
+        setLastRefresh(new Date());
+        console.log("[MembersList] Lista de membros atualizada com sucesso");
+      } catch (error) {
+        console.error("[MembersList] Erro ao atualizar membros:", error);
+      } finally {
+        setIsLoadingMembers(false);
+      }
+    }
+  }, [activeProject?.id, fetchMembers]);
+
+  // Carregar os membros quando o componente montar ou quando o projeto ativo mudar
+  React.useEffect(() => {
+    refreshMembers();
+  }, [refreshMembers, activeProject?.id]);
+
+  // Carregar as equipes quando o componente montar ou quando o projeto ativo mudar
   React.useEffect(() => {
     if (activeProject?.id) {
       fetchTeams(activeProject.id);
     }
-  }, [activeProject, fetchTeams]);
+  }, [activeProject?.id, fetchTeams]);
+
+  // Escutar diretamente eventos relevantes do socket
+  React.useEffect(() => {
+    if (!socket) return;
+
+    // Função handler para quando receber uma notificação
+    const handleNotification = (notification: any) => {
+      console.log("[MembersList] Notificação socket recebida:", notification);
+
+      // Verificar se a notificação é relacionada a convites ou membros
+      if (
+        notification.type === "invite_accepted" ||
+        notification.type === "member_added" ||
+        notification.type === "team_added" ||
+        notification.type === "invite_status_changed" ||
+        notification.type === "project_member_updated"
+      ) {
+        console.log(
+          "[MembersList] Notificação relevante detectada, atualizando membros..."
+        );
+        // Adicionar um pequeno atraso para garantir que o banco de dados esteja atualizado
+        setTimeout(() => {
+          refreshMembers();
+        }, 500);
+      }
+    };
+
+    // Adicionar listener
+    socket.on("notification", handleNotification);
+
+    // Cleanup ao desmontar
+    return () => {
+      socket.off("notification", handleNotification);
+    };
+  }, [socket, refreshMembers]);
+
+  // Atualizar membros quando receber notificações relevantes
+  React.useEffect(() => {
+    // Verificar se há notificações relacionadas a membros ou convites
+    const memberNotifications = notifications.filter(
+      (notification) =>
+        notification.type === "invite_accepted" ||
+        notification.type === "member_added" ||
+        notification.type === "team_added" ||
+        notification.type === "invite_status_changed" ||
+        notification.type === "project_member_updated"
+    );
+
+    // Se houver notificações de membros, atualizar a lista
+    if (memberNotifications.length > 0) {
+      console.log(
+        "[MembersList] Atualizando membros devido a notificações:",
+        memberNotifications
+      );
+      // Adicionar um pequeno atraso para garantir que o banco de dados esteja atualizado
+      setTimeout(() => {
+        refreshMembers();
+      }, 500); // Meio segundo de atraso
+    }
+  }, [notifications, refreshMembers]);
+
+  // Recarregar membros a cada 15 segundos como fallback
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("[MembersList] Atualizando membros (intervalo periódico)");
+      refreshMembers();
+    }, 15000); // 15 segundos em vez de 30
+
+    return () => clearInterval(interval);
+  }, [refreshMembers]);
 
   const handleAddMember = () => {
     if (newMemberName.trim() && newMemberEmail.trim() && newMemberRole) {
@@ -145,6 +248,9 @@ export function MembersList() {
       // Fechar o modal e mostrar mensagem de sucesso
       toast.success("Função do membro atualizada com sucesso");
       setEditRoleOpen(false);
+
+      // Atualizar a lista de membros
+      refreshMembers();
     } catch (error: any) {
       toast.error(error.message || "Erro ao atualizar função do membro");
     }
@@ -167,6 +273,9 @@ export function MembersList() {
       await removeMember(memberToDelete.id);
       toast.success(`Membro ${memberToDelete.name} removido com sucesso`);
       setDeleteConfirmOpen(false);
+
+      // Atualizar a lista após remover
+      refreshMembers();
     } catch (error: any) {
       toast.error(error.message || "Erro ao remover membro");
     }
@@ -286,6 +395,9 @@ export function MembersList() {
       const memberIds = selectedRows.map((member) => member.id);
       const result = await removeManyMembers(memberIds);
       toast.success(`${result.removedCount} membros removidos com sucesso`);
+
+      // Atualizar a lista após remover
+      refreshMembers();
     } catch (error: any) {
       toast.error(error.message || "Erro ao remover membros selecionados");
     }
@@ -321,22 +433,29 @@ export function MembersList() {
       setIsAddingToTeam(true);
 
       // Adicionar o membro a várias equipes
-      selectedTeamIds.forEach((teamId) => {
-        addTeamMember(teamId, memberToAddToTeam.id)
-          .then(() => {
-            toast.success(
-              `${memberToAddToTeam.name} adicionado às equipes selecionadas`
-            );
-            setAddToTeamOpen(false);
-            setMemberToAddToTeam(null);
-            setSelectedTeamIds([]);
-            setIsAddingToTeam(false);
-          })
-          .catch((error: Error) => {
-            toast.error(`Erro ao adicionar membro à equipe: ${error.message}`);
-            setIsAddingToTeam(false);
-          });
-      });
+      Promise.all(
+        selectedTeamIds.map((teamId) =>
+          addTeamMember(teamId, memberToAddToTeam.id)
+        )
+      )
+        .then(() => {
+          toast.success(
+            `${memberToAddToTeam.name} adicionado às equipes selecionadas`
+          );
+          setAddToTeamOpen(false);
+          setMemberToAddToTeam(null);
+          setSelectedTeamIds([]);
+          setIsAddingToTeam(false);
+
+          // Atualizar as equipes após adicionar membros
+          if (activeProject?.id) {
+            fetchTeams(activeProject.id);
+          }
+        })
+        .catch((error: Error) => {
+          toast.error(`Erro ao adicionar membro à equipe: ${error.message}`);
+          setIsAddingToTeam(false);
+        });
     }
   };
 
@@ -360,6 +479,11 @@ export function MembersList() {
           setSelectedMembers([]);
           setSelectedTeamIds([]);
           setIsAddingToTeam(false);
+
+          // Atualizar as equipes após adicionar membros
+          if (activeProject?.id) {
+            fetchTeams(activeProject.id);
+          }
         })
         .catch((error) => {
           toast.error(`Erro ao adicionar membros às equipes: ${error.message}`);
@@ -386,9 +510,41 @@ export function MembersList() {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle>Membros</CardTitle>
-            <CardDescription>
-              Gerencie os membros da sua organização
-            </CardDescription>
+            <div className="flex items-center gap-2">
+              <CardDescription>
+                Gerencie os membros da sua organização
+              </CardDescription>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refreshMembers}
+                disabled={isLoadingMembers}
+                title="Atualizar lista de membros"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${
+                    isLoadingMembers ? "animate-spin" : ""
+                  }`}
+                />
+              </Button>
+            </div>
+          </div>
+
+          {/* Indicador de atualização e última atualização */}
+          <div className="flex flex-col gap-1 mt-2">
+            {isLoadingMembers && (
+              <div className="text-xs text-muted-foreground animate-pulse flex items-center">
+                <RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Atualizando
+                membros...
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground">
+              Última atualização:{" "}
+              <span suppressHydrationWarning>
+                {lastRefresh.toLocaleTimeString()}
+              </span>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

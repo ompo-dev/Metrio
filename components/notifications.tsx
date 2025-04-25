@@ -20,6 +20,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useSocketContext } from "@/lib/providers/SocketProvider";
+import {
+  FormattedNotification,
+  NotificationType as ApiNotificationType,
+} from "@/types/notifications";
 
 // Tipos de notificações
 type NotificationType =
@@ -29,7 +33,13 @@ type NotificationType =
   | "default"
   | "invite"
   | "team_added"
-  | "team_removed";
+  | "team_removed"
+  | "invite_accepted"
+  | "member_added"
+  | "project_member_updated"
+  | "invite_status_changed"
+  | "invite_rejected"
+  | "invite_expired";
 
 interface BaseNotification {
   id: number;
@@ -235,10 +245,81 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
   // Adicionar novas notificações recebidas via WebSocket
   useEffect(() => {
     if (lastMessage) {
+      // Convertemos a notificação formatada para o formato interno
+      const formattedToInternalNotification = (
+        formatted: FormattedNotification
+      ): Notification => {
+        // Formato padrão para todos os tipos
+        const baseNotification: BaseNotification = {
+          id:
+            typeof formatted.id === "string"
+              ? parseInt(formatted.id)
+              : formatted.id,
+          timestamp: formatted.timestamp || new Date().toLocaleDateString(),
+          unread: formatted.unread ?? true,
+          type: formatted.type as NotificationType,
+        };
+
+        // Converter com base no tipo
+        switch (formatted.type) {
+          case "invite":
+            return {
+              ...baseNotification,
+              type: "invite",
+              inviteId: formatted.content?.inviteId || "",
+              projectName: formatted.content?.projectName || "Projeto",
+              senderName: formatted.content?.senderName || "Usuário",
+              projectId: formatted.content?.projectId || "",
+            } as InviteNotification;
+          case "team_added":
+            return {
+              ...baseNotification,
+              type: "team_added",
+              teamId: formatted.content?.teamId || "",
+              teamName: formatted.content?.teamName || "",
+              projectName: formatted.content?.projectName || "",
+              senderName: formatted.content?.senderName || "",
+              projectId: formatted.content?.projectId || "",
+            } as TeamAddedNotification;
+          case "invite_accepted":
+          case "member_added":
+          case "project_member_updated":
+            // Tratar como notificação padrão
+            return {
+              ...baseNotification,
+              type: "default",
+              image: "",
+              initials:
+                formatted.content?.recipientName
+                  ?.substring(0, 2)
+                  ?.toUpperCase() || "US",
+              user: formatted.content?.recipientName || "Usuário",
+              action: "aceitou o convite para",
+              target: formatted.content?.projectName || "projeto",
+            } as DefaultNotification;
+          default:
+            // Para outros tipos, criar uma notificação genérica
+            return {
+              ...baseNotification,
+              type: "default",
+              image: "",
+              initials: "SYS",
+              user: "Sistema",
+              action: "enviou uma",
+              target: "notificação",
+            } as DefaultNotification;
+        }
+      };
+
       // Verificar se a notificação já existe para evitar duplicatas
-      const exists = notifications.some((n) => n.id === lastMessage.id);
+      const convertedNotification =
+        formattedToInternalNotification(lastMessage);
+      const exists = notifications.some(
+        (n) => n.id === convertedNotification.id
+      );
+
       if (!exists) {
-        setNotifications((prev) => [lastMessage, ...prev]);
+        setNotifications((prev) => [convertedNotification, ...prev]);
       }
     }
   }, [lastMessage, notifications]);

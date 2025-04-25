@@ -96,6 +96,26 @@ export async function PATCH(
         },
       });
 
+      // Enviar notificação de convite aceito
+      try {
+        await fetch("/api/notifications/invite-accepted", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inviteId: invite.id,
+            projectId: invite.projectId,
+          }),
+        });
+      } catch (notificationError) {
+        console.error(
+          "Erro ao enviar notificação de convite aceito:",
+          notificationError
+        );
+        // Continuar mesmo se a notificação falhar, pois o convite já foi processado
+      }
+
       return NextResponse.json({
         message: `Você foi adicionado ao projeto ${invite.project.name}`,
       });
