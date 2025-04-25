@@ -2596,6 +2596,71 @@ export const getApiDocs = () => {
             },
           },
         },
+        "/api/notifications/invite-accepted": {
+          post: {
+            tags: ["Notificações"],
+            summary: "Criar notificação de convite aceito",
+            description:
+              "Envia uma notificação informando que um convite foi aceito pelo destinatário",
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["inviteId", "projectId"],
+                    properties: {
+                      inviteId: {
+                        type: "string",
+                        description: "ID do convite aceito",
+                      },
+                      projectId: {
+                        type: "string",
+                        description:
+                          "ID do projeto para o qual o convite foi aceito",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            responses: {
+              200: {
+                description: "Notificação enviada com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        success: {
+                          type: "boolean",
+                        },
+                        message: {
+                          type: "string",
+                        },
+                        notification: {
+                          $ref: "#/components/schemas/FormattedNotification",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "Parâmetros inválidos",
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              404: {
+                description: "Convite não encontrado",
+              },
+              500: {
+                description: "Erro no servidor",
+              },
+            },
+          },
+        },
       },
     },
   });

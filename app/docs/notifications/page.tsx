@@ -267,6 +267,18 @@ async function meuHandler() {
               <strong>Corpo:</strong> userId, teamId, teamName, projectId
             </p>
           </div>
+
+          <div className="border rounded-md p-4">
+            <h3 className="font-medium">
+              POST /api/notifications/invite-accepted
+            </h3>
+            <p className="text-sm text-gray-600 mb-2">
+              Cria uma notificação quando um convite é aceito
+            </p>
+            <p className="text-sm">
+              <strong>Corpo:</strong> inviteId, projectId
+            </p>
+          </div>
         </div>
 
         <p className="mt-4">
@@ -323,6 +335,86 @@ async function meuHandler() {
                 <td className="border p-2">Cliente ↔ Servidor</td>
                 <td className="border p-2">Desconexão</td>
                 <td className="border p-2">N/A</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="text-xl font-semibold mt-6 mb-3">
+          Tipos de Notificações
+        </h3>
+        <p className="mb-4">
+          O sistema suporta os seguintes tipos de notificações em tempo real:
+        </p>
+
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border p-2 text-left">Tipo</th>
+                <th className="border p-2 text-left">Descrição</th>
+                <th className="border p-2 text-left">Conteúdo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border p-2 font-mono text-sm">team_added</td>
+                <td className="border p-2">Usuário adicionado a uma equipe</td>
+                <td className="border p-2">
+                  teamId, teamName, projectId, senderName
+                </td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-mono text-sm">team_removed</td>
+                <td className="border p-2">Usuário removido de uma equipe</td>
+                <td className="border p-2">
+                  teamId, teamName, projectId, senderName
+                </td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-mono text-sm">invite</td>
+                <td className="border p-2">Convite para um projeto</td>
+                <td className="border p-2">
+                  inviteId, projectId, projectName, senderName
+                </td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-mono text-sm">
+                  invite_accepted
+                </td>
+                <td className="border p-2">Convite aceito pelo destinatário</td>
+                <td className="border p-2">
+                  inviteId, projectId, projectName, recipientName
+                </td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-mono text-sm">
+                  invite_rejected
+                </td>
+                <td className="border p-2">
+                  Convite rejeitado pelo destinatário
+                </td>
+                <td className="border p-2">
+                  inviteId, projectId, projectName, recipientName
+                </td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-mono text-sm">
+                  invite_status_changed
+                </td>
+                <td className="border p-2">Status do convite alterado</td>
+                <td className="border p-2">
+                  inviteId, status, projectId, projectName
+                </td>
+              </tr>
+              <tr>
+                <td className="border p-2 font-mono text-sm">member_added</td>
+                <td className="border p-2">
+                  Novo membro adicionado ao projeto
+                </td>
+                <td className="border p-2">
+                  projectId, projectName, memberName, memberId
+                </td>
               </tr>
             </tbody>
           </table>
