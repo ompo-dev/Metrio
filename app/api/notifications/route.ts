@@ -3,6 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendNotificationToUser } from "@/lib/socketio";
+import {
+  Notification,
+  FormattedNotification,
+  NotificationType,
+} from "@/types/notifications";
+import { z } from "zod";
 
 export async function GET() {
   try {
@@ -223,13 +229,31 @@ export async function PATCH(request: Request) {
   }
 }
 
+// Interface para resposta da criação de notificação
+interface CreateNotificationResponse {
+  success: boolean;
+  notification?: FormattedNotification;
+  error?: string;
+}
+
 // Função para criar uma notificação e enviar via WebSocket
 export async function createAndSendNotification(
   userId: string,
   type: string,
   content: any
-) {
+): Promise<CreateNotificationResponse> {
   try {
+    // Validar o userId como UUID
+    const userIdSchema = z.string().uuid({ message: "ID de usuário inválido" });
+    const userIdResult = userIdSchema.safeParse(userId);
+
+    if (!userIdResult.success) {
+      return {
+        success: false,
+        error: "ID de usuário inválido",
+      };
+    }
+
     // Criar a notificação no banco de dados
     const notification = await prisma.notification.create({
       data: {
@@ -241,56 +265,90 @@ export async function createAndSendNotification(
     });
 
     // Formatar a notificação para o cliente
-    let formattedNotification: any = {
-      id: notification.id,
-      timestamp: new Date().toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      unread: true,
-    };
+    let formattedNotification: FormattedNotification;
 
-    // Definir os campos específicos do tipo
-    if (type === "TEAM_ADDED") {
+    if (type === NotificationType.TEAM_ADDED) {
       formattedNotification = {
-        ...formattedNotification,
+        id: notification.id,
         type: "team_added",
         teamId: content.teamId || "",
         teamName: content.teamName || "Equipe",
         projectName: content.projectName || "Projeto",
         senderName: content.senderName || "Um usuário",
         projectId: content.projectId || "",
+        timestamp: new Date(notification.createdAt).toLocaleDateString(
+          "pt-BR",
+          {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        ),
+        unread: true,
       };
-    } else if (type === "TEAM_REMOVED") {
+    } else if (type === NotificationType.TEAM_REMOVED) {
       formattedNotification = {
-        ...formattedNotification,
+        id: notification.id,
         type: "team_removed",
         teamId: content.teamId || "",
         teamName: content.teamName || "Equipe",
         projectName: content.projectName || "Projeto",
         senderName: content.senderName || "Um usuário",
         projectId: content.projectId || "",
+        timestamp: new Date(notification.createdAt).toLocaleDateString(
+          "pt-BR",
+          {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        ),
+        unread: true,
       };
     } else {
       formattedNotification = {
-        ...formattedNotification,
+        id: notification.id,
         type: "default",
-        image: "",
-        initials: content.senderInitials || "NU",
         user: content.senderName || "Um usuário",
         action: content.action || "enviou uma notificação",
         target: content.target || "",
+        timestamp: new Date(notification.createdAt).toLocaleDateString(
+          "pt-BR",
+          {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }
+        ),
+        unread: true,
       };
     }
 
     // Enviar notificação via WebSocket
-    sendNotificationToUser(userId, formattedNotification);
+    const sent = sendNotificationToUser(userId, formattedNotification);
 
-    return { success: true, notification: formattedNotification };
+    // Notificar outras instâncias do servidor via Postgres NOTIFY
+    await prisma.$queryRawUnsafe(
+      `SELECT pg_notify('notifications_channel', $1)`,
+      JSON.stringify({
+        event: "new_notification",
+        userId,
+        notification: formattedNotification,
+      })
+    );
+
+    return {
+      success: true,
+      notification: formattedNotification,
+    };
   } catch (error) {
-    console.error("Erro ao criar notificação:", error);
-    return { success: false, error };
+    console.error("Erro ao criar e enviar notificação:", error);
+    return {
+      success: false,
+      error: "Erro ao criar e enviar notificação",
+    };
   }
 }

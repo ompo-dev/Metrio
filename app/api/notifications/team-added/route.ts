@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAndSendNotification } from "@/app/api/notifications/route";
+import { teamAddedSchema } from "@/types/notifications";
 
 // Rota para criar uma notificação quando um membro é adicionado a uma equipe
 export async function POST(request: Request) {
@@ -18,16 +19,23 @@ export async function POST(request: Request) {
     }
 
     // Obter dados do corpo da requisição
-    const { userId, teamId, teamName, projectId, projectName } =
-      await request.json();
+    const requestData = await request.json();
 
-    // Validar dados essenciais
-    if (!userId || !teamId || !teamName || !projectId) {
+    // Validar dados com Zod
+    const validationResult = teamAddedSchema.safeParse(requestData);
+
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Dados incompletos para criar a notificação" },
+        {
+          error: "Dados inválidos para criar a notificação",
+          details: validationResult.error.format(),
+        },
         { status: 400 }
       );
     }
+
+    const { userId, teamId, teamName, projectId, projectName } =
+      validationResult.data;
 
     // Obter informações do remetente (usuário atual)
     const sender = await prisma.user.findUnique({

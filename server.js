@@ -3,6 +3,10 @@ const { parse } = require("url");
 const next = require("next");
 const { Server } = require("socket.io");
 
+// Importar o sistema de PG LISTEN
+// Nota: Usando require para compatibilidade com módulos CommonJS
+const { initPgListen } = require("./lib/pubsub");
+
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
@@ -42,6 +46,11 @@ app.prepare().then(() => {
     socket.on("disconnect", () => {
       console.log(`Usuário ${userId} desconectado (socket: ${socket.id})`);
     });
+  });
+
+  // Inicializa o sistema de LISTEN do PostgreSQL
+  initPgListen().catch((err) => {
+    console.error("Erro ao inicializar PG LISTEN:", err);
   });
 
   // Inicia o servidor

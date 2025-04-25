@@ -3,13 +3,16 @@
 import React, { createContext, ReactNode, useContext } from "react";
 import { useSocket } from "@/lib/hooks/useSocket";
 import { Socket } from "socket.io-client";
+import { FormattedNotification } from "@/types/notifications";
 
 interface SocketContextType {
   socket: Socket | null;
   isConnected: boolean;
-  lastMessage: any;
-  notifications: any[];
+  lastMessage: FormattedNotification | null;
+  notifications: FormattedNotification[];
   clearNotifications: () => void;
+  markAsRead: (notificationId: string) => Promise<boolean>;
+  markAllAsRead: () => Promise<boolean>;
 }
 
 const SocketContext = createContext<SocketContextType | undefined>(undefined);

@@ -608,6 +608,136 @@ export const getApiDocs = () => {
               },
             },
           },
+          Notification: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                format: "uuid",
+                description: "Identificador único da notificação",
+              },
+              type: {
+                type: "string",
+                description:
+                  "Tipo de notificação: TEAM_ADDED, TEAM_REMOVED, INVITE, MENTION, SYSTEM",
+                enum: [
+                  "TEAM_ADDED",
+                  "TEAM_REMOVED",
+                  "INVITE",
+                  "MENTION",
+                  "SYSTEM",
+                ],
+              },
+              content: {
+                type: "object",
+                description: "Conteúdo da notificação em formato JSON",
+              },
+              read: {
+                type: "boolean",
+                description: "Status de leitura da notificação",
+              },
+              createdAt: {
+                type: "string",
+                format: "date-time",
+                description: "Data de criação da notificação",
+              },
+              userId: {
+                type: "string",
+                format: "uuid",
+                description: "ID do usuário que recebeu a notificação",
+              },
+            },
+          },
+          FormattedNotification: {
+            type: "object",
+            properties: {
+              id: {
+                type: "string",
+                format: "uuid",
+                description: "ID único da notificação",
+              },
+              type: {
+                type: "string",
+                description:
+                  "Tipo formatado para o cliente: team_added, team_removed, invite, etc.",
+              },
+              timestamp: {
+                type: "string",
+                description: "Data formatada para exibição no cliente",
+              },
+              unread: {
+                type: "boolean",
+                description:
+                  "Status de leitura da notificação (true = não lida)",
+              },
+            },
+            additionalProperties: true,
+          },
+          TeamNotificationRequest: {
+            type: "object",
+            required: ["userId", "teamId", "teamName", "projectId"],
+            properties: {
+              userId: {
+                type: "string",
+                format: "uuid",
+                description: "ID do usuário que receberá a notificação",
+              },
+              teamId: {
+                type: "string",
+                description: "ID da equipe associada à notificação",
+              },
+              teamName: {
+                type: "string",
+                description: "Nome da equipe associada à notificação",
+              },
+              projectId: {
+                type: "string",
+                description: "ID do projeto associado à notificação",
+              },
+              projectName: {
+                type: "string",
+                description: "Nome do projeto (opcional)",
+              },
+            },
+          },
+          NotificationResponse: {
+            type: "object",
+            properties: {
+              notifications: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/FormattedNotification",
+                },
+                description: "Lista de notificações formatadas",
+              },
+            },
+          },
+          NotificationUpdateRequest: {
+            type: "object",
+            properties: {
+              notificationId: {
+                type: "string",
+                description: "ID da notificação a ser marcada como lida",
+              },
+              markAllAsRead: {
+                type: "boolean",
+                description: "Marcar todas as notificações como lidas",
+              },
+            },
+          },
+          NotificationUpdateResponse: {
+            type: "object",
+            properties: {
+              success: {
+                type: "boolean",
+                description: "Status da operação",
+              },
+              message: {
+                type: "string",
+                description: "Mensagem descritiva da operação",
+              },
+            },
+          },
         },
       },
       security: [
@@ -2304,6 +2434,164 @@ export const getApiDocs = () => {
                     },
                   },
                 },
+              },
+            },
+          },
+        },
+        "/api/notifications": {
+          get: {
+            tags: ["Notificações"],
+            summary: "Listar notificações não lidas",
+            description:
+              "Retorna todas as notificações não lidas do usuário autenticado",
+            security: [{ BearerAuth: [] }],
+            responses: {
+              200: {
+                description: "Lista de notificações não lidas",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/NotificationResponse",
+                    },
+                  },
+                },
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              500: {
+                description: "Erro no servidor",
+              },
+            },
+          },
+          patch: {
+            tags: ["Notificações"],
+            summary: "Atualizar status de notificação",
+            description:
+              "Marcar uma notificação específica ou todas as notificações como lidas",
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/NotificationUpdateRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              200: {
+                description: "Notificação(ões) marcada(s) como lida(s)",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/NotificationUpdateResponse",
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "Parâmetros inválidos",
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              500: {
+                description: "Erro no servidor",
+              },
+            },
+          },
+        },
+        "/api/notifications/team-added": {
+          post: {
+            tags: ["Notificações"],
+            summary: "Criar notificação de equipe adicionada",
+            description:
+              "Envia uma notificação informando que um usuário foi adicionado a uma equipe",
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/TeamNotificationRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              200: {
+                description: "Notificação enviada com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        success: {
+                          type: "boolean",
+                        },
+                        notification: {
+                          $ref: "#/components/schemas/FormattedNotification",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "Parâmetros inválidos",
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              500: {
+                description: "Erro no servidor",
+              },
+            },
+          },
+        },
+        "/api/notifications/team-removed": {
+          post: {
+            tags: ["Notificações"],
+            summary: "Criar notificação de equipe removida",
+            description:
+              "Envia uma notificação informando que um usuário foi removido de uma equipe",
+            security: [{ BearerAuth: [] }],
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/TeamNotificationRequest",
+                  },
+                },
+              },
+            },
+            responses: {
+              200: {
+                description: "Notificação enviada com sucesso",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        success: {
+                          type: "boolean",
+                        },
+                        notification: {
+                          $ref: "#/components/schemas/FormattedNotification",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              400: {
+                description: "Parâmetros inválidos",
+              },
+              401: {
+                description: "Não autorizado",
+              },
+              500: {
+                description: "Erro no servidor",
               },
             },
           },
