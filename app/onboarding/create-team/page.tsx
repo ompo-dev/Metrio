@@ -106,7 +106,7 @@ export default function CreateTeamPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center space-y-2 text-center">
           <Logo className="h-12 w-12" />
-          <h1 className="text-3xl font-bold">Bem-vindo à Métricas SaaS</h1>
+          <h1 className="text-3xl font-bold">Bem-vindo ao Metrio</h1>
           <p className="text-muted-foreground">
             Vamos criar seu primeiro projeto para começar
           </p>
