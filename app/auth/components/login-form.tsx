@@ -1,54 +1,137 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import api from "@/lib/api";
+import { AxiosError } from "axios";
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function LoginForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteToken = searchParams.get("inviteToken");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
-    // Simulando login
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/dashboard")
-    }, 1500)
-  }
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast.error("Credenciais inválidas");
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success("Login realizado com sucesso!");
+
+      // Se tiver um token de convite, vá diretamente para a página de processamento do convite
+      if (inviteToken) {
+        router.push(`/join/${inviteToken}`);
+        return;
+      }
+
+      // Verificar se o usuário já tem projetos
+      try {
+        const response = await api.get("/api/projects");
+        const projects = response.data;
+        const hasProjects = Array.isArray(projects) && projects.length > 0;
+
+        // Redirecionar para onboarding se não tiver projetos, senão para dashboard
+        if (hasProjects) {
+          router.push("/dashboard");
+        } else {
+          router.push("/onboarding/create-team");
+        }
+      } catch (error) {
+        // Se ocorrer erro ao verificar projetos, redirecionar para o dashboard
+        console.error("Erro ao verificar projetos:", error);
+        router.push("/dashboard");
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error("Erro no login:", error);
+
+      if (error instanceof AxiosError && error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Ocorreu um erro durante o login");
+      }
+
+      // Em caso de erro, redirecionar para o dashboard
+      router.push("/dashboard");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Card>
       <form onSubmit={handleSubmit}>
         <CardHeader>
           <CardTitle>Login</CardTitle>
-          <CardDescription>Entre com seu email e senha para acessar sua conta</CardDescription>
+          <CardDescription>
+            Entre com seu email e senha para acessar sua conta
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" placeholder="seu@email.com" required />
+            <Input
+              id="email"
+              type="email"
+              placeholder="seu@email.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Senha</Label>
-              <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
+              <Link
+                href="/forgot-password"
+                className="text-xs text-muted-foreground hover:text-primary"
+              >
                 Esqueceu a senha?
               </Link>
             </div>
             <div className="relative">
-              <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
               <Button
                 type="button"
                 variant="ghost"
@@ -61,7 +144,9 @@ export function LoginForm() {
                 ) : (
                   <Eye className="h-4 w-4 text-muted-foreground" />
                 )}
-                <span className="sr-only">{showPassword ? "Esconder senha" : "Mostrar senha"}</span>
+                <span className="sr-only">
+                  {showPassword ? "Esconder senha" : "Mostrar senha"}
+                </span>
               </Button>
             </div>
           </div>
@@ -79,13 +164,19 @@ export function LoginForm() {
           </Button>
           <div className="text-center text-sm text-muted-foreground">
             Não tem uma conta?{" "}
-            <Link href="/register" className="font-medium text-primary hover:underline">
+            <Link
+              href={
+                inviteToken
+                  ? `/auth/register?inviteToken=${inviteToken}`
+                  : "/auth/register"
+              }
+              className="font-medium text-primary hover:underline"
+            >
               Registre-se
             </Link>
           </div>
         </CardFooter>
       </form>
     </Card>
-  )
+  );
 }
-

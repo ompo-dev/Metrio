@@ -4,88 +4,90 @@ import * as React from "react";
 import { Users, UserPlus, Shield, Briefcase } from "lucide-react";
 import SelectIcon from "@/components/select-icon";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Importações dos componentes internos
 import { TeamsList } from "./TeamsList";
 import { MembersList } from "./MembersList";
 import { PermissionsList } from "./PermissionsList";
 import { RolesList } from "./RolesList";
+import { InviteSection } from "./invite-section";
 
-// Importações de dados e tipos
-import { TeamsManagementProps, Team, Member, Role } from "./types";
-import {
-  teamsData as initialTeamsData,
-  membersData as initialMembersData,
-  rolesData as initialRolesData,
-  permissionsData,
-} from "./data";
+// Importações de stores e tipos
+import { useMemberStore } from "@/lib/store/member-store";
+import { useTeamStore } from "@/lib/store/team-store";
+import { useProjectStore } from "@/lib/store/project-store";
+import { permissionsData } from "./data";
 
 // Definindo o tipo para as abas
 type TabType = "todas" | "membros" | "permissoes" | "funcoes";
 
 export function TeamsManagement({
   defaultTab = "todas",
-}: TeamsManagementProps) {
-  // Estados para armazenar os dados
-  const [teams, setTeams] = React.useState(initialTeamsData);
-  const [members, setMembers] = React.useState(initialMembersData);
-  const [roles, setRoles] = React.useState(initialRolesData);
+}: {
+  defaultTab?: TabType;
+}) {
+  // Estado para o controle de abas
   const [activeTab, setActiveTab] = React.useState<TabType>(
     defaultTab as TabType
   );
 
-  // Função para adicionar nova equipe
-  const handleAddTeam = (name: string) => {
-    const newTeam: Team = {
-      id: `team-${Date.now()}`,
-      name,
-      members: 0,
-      lastActive: "Agora",
-    };
-    setTeams([...teams, newTeam]);
-  };
+  // Obter estado e ações das stores
+  const { members, roles, fetchMembers, fetchRoles, addRole } =
+    useMemberStore();
 
-  // Função para adicionar novo membro
-  const handleAddMember = (name: string, email: string, role: string) => {
-    const newMember: Member = {
-      id: `member-${Date.now()}`,
-      name,
-      email,
-      role,
-      status: "Ativo",
-      lastActive: "Agora",
-    };
-    setMembers([...members, newMember]);
-  };
+  const { teams, fetchTeams, isLoading: isTeamsLoading } = useTeamStore();
 
-  // Função para adicionar nova função
-  const handleAddRole = (
-    name: string,
-    description: string,
-    permissions: string[]
-  ) => {
-    const newRole: Role = {
-      id: `role-${Date.now()}`,
-      name,
-      description,
-      members: 0,
+  const { activeProject } = useProjectStore();
+
+  // Estado local para controlar carregamento inicial
+  const [isInitialLoading, setIsInitialLoading] = React.useState(false);
+
+  // Carregar dados quando o componente montar
+  React.useEffect(() => {
+    const loadData = async () => {
+      setIsInitialLoading(true);
+      try {
+        if (activeProject?.id) {
+          if (activeTab === "todas") {
+            await fetchTeams(activeProject.id);
+          }
+
+          if (activeTab === "membros" || activeTab === "funcoes") {
+            if (members.length === 0) {
+              await fetchMembers();
+            }
+            if (roles.length === 0) {
+              await fetchRoles();
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        toast.error("Não foi possível carregar os dados necessários");
+      } finally {
+        setIsInitialLoading(false);
+      }
     };
-    setRoles([...roles, newRole]);
-  };
+
+    loadData();
+  }, [
+    activeTab,
+    activeProject,
+    fetchTeams,
+    fetchMembers,
+    fetchRoles,
+    members.length,
+    roles.length,
+  ]);
 
   // Renderiza o conteúdo com base na tab ativa
   const renderContent = () => {
     switch (activeTab) {
       case "todas":
-        return <TeamsList teams={teams} onAddTeam={handleAddTeam} />;
+        return <TeamsList />;
       case "membros":
-        return (
-          <MembersList
-            members={members}
-            roles={roles}
-            onAddMember={handleAddMember}
-          />
-        );
+        return <MembersList />;
       case "permissoes":
         return <PermissionsList permissions={permissionsData} />;
       case "funcoes":
@@ -93,16 +95,19 @@ export function TeamsManagement({
           <RolesList
             roles={roles}
             permissions={permissionsData}
-            onAddRole={handleAddRole}
+            onAddRole={addRole}
           />
         );
       default:
-        return <TeamsList teams={teams} onAddTeam={handleAddTeam} />;
+        return <TeamsList />;
     }
   };
 
   return (
     <div className="space-y-6">
+      {/* Seção de Convites */}
+      <InviteSection />
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold">Gerenciamento de Equipes</h2>
@@ -174,7 +179,15 @@ export function TeamsManagement({
         </Button>
       </div>
 
-      <div className="space-y-4">{renderContent()}</div>
+      <div className="space-y-4">
+        {isInitialLoading ? (
+          <div className="flex justify-center p-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          renderContent()
+        )}
+      </div>
     </div>
   );
 }

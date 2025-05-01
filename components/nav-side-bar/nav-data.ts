@@ -30,6 +30,7 @@ export interface Team {
   plan: string;
 }
 
+// A estrutura do usuário agora vem da sessão
 export interface User {
   name: string;
   email: string;
@@ -38,11 +39,6 @@ export interface User {
 
 // Estrutura de navegação compartilhada
 export const navData = {
-  user: {
-    name: "Admin",
-    email: "admin@metricas.com",
-    avatar: "/avatars/admin.jpg",
-  } as User,
   teams: [
     {
       name: "Métricas SaaS",

@@ -7,7 +7,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center space-y-2 text-center">
           <Logo className="h-12 w-12" />
-          <h1 className="text-3xl font-bold">Métricas SaaS</h1>
+          <h1 className="text-3xl font-bold">Metrio</h1>
           <p className="text-muted-foreground">
             Entre na sua conta para acessar o dashboard
           </p>
