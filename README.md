@@ -1,4 +1,4 @@
-![Logo Metrio](capa.png)
+![Logo Metrio](public/capa.png)
 
 ## Visão Geral
 
