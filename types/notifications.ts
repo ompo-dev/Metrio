@@ -92,7 +92,7 @@ const baseContentSchema = z.object({
 
 // Schema para notificação de equipe adicionada
 export const teamAddedSchema = z.object({
-  userId: z.string().uuid({ message: "ID de usuário inválido" }),
+  userId: z.string().min(1, { message: "ID de usuário é obrigatório" }),
   teamId: z.string().min(1, { message: "ID da equipe é obrigatório" }),
   teamName: z.string().min(1, { message: "Nome da equipe é obrigatório" }),
   projectId: z.string().min(1, { message: "ID do projeto é obrigatório" }),

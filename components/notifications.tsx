@@ -235,7 +235,21 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
     }
   };
 
-  // Buscar notificações quando o componente montar ou quando o popover abrir
+  // Buscar notificações quando o componente montar 
+  useEffect(() => {
+    // Carregar notificações imediatamente quando o componente é montado
+    fetchNotifications();
+    
+    // Configurar atualização periódica a cada 60 segundos
+    const intervalId = setInterval(() => {
+      fetchNotifications();
+    }, 15000); // 15 segundos
+    
+    // Limpar intervalo quando o componente for desmontado
+    return () => clearInterval(intervalId);
+  }, []);
+  
+  // Buscar notificações novamente quando o popover abrir para garantir dados frescos
   useEffect(() => {
     if (open) {
       fetchNotifications();

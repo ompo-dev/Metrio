@@ -29,41 +29,96 @@ export default function TestSocketPage() {
   const [testMessage, setTestMessage] = useState("");
 
   // Função para enviar uma notificação de teste
-  const sendTestNotification = async () => {
+  const sendTestNotification = async (type = "team_added") => {
     try {
-      // Preparar dados para a notificação
-      const notificationData = {
-        userId: session?.user?.id,
-        teamId: "test-team-id",
-        teamName: "Equipe de Teste",
-        projectId: "test-project-id",
-        projectName: "Projeto de Teste",
-      };
-
-      // Validar os dados com Zod antes de enviar
-      const validateResult = teamAddedSchema.safeParse(notificationData);
-
-      if (!validateResult.success) {
-        setTestMessage("Erro de validação dos dados");
-        console.error("Erro de validação:", validateResult.error);
+      // Verificar se o usuário está autenticado
+      if (!session?.user?.id) {
+        setTestMessage("Usuário não autenticado");
         return;
       }
+      
+      // Usar o ID do usuário da sessão
+      const userId = session.user.id;
+        
+      // Preparar dados para a notificação
+      let notificationData: any;
+      let endpoint: string;
+      
+      switch (type) {
+        case "team_added":
+          notificationData = {
+            userId,
+            teamId: "test-team-id",
+            teamName: "Equipe de Teste",
+            projectId: "test-project-id",
+            projectName: "Projeto de Teste",
+          };
+          endpoint = "/api/notifications/team-added";
+          break;
+        case "team_removed":
+          notificationData = {
+            userId,
+            teamId: "test-team-id",
+            teamName: "Equipe de Teste",
+            projectId: "test-project-id",
+            projectName: "Projeto de Teste",
+          };
+          endpoint = "/api/notifications/team-removed";
+          break;
+        case "system":
+          notificationData = {
+            userId,
+            message: "Mensagem de teste do sistema",
+            severity: "info",
+            action: "Testar",
+            actionLink: "/test",
+          };
+          endpoint = "/api/notifications/system";
+          break;
+        default:
+          notificationData = {
+            userId,
+            teamId: "test-team-id",
+            teamName: "Equipe de Teste",
+            projectId: "test-project-id",
+            projectName: "Projeto de Teste",
+          };
+          endpoint = "/api/notifications/team-added";
+      }
 
-      const response = await fetch("/api/notifications/team-added", {
+      // Exibir informações do usuário e sessão para debug
+      console.log("ID do usuário na sessão:", userId);
+      console.log("Dados da notificação:", notificationData);
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(validateResult.data),
+        body: JSON.stringify(notificationData),
       });
 
+      // Obter detalhes completos da resposta para debug
+      let responseText;
+      let responseData;
+      try {
+        responseText = await response.text();
+        responseData = responseText ? JSON.parse(responseText) : {};
+      } catch (e) {
+        responseData = { error: `Não foi possível analisar a resposta: ${responseText}` };
+      }
+      
       if (response.ok) {
-        const data = await response.json();
-        setTestMessage("Notificação enviada com sucesso!");
-        console.log("Resposta da notificação:", data);
+        setTestMessage(`Notificação de ${type} enviada com sucesso!`);
+        console.log("Resposta da notificação:", responseData);
       } else {
-        setTestMessage("Erro ao enviar notificação");
-        console.error("Erro na resposta:", await response.json());
+        setTestMessage(`Erro ao enviar notificação: ${responseData.error || 'Erro desconhecido'} (${response.status})`);
+        console.error("Erro na resposta:", {
+          status: response.status,
+          statusText: response.statusText,
+          data: responseData,
+          endpoint
+        });
       }
     } catch (error) {
       setTestMessage(`Erro: ${error}`);
@@ -124,18 +179,28 @@ export default function TestSocketPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col items-start gap-2">
-            <Button
-              onClick={sendTestNotification}
-              disabled={!isConnected || !session?.user?.id}
-            >
-              Enviar Notificação de Teste
-            </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+              <Button
+                onClick={() => sendTestNotification("team_added")}
+                disabled={!isConnected || !session?.user?.id}
+              >
+                Enviar Notificação de Equipe
+              </Button>
+
+              <Button
+                onClick={() => sendTestNotification("team_removed")}
+                disabled={!isConnected || !session?.user?.id}
+                variant="secondary"
+              >
+                Notif. Remoção de Equipe
+              </Button>
+            </div>
 
             <Button
               onClick={handleMarkAllAsRead}
               variant="outline"
               disabled={!isConnected || notifications.length === 0}
-              className="mt-2"
+              className="mt-2 w-full"
             >
               Marcar Todas Como Lidas
             </Button>

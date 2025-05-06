@@ -27,10 +27,27 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Notifications } from "@/components/notifications";
+import { useSocketContext } from "@/lib/providers/SocketProvider";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { data: session } = useSession();
+  const { lastMessage } = useSocketContext();
+  const [hasNewNotification, setHasNewNotification] = useState(false);
+
+  // Efeito para indicar visualmente quando uma nova notificação chega
+  useEffect(() => {
+    if (lastMessage) {
+      setHasNewNotification(true);
+      // Resetar o indicador visual após 5 segundos
+      const timer = setTimeout(() => {
+        setHasNewNotification(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastMessage]);
 
   const user = {
     name: session?.user?.name || "Usuário",
@@ -106,8 +123,14 @@ export function NavUser() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <Notifications>
-                  <div className="flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
-                    <Bell className="mr-2 h-4 w-4" />
+                  <div className={cn(
+                    "flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground",
+                    hasNewNotification && "animate-pulse"
+                  )}>
+                    <Bell className={cn(
+                      "mr-2 h-4 w-4",
+                      hasNewNotification && "text-blue-500"
+                    )} />
                     <span>Notificações</span>
                   </div>
                 </Notifications>
@@ -123,4 +146,4 @@ export function NavUser() {
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+} 

@@ -243,8 +243,8 @@ export async function createAndSendNotification(
   content: any
 ): Promise<CreateNotificationResponse> {
   try {
-    // Validar o userId como UUID
-    const userIdSchema = z.string().uuid({ message: "ID de usuário inválido" });
+    // Validar o userId como string não vazia
+    const userIdSchema = z.string().min(1, { message: "ID de usuário é obrigatório" });
     const userIdResult = userIdSchema.safeParse(userId);
 
     if (!userIdResult.success) {

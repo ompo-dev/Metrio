@@ -18,13 +18,18 @@ export async function POST(request: Request) {
     }
 
     // Obter dados do corpo da requisição
-    const { userId, teamId, teamName, projectId, projectName } =
-      await request.json();
+    const requestData = await request.json();
+    console.log("[DEBUG] Dados recebidos em team-removed:", requestData);
+    
+    const { userId, teamId, teamName, projectId, projectName } = requestData;
 
     // Validar dados essenciais
     if (!userId || !teamName || !projectId) {
       return NextResponse.json(
-        { error: "Dados incompletos para criar a notificação" },
+        { 
+          error: "Dados incompletos para criar a notificação",
+          received: requestData 
+        },
         { status: 400 }
       );
     }
@@ -48,28 +53,43 @@ export async function POST(request: Request) {
       action: "removeu você da equipe",
     };
 
-    // Criar a notificação e enviar via WebSocket
-    const result = await createAndSendNotification(
+    console.log("[DEBUG] Criando notificação de remoção com:", {
       userId,
-      "TEAM_REMOVED",
-      notificationContent
-    );
+      type: "TEAM_REMOVED",
+      content: notificationContent
+    });
 
-    if (result.success) {
-      return NextResponse.json({
-        success: true,
-        notification: result.notification,
-      });
-    } else {
+    // Criar a notificação e enviar via WebSocket
+    try {
+      const result = await createAndSendNotification(
+        userId,
+        "TEAM_REMOVED",
+        notificationContent
+      );
+
+      if (result.success) {
+        return NextResponse.json({
+          success: true,
+          notification: result.notification,
+        });
+      } else {
+        console.error("[DEBUG] Erro no createAndSendNotification para team-removed:", result.error);
+        return NextResponse.json(
+          { error: `Erro ao criar notificação de remoção: ${result.error}` },
+          { status: 500 }
+        );
+      }
+    } catch (notifError) {
+      console.error("[DEBUG] Exceção no createAndSendNotification para team-removed:", notifError);
       return NextResponse.json(
-        { error: "Erro ao criar notificação de remoção" },
+        { error: `Exceção ao criar notificação de remoção: ${notifError}` },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Erro ao criar notificação de remoção:", error);
+    console.error("[DEBUG] Erro geral ao criar notificação de remoção:", error);
     return NextResponse.json(
-      { error: "Erro ao criar notificação de remoção" },
+      { error: `Erro ao criar notificação de remoção: ${error}` },
       { status: 500 }
     );
   }

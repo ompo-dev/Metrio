@@ -20,22 +20,21 @@ export async function POST(request: Request) {
 
     // Obter dados do corpo da requisição
     const requestData = await request.json();
+    console.log("[DEBUG] Dados recebidos:", requestData);
 
-    // Validar dados com Zod
-    const validationResult = teamAddedSchema.safeParse(requestData);
+    // Extrair dados diretamente, sem validação Zod que pode estar falhando
+    const { userId, teamId, teamName, projectId, projectName } = requestData;
 
-    if (!validationResult.success) {
+    // Validação manual básica
+    if (!userId || !teamId || !teamName || !projectId) {
       return NextResponse.json(
         {
-          error: "Dados inválidos para criar a notificação",
-          details: validationResult.error.format(),
+          error: "Dados incompletos para criar a notificação",
+          received: requestData
         },
         { status: 400 }
       );
     }
-
-    const { userId, teamId, teamName, projectId, projectName } =
-      validationResult.data;
 
     // Obter informações do remetente (usuário atual)
     const sender = await prisma.user.findUnique({
@@ -55,28 +54,43 @@ export async function POST(request: Request) {
         : "NU",
     };
 
-    // Criar a notificação e enviar via WebSocket
-    const result = await createAndSendNotification(
+    console.log("[DEBUG] Criando notificação com:", {
       userId,
-      "TEAM_ADDED",
-      notificationContent
-    );
+      type: "TEAM_ADDED",
+      content: notificationContent
+    });
 
-    if (result.success) {
-      return NextResponse.json({
-        success: true,
-        notification: result.notification,
-      });
-    } else {
+    // Criar a notificação e enviar via WebSocket
+    try {
+      const result = await createAndSendNotification(
+        userId,
+        "TEAM_ADDED",
+        notificationContent
+      );
+
+      if (result.success) {
+        return NextResponse.json({
+          success: true,
+          notification: result.notification,
+        });
+      } else {
+        console.error("[DEBUG] Erro no createAndSendNotification:", result.error);
+        return NextResponse.json(
+          { error: `Erro ao criar notificação: ${result.error}` },
+          { status: 500 }
+        );
+      }
+    } catch (notifError) {
+      console.error("[DEBUG] Exceção no createAndSendNotification:", notifError);
       return NextResponse.json(
-        { error: "Erro ao criar notificação" },
+        { error: `Exceção ao criar notificação: ${notifError}` },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Erro ao criar notificação:", error);
+    console.error("[DEBUG] Erro geral ao criar notificação:", error);
     return NextResponse.json(
-      { error: "Erro ao criar notificação" },
+      { error: `Erro ao criar notificação: ${error}` },
       { status: 500 }
     );
   }
