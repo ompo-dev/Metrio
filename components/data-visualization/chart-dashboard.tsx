@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDown, Filter, MessageSquare, Plus, RotateCcw, Send, X } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, Filter, MessageSquare, Plus, RotateCcw, Send, X } from "lucide-react"
 import {
   Line,
   LineChart,
@@ -16,6 +16,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts"
+import { BarChart2, LineChart as LucideLineChart, AreaChart as LucideAreaChart } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -92,6 +93,7 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
   const [isAddingFilter, setIsAddingFilter] = React.useState(false)
   const [isAddingSeries, setIsAddingSeries] = React.useState(false)
   const [showAiChat, setShowAiChat] = React.useState(false)
+  const [configPanelExpanded, setConfigPanelExpanded] = React.useState(true)
   const [messages, setMessages] = React.useState<Message[]>([
     {
       id: "welcome",
@@ -436,6 +438,7 @@ Qual aspecto específico você gostaria de explorar?`
             />
           )
         }
+        return null; // Add a default return
       })
     }
 
@@ -584,6 +587,13 @@ Qual aspecto específico você gostaria de explorar?`
         </BarChart>
       )
     }
+    
+    // Retorno padrão para garantir que sempre há um ReactNode
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gray-50">
+        <p className="text-gray-400">Nenhum gráfico selecionado</p>
+      </div>
+    )
   }
 
   return (
@@ -682,348 +692,363 @@ Qual aspecto específico você gostaria de explorar?`
 
       <div className="flex flex-col md:flex-row">
         {/* Left Panel - Configuration */}
-        <div className="w-full border-r md:w-80">
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 rounded-none border-b bg-white p-0">
-              <TabsTrigger
-                value="general"
-                className={cn(
-                  "rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none",
-                  activeTab === "general" && "border-emerald-500 font-medium text-emerald-600",
-                )}
-              >
-                General
-              </TabsTrigger>
-              <TabsTrigger
-                value="display"
-                className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
-              >
-                Display
-              </TabsTrigger>
-              <TabsTrigger
-                value="x-axis"
-                className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
-              >
-                X-Axis
-              </TabsTrigger>
-              <TabsTrigger
-                value="y-axis"
-                className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
-              >
-                Y-Axis
-              </TabsTrigger>
-            </TabsList>
+        <div 
+          className={cn(
+            "border-r transition-all duration-300 ease-in-out",
+            configPanelExpanded ? "w-full md:w-80" : "w-16",
+          )}
+        >
+          {configPanelExpanded ? (
+            /* Expanded Configuration Panel */
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-4 rounded-none border-b bg-white p-0">
+                <TabsTrigger
+                  value="general"
+                  className={cn(
+                    "rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none",
+                    activeTab === "general" && "border-emerald-500 font-medium text-emerald-600",
+                  )}
+                >
+                  General
+                </TabsTrigger>
+                <TabsTrigger
+                  value="display"
+                  className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
+                >
+                  Display
+                </TabsTrigger>
+                <TabsTrigger
+                  value="x-axis"
+                  className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
+                >
+                  X-Axis
+                </TabsTrigger>
+                <TabsTrigger
+                  value="y-axis"
+                  className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
+                >
+                  Y-Axis
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="general" className="p-4">
-              {/* Chart Type */}
-              <div className="mb-6">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Chart Type</label>
-                <Select value={chartType} onValueChange={(value: ChartType) => setChartType(value)}>
-                  <SelectTrigger className="h-10 w-full border bg-white">
-                    <div className="flex items-center gap-2">
-                      {chartType === "line" && (
-                        <svg
-                          className="h-5 w-5 text-gray-500"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M3 16L7 12L11 16L21 6"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                      {chartType === "bar" && (
-                        <svg
-                          className="h-5 w-5 text-gray-500"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M8 13V17M12 9V17M16 5V17M5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21Z"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                      {chartType === "area" && (
-                        <svg
-                          className="h-5 w-5 text-gray-500"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M3 16L7 12L11 16L21 6M21 6V12M21 6H15"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M3 16V21H21V16L11 6L3 16Z"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeDasharray="2 2"
-                          />
-                        </svg>
-                      )}
-                      <span>{chartType.charAt(0).toUpperCase() + chartType.slice(1)}</span>
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="line">Line</SelectItem>
-                    <SelectItem value="bar">Bar</SelectItem>
-                    <SelectItem value="area">Area</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Display Options */}
-              <div className="mb-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-700">Show Grid Lines</label>
-                  <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-700">Show Data Points</label>
-                  <Switch checked={showDots} onCheckedChange={setShowDots} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-700">Show Legend</label>
-                  <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-700">Show Tooltip</label>
-                  <Switch checked={showTooltip} onCheckedChange={setShowTooltip} />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="display" className="p-4">
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Chart Title</label>
-                  <Input defaultValue={title} />
-                </div>
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Y-Axis Label</label>
-                  <Input defaultValue="Sales ($)" />
-                </div>
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium text-gray-700">Chart Height</label>
-                  <Input type="number" defaultValue="500" />
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="x-axis" className="p-4">
-              {/* X-Axis */}
-              <div className="mb-6">
-                <label className="mb-2 block text-sm font-medium text-gray-700">X-Axis Field</label>
-                <Select value={xAxisField} onValueChange={setXAxisField}>
-                  <SelectTrigger className="h-10 w-full border bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableFields.map((field) => (
-                      <SelectItem key={field} value={field}>
-                        {field}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Group by */}
-              <div className="mb-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-700">Group by</label>
-                  <Select value={groupBy} onValueChange={setGroupBy}>
-                    <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
-                      <SelectValue />
+              <TabsContent value="general" className="p-4">
+                {/* Chart Type */}
+                <div className="mb-6">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">Chart Type</label>
+                  <Select value={chartType} onValueChange={(value: ChartType) => setChartType(value)}>
+                    <SelectTrigger className="h-10 w-full border bg-white">
+                      <div className="flex items-center gap-2">
+                        {chartType === "line" && (
+                          <LucideLineChart className="h-5 w-5 text-gray-500" />
+                        )}
+                        {chartType === "bar" && (
+                          <BarChart2 className="h-5 w-5 text-gray-500" />
+                        )}
+                        {chartType === "area" && (
+                          <LucideAreaChart className="h-5 w-5 text-gray-500" />
+                        )}
+                        <span>{chartType.charAt(0).toUpperCase() + chartType.slice(1)}</span>
+                      </div>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {availableFields
-                        .filter((field) => field !== xAxisField)
-                        .map((field) => (
-                          <SelectItem key={field} value={field}>
-                            {field}
-                          </SelectItem>
-                        ))}
+                      <SelectItem value="line">Line</SelectItem>
+                      <SelectItem value="bar">Bar</SelectItem>
+                      <SelectItem value="area">Area</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              {/* Sort */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-700">Sort</label>
-                  <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
-                    <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
+                {/* Display Options */}
+                <div className="mb-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700">Show Grid Lines</label>
+                    <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700">Show Data Points</label>
+                    <Switch checked={showDots} onCheckedChange={setShowDots} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700">Show Legend</label>
+                    <Switch checked={showLegend} onCheckedChange={setShowLegend} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700">Show Tooltip</label>
+                    <Switch checked={showTooltip} onCheckedChange={setShowTooltip} />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="display" className="p-4">
+                <div className="space-y-4">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium text-gray-700">Chart Title</label>
+                    <Input defaultValue={title} />
+                  </div>
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium text-gray-700">Y-Axis Label</label>
+                    <Input defaultValue="Sales ($)" />
+                  </div>
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium text-gray-700">Chart Height</label>
+                    <Input type="number" defaultValue="500" />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="x-axis" className="p-4">
+                {/* X-Axis */}
+                <div className="mb-6">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">X-Axis Field</label>
+                  <Select value={xAxisField} onValueChange={setXAxisField}>
+                    <SelectTrigger className="h-10 w-full border bg-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ascending">Ascending</SelectItem>
-                      <SelectItem value="descending">Descending</SelectItem>
-                      <SelectItem value="none">None</SelectItem>
+                      {availableFields.map((field) => (
+                        <SelectItem key={field} value={field}>
+                          {field}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            </TabsContent>
 
-            <TabsContent value="y-axis" className="p-4">
-              {/* Y-Axis */}
-              <div className="mb-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">Y-Axis</label>
-                  <Dialog open={isAddingSeries} onOpenChange={setIsAddingSeries}>
-                    <DialogTrigger asChild>
-                      <button className="text-xs text-gray-500 hover:text-gray-700">Add Y-Axis</button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Series</DialogTitle>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="series-field">Field</Label>
+                {/* Group by */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700">Group by</label>
+                    <Select value={groupBy} onValueChange={setGroupBy}>
+                      <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {availableFields
+                          .filter((field) => field !== xAxisField)
+                          .map((field) => (
+                            <SelectItem key={field} value={field}>
+                              {field}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Sort */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm text-gray-700">Sort</label>
+                    <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
+                      <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ascending">Ascending</SelectItem>
+                        <SelectItem value="descending">Descending</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="y-axis" className="p-4">
+                {/* Y-Axis */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-700">Y-Axis</label>
+                    <Dialog open={isAddingSeries} onOpenChange={setIsAddingSeries}>
+                      <DialogTrigger asChild>
+                        <button className="text-xs text-gray-500 hover:text-gray-700">Add Y-Axis</button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Add Series</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="series-field">Field</Label>
+                            <Select
+                              onValueChange={(value) => {
+                                const newSeries: SeriesConfig = {
+                                  key: value,
+                                  label: value.charAt(0).toUpperCase() + value.slice(1),
+                                  color: DEFAULT_COLORS[series.length % DEFAULT_COLORS.length],
+                                  aggregation: "sum",
+                                }
+                                addSeries(newSeries)
+                              }}
+                            >
+                              <SelectTrigger id="series-field">
+                                <SelectValue placeholder="Select field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {availableFields
+                                  .filter(
+                                    (field) =>
+                                      field !== xAxisField &&
+                                      typeof data[0][field] === "number" &&
+                                      !series.some((s) => s.key === field),
+                                  )
+                                  .map((field) => (
+                                    <SelectItem key={field} value={field}>
+                                      {field}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+
+                {/* Series List */}
+                <div className="space-y-4">
+                  {series.map((seriesConfig, index) => (
+                    <div key={seriesConfig.key} className="rounded-md border p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: seriesConfig.color }} />
+                          <span className="text-sm font-medium">
+                            Series {index + 1}: {seriesConfig.label}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => removeSeries(seriesConfig.key)}
+                          className="rounded-full p-1 hover:bg-gray-100"
+                        >
+                          <X className="h-3 w-3 text-gray-500" />
+                        </button>
+                      </div>
+
+                      <div className="mb-2">
+                        <div className="relative">
+                          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <span className="text-gray-400">#</span>
+                          </div>
+                          <Input className="h-10 pl-10 pr-10" value={seriesConfig.key} readOnly />
+                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <ChevronDown className="h-4 w-4 text-gray-400" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mb-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm text-gray-500">Aggregate</label>
                           <Select
-                            onValueChange={(value) => {
-                              const newSeries: SeriesConfig = {
-                                key: value,
-                                label: value.charAt(0).toUpperCase() + value.slice(1),
-                                color: DEFAULT_COLORS[series.length % DEFAULT_COLORS.length],
-                                aggregation: "sum",
-                              }
-                              addSeries(newSeries)
-                            }}
+                            value={seriesConfig.aggregation}
+                            onValueChange={(value: AggregationType) =>
+                              updateSeries(seriesConfig.key, { aggregation: value })
+                            }
                           >
-                            <SelectTrigger id="series-field">
-                              <SelectValue placeholder="Select field" />
+                            <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
+                              <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {availableFields
-                                .filter(
-                                  (field) =>
-                                    field !== xAxisField &&
-                                    typeof data[0][field] === "number" &&
-                                    !series.some((s) => s.key === field),
-                                )
-                                .map((field) => (
-                                  <SelectItem key={field} value={field}>
-                                    {field}
-                                  </SelectItem>
-                                ))}
+                              <SelectItem value="sum">Sum</SelectItem>
+                              <SelectItem value="average">Average</SelectItem>
+                              <SelectItem value="min">Min</SelectItem>
+                              <SelectItem value="max">Max</SelectItem>
+                              <SelectItem value="count">Count</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                       </div>
-                    </DialogContent>
-                  </Dialog>
+
+                      <div className="mb-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm text-gray-500">Group by</label>
+                          <Select
+                            value={seriesConfig.groupBy || "category_name"}
+                            onValueChange={(value) => updateSeries(seriesConfig.key, { groupBy: value })}
+                          >
+                            <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="category_name">category_name</SelectItem>
+                              <SelectItem value="region">region</SelectItem>
+                              <SelectItem value="channel">channel</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add Series */}
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-gray-500"
+                    onClick={() => setIsAddingSeries(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Series
+                  </Button>
                 </div>
-              </div>
+              </TabsContent>
+            </Tabs>
+          ) : (
+            /* Collapsed Icons Panel */
+            <div className="h-full py-4 flex flex-col items-center">
+              <div className="mb-8"></div> {/* Spacer to align with expanded view */}
+              <button 
+                onClick={() => { setActiveTab("general"); setConfigPanelExpanded(true); }}
+                className={cn(
+                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
+                  activeTab === "general" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
+                )}
+                title="Geral"
+              >
+                <BarChart2 className="h-5 w-5" />
+              </button>
+              <button 
+                onClick={() => { setActiveTab("display"); setConfigPanelExpanded(true); }}
+                className={cn(
+                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
+                  activeTab === "display" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
+                )}
+                title="Exibição"
+              >
+                <LucideLineChart className="h-5 w-5" />
+              </button>
+              <button 
+                onClick={() => { setActiveTab("x-axis"); setConfigPanelExpanded(true); }}
+                className={cn(
+                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
+                  activeTab === "x-axis" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
+                )}
+                title="Eixo-X"
+              >
+                <ChevronDown className="h-5 w-5" />
+              </button>
+              <button 
+                onClick={() => { setActiveTab("y-axis"); setConfigPanelExpanded(true); }}
+                className={cn(
+                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
+                  activeTab === "y-axis" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
+                )}
+                title="Eixo-Y"
+              >
+                <LucideAreaChart className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+        </div>
 
-              {/* Series List */}
-              <div className="space-y-4">
-                {series.map((seriesConfig, index) => (
-                  <div key={seriesConfig.key} className="rounded-md border p-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full" style={{ backgroundColor: seriesConfig.color }} />
-                        <span className="text-sm font-medium">
-                          Series {index + 1}: {seriesConfig.label}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => removeSeries(seriesConfig.key)}
-                        className="rounded-full p-1 hover:bg-gray-100"
-                      >
-                        <X className="h-3 w-3 text-gray-500" />
-                      </button>
-                    </div>
-
-                    <div className="mb-2">
-                      <div className="relative">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                          <span className="text-gray-400">#</span>
-                        </div>
-                        <Input className="h-10 pl-10 pr-10" value={seriesConfig.key} readOnly />
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mb-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm text-gray-500">Aggregate</label>
-                        <Select
-                          value={seriesConfig.aggregation}
-                          onValueChange={(value: AggregationType) =>
-                            updateSeries(seriesConfig.key, { aggregation: value })
-                          }
-                        >
-                          <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="sum">Sum</SelectItem>
-                            <SelectItem value="average">Average</SelectItem>
-                            <SelectItem value="min">Min</SelectItem>
-                            <SelectItem value="max">Max</SelectItem>
-                            <SelectItem value="count">Count</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="mb-2">
-                      <div className="flex items-center justify-between">
-                        <label className="text-sm text-gray-500">Group by</label>
-                        <Select
-                          value={seriesConfig.groupBy || "category_name"}
-                          onValueChange={(value) => updateSeries(seriesConfig.key, { groupBy: value })}
-                        >
-                          <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="category_name">category_name</SelectItem>
-                            <SelectItem value="region">region</SelectItem>
-                            <SelectItem value="channel">channel</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Add Series */}
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-gray-500"
-                  onClick={() => setIsAddingSeries(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Series
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+        {/* Toggle Panel Button */}
+        <div className="relative">
+          <button 
+            onClick={() => setConfigPanelExpanded(!configPanelExpanded)}
+            className="absolute -left-3 top-4 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm"
+          >
+            {configPanelExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </button>
         </div>
 
         {/* Right Panel - Chart */}
