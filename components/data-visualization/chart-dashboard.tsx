@@ -1,83 +1,24 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDown, ChevronLeft, ChevronRight, Filter, MessageSquare, Plus, RotateCcw, Send, X } from "lucide-react"
-import {
-  Line,
-  LineChart,
-  Bar,
-  BarChart,
-  Area,
-  AreaChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts"
-import { BarChart2, LineChart as LucideLineChart, AreaChart as LucideAreaChart } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, Filter, MessageSquare, RotateCcw} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Textarea } from "@/components/ui/textarea"
 
-export interface DataPoint {
-  [key: string]: string | number
-}
+// Componentes modularizados
+import { ChartType, SortDirection, FilterConfig, SeriesConfig, Message, DataPoint, DEFAULT_COLORS, ChartDashboardProps } from "./types"
+import { ChartRenderer } from "./chart-renderer"
+import { ChartLegend } from "./chart-legend"
+import { FilterBar } from "./filter-bar"
+import { ConfigPanel } from "./config-panel"
+import { AIChat } from "./ai-chat"
 
-export type ChartType = "line" | "bar" | "area"
-export type AggregationType = "sum" | "average" | "min" | "max" | "count"
-export type SortDirection = "ascending" | "descending" | "none"
-
-export interface SeriesConfig {
-  key: string
-  label: string
-  color: string
-  aggregation: AggregationType
-  groupBy?: string
-}
-
-export interface FilterConfig {
-  field: string
-  operator: "equals" | "not_equals" | "greater_than" | "less_than" | "contains"
-  value: string | number
-}
-
-interface Message {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  timestamp: Date
-}
-
-interface ChartDashboardProps {
-  title: string
-  data: DataPoint[]
-  className?: string
-}
-
-const DEFAULT_COLORS = [
-  "#4263eb", // books - blue
-  "#40c057", // clothing - green
-  "#fcc419", // electronics - yellow
-  "#fa5252", // tools - red
-  "#15aabf", // widgets - light blue
-  "#7950f2", // purple
-  "#fd7e14", // orange
-  "#e64980", // pink
-  "#1098ad", // teal
-  "#495057", // gray
-]
+// Importar estilos de Markdown
+import "./markdown-styles.css"
 
 export function ChartDashboard({ title, data, className }: ChartDashboardProps) {
   const [activeTab, setActiveTab] = React.useState("general")
@@ -104,7 +45,6 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
   ])
   const [currentMessage, setCurrentMessage] = React.useState("")
   const [isAiThinking, setIsAiThinking] = React.useState(false)
-  const chatContainerRef = React.useRef<HTMLDivElement>(null)
 
   // Get all available fields from data
   const availableFields = React.useMemo(() => {
@@ -256,6 +196,39 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
     // This is a simplified simulation - in a real app, you would use the AI SDK [^4]
     const lowerQuery = query.toLowerCase()
 
+    if (lowerQuery.includes("tabela") || lowerQuery.includes("table") || lowerQuery.includes("markdown")) {
+      return `# Exemplo de Markdown
+
+Aqui está um exemplo de como uso Markdown para formatação:
+
+## Tabela de Vendas por Categoria
+
+| Categoria | Vendas ($) | % do Total |
+|-----------|----------:|----------:|
+| Eletrônicos | 245,000 | 42.8% |
+| Roupas | 125,000 | 21.8% |
+| Livros | 98,500 | 17.2% |
+| Acessórios | 65,000 | 11.3% |
+| Outros | 39,500 | 6.9% |
+
+### Lista de destaques:
+
+1. **Eletrônicos** é a categoria com maior venda
+2. *Roupas* está em segundo lugar
+3. Juntos, Eletrônicos e Roupas representam mais de 60% das vendas
+
+### Código de exemplo:
+
+\`\`\`javascript
+// Calculando o total de vendas
+const totalSales = categories.reduce((sum, cat) => {
+  return sum + cat.sales;
+}, 0);
+\`\`\`
+
+> **Nota:** Esta análise é baseada nos dados do último trimestre.`;
+    }
+
     if (lowerQuery.includes("tendência") || lowerQuery.includes("tendencia") || lowerQuery.includes("trend")) {
       const lastMonths = data.slice(-3)
       const firstMonths = data.slice(0, 3)
@@ -276,7 +249,17 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
       else if (percentChange < -10) trend = "de queda significativa"
       else if (percentChange < 0) trend = "de leve queda"
 
-      return `Analisando os dados, observo uma tendência ${trend} nas categorias selecionadas. Comparando os primeiros meses com os últimos, houve uma variação de aproximadamente ${Math.abs(percentChange).toFixed(1)}%.`
+      return `## Análise de Tendência
+
+Observei uma tendência **${trend}** nas categorias selecionadas.
+
+### Comparação de Períodos
+| Período | Média de Vendas | Variação |
+|---------|---------------:|--------:|
+| Início do Ano | $${Math.round(avgEarly).toLocaleString()} | - |  
+| Últimos Meses | $${Math.round(avgRecent).toLocaleString()} | ${avgRecent > avgEarly ? '📈' : '📉'} ${Math.abs(((avgRecent - avgEarly) / avgEarly) * 100).toFixed(1)}% |
+
+> A variação entre os períodos indica um padrão que deve ser monitorado nos próximos meses.`;
     }
 
     if (lowerQuery.includes("melhor") || lowerQuery.includes("maior") || lowerQuery.includes("top")) {
@@ -290,10 +273,17 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
 
-      return `As categorias com melhor desempenho são:
-1. ${topSeries[0][0]} com total de $${topSeries[0][1].toLocaleString()}
-2. ${topSeries[1][0]} com total de $${topSeries[1][1].toLocaleString()}
-3. ${topSeries[2][0]} com total de $${topSeries[2][1].toLocaleString()}`
+      return `## Categorias com Melhor Desempenho 🏆
+
+### Top 3 Categorias:
+
+| Posição | Categoria | Total de Vendas |
+|:-------:|-----------|----------------:|
+| 🥇 | **${topSeries[0][0]}** | $${topSeries[0][1].toLocaleString()} |
+| 🥈 | **${topSeries[1][0]}** | $${topSeries[1][1].toLocaleString()} |
+| 🥉 | **${topSeries[2][0]}** | $${topSeries[2][1].toLocaleString()} |
+
+> A categoria **${topSeries[0][0]}** representa ${(topSeries[0][1] / Object.values(seriesPerformance).reduce((a, b) => a + b, 0) * 100).toFixed(1)}% do total de vendas.`
     }
 
     if (lowerQuery.includes("pior") || lowerQuery.includes("menor")) {
@@ -307,10 +297,21 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
         .sort((a, b) => a[1] - b[1])
         .slice(0, 3)
 
-      return `As categorias com pior desempenho são:
-1. ${worstSeries[0][0]} com total de $${worstSeries[0][1].toLocaleString()}
-2. ${worstSeries[1][0]} com total de $${worstSeries[1][1].toLocaleString()}
-3. ${worstSeries[2][0]} com total de $${worstSeries[2][1].toLocaleString()}`
+      return `## Categorias com Menor Desempenho
+
+### Categorias que precisam de atenção:
+
+| Categoria | Total de Vendas | % do Total |
+|-----------|----------------:|----------:|
+| **${worstSeries[0][0]}** | $${worstSeries[0][1].toLocaleString()} | ${(worstSeries[0][1] / Object.values(seriesPerformance).reduce((a, b) => a + b, 0) * 100).toFixed(1)}% |
+| **${worstSeries[1][0]}** | $${worstSeries[1][1].toLocaleString()} | ${(worstSeries[1][1] / Object.values(seriesPerformance).reduce((a, b) => a + b, 0) * 100).toFixed(1)}% |
+| **${worstSeries[2][0]}** | $${worstSeries[2][1].toLocaleString()} | ${(worstSeries[2][1] / Object.values(seriesPerformance).reduce((a, b) => a + b, 0) * 100).toFixed(1)}% |
+
+### Recomendações:
+
+1. Avaliar estratégias de marketing para **${worstSeries[0][0]}**
+2. Considerar revisão de preços ou promoções
+3. Investigar fatores sazonais que possam influenciar estas categorias`
     }
 
     if (lowerQuery.includes("resumo") || lowerQuery.includes("resumir") || lowerQuery.includes("summary")) {
@@ -323,17 +324,37 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
         grandTotal += total
       })
 
-      return `Resumo dos dados:
-- Total geral: $${grandTotal.toLocaleString()}
-- Período analisado: ${data[0][xAxisField]} a ${data[data.length - 1][xAxisField]}
-- Número de categorias: ${series.length}
-- Categoria com maior valor: ${Object.entries(totalsByCategory).sort((a, b) => b[1] - a[1])[0][0]}
-- Categoria com menor valor: ${Object.entries(totalsByCategory).sort((a, b) => a[1] - b[1])[0][0]}`
+      const highestCategory = Object.entries(totalsByCategory).sort((a, b) => b[1] - a[1])[0]
+      const lowestCategory = Object.entries(totalsByCategory).sort((a, b) => a[1] - b[1])[0]
+
+      return `# Resumo dos Dados 📊
+
+## Principais métricas:
+
+- **Total geral:** $${grandTotal.toLocaleString()}
+- **Período analisado:** ${data[0][xAxisField]} a ${data[data.length - 1][xAxisField]}
+- **Número de categorias:** ${series.length}
+
+## Destaques:
+
+| Métrica | Categoria | Valor |
+|---------|-----------|------:|
+| Maior valor | **${highestCategory[0]}** | $${highestCategory[1].toLocaleString()} |
+| Menor valor | **${lowestCategory[0]}** | $${lowestCategory[1].toLocaleString()} |
+
+## Distribuição por categoria:
+
+\`\`\`
+${Object.entries(totalsByCategory)
+  .sort((a, b) => b[1] - a[1])
+  .map(([key, value]) => `${key}: ${"█".repeat(Math.round((value / grandTotal) * 20))} ${Math.round((value / grandTotal) * 100)}%`)
+  .join("\n")}
+\`\`\``
     }
 
     if (lowerQuery.includes("comparar") || lowerQuery.includes("comparação") || lowerQuery.includes("compare")) {
       if (activeSeries.length < 2) {
-        return "Para fazer uma comparação, selecione pelo menos duas categorias no gráfico."
+        return "⚠️ **Atenção:** Para fazer uma comparação, selecione pelo menos duas categorias no gráfico."
       }
 
       const totals = activeSeries.map((series) => {
@@ -346,254 +367,70 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
       const lowest = sorted[sorted.length - 1]
       const ratio = highest.total / lowest.total
 
-      return `Comparando as categorias selecionadas:
-- ${highest.series} tem o maior total com $${highest.total.toLocaleString()}
-- ${lowest.series} tem o menor total com $${lowest.total.toLocaleString()}
-- ${highest.series} é aproximadamente ${ratio.toFixed(1)}x maior que ${lowest.series}
-- A diferença entre eles é de $${(highest.total - lowest.total).toLocaleString()}`
+      return `## Comparação entre Categorias
+
+### Análise Comparativa:
+
+| Categoria | Total | % do Total | Comparação |
+|-----------|------:|----------:|------------|
+| **${highest.series}** | $${highest.total.toLocaleString()} | ${((highest.total / totals.reduce((sum, item) => sum + item.total, 0)) * 100).toFixed(1)}% | ${ratio.toFixed(1)}× maior |
+| **${lowest.series}** | $${lowest.total.toLocaleString()} | ${((lowest.total / totals.reduce((sum, item) => sum + item.total, 0)) * 100).toFixed(1)}% | Referência |
+
+### Diferença entre extremos:
+
+* Diferença absoluta: **$${(highest.total - lowest.total).toLocaleString()}**
+* Diferença percentual: **${(((highest.total - lowest.total) / lowest.total) * 100).toFixed(1)}%**
+
+> As categorias selecionadas apresentam variação significativa, com **${highest.series}** dominando o mercado.`
     }
 
     if (lowerQuery.includes("sazonalidade") || lowerQuery.includes("seasonal") || lowerQuery.includes("padrão")) {
-      return `Analisando os padrões sazonais nos dados:
-      
-1. Observo picos de vendas nos meses de Fevereiro, Abril e Junho.
-2. Os meses com menor desempenho tendem a ser Outubro e Novembro.
-3. A categoria "clothing" mostra forte sazonalidade, com pico em Fevereiro.
-4. "Electronics" tem desempenho mais estável ao longo do ano.
-5. Recomendo planejar promoções e estoque considerando estes padrões sazonais.`
+      return `## Análise de Sazonalidade 📅
+
+### Padrões identificados:
+
+1. **Picos de vendas:** 
+   * Fevereiro: +15% acima da média
+   * Abril: +12% acima da média
+   * Junho: +18% acima da média
+
+2. **Períodos de baixa:**
+   * Outubro: -8% abaixo da média
+   * Novembro: -12% abaixo da média
+
+### Padrões por categoria:
+
+| Categoria | Padrão Sazonal | Mês de pico |
+|-----------|----------------|-------------|
+| **Clothing** | Alta sazonalidade | Fevereiro |
+| **Electronics** | Estável | Distribuição uniforme |
+| **Books** | Sazonalidade moderada | Junho |
+
+### Recomendações:
+
+\`\`\`
+- Planejar promoções para períodos de baixa
+- Aumentar estoque antes dos picos sazonais
+- Criar campanhas específicas para categorias sazonais
+\`\`\`
+
+> **Insight:** A categoria "clothing" apresenta forte correlação com mudanças de estação.`
     }
 
     // Default response
-    return `Baseado nos dados apresentados no gráfico, posso ver que temos informações de vendas por categoria ao longo do tempo. Para análises mais específicas, você pode me perguntar sobre:
+    return `## Análise de Dados
 
-1. Tendências gerais ou por categoria
-2. Comparações entre categorias
-3. Períodos de melhor/pior desempenho
-4. Padrões sazonais
-5. Resumo geral dos dados
+Posso ajudar você a entender melhor seus dados usando formatação **Markdown**.
 
-Qual aspecto específico você gostaria de explorar?`
-  }
+### O que você gostaria de saber?
 
-  // Scroll to bottom of chat when messages change
-  React.useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-    }
-  }, [messages])
+* Tendências gerais ou por categoria
+* Comparações entre categorias
+* Períodos de melhor/pior desempenho
+* Padrões sazonais
+* Resumo geral dos dados
 
-  // Render the appropriate chart based on chartType
-  const renderChart = () => {
-    const commonProps = {
-      data: sortedData,
-      margin: {
-        top: 20,
-        right: 20,
-        left: 20,
-        bottom: 20,
-      },
-    }
-
-    const renderLines = () => {
-      return activeSeries.map((seriesKey) => {
-        const seriesConfig = series.find((s) => s.key === seriesKey)
-        if (!seriesConfig) return null
-
-        if (chartType === "line") {
-          return (
-            <Line
-              key={seriesKey}
-              type="monotone"
-              dataKey={seriesKey}
-              name={seriesConfig.label}
-              stroke={seriesConfig.color}
-              strokeWidth={2}
-              dot={showDots ? { r: 4, strokeWidth: 2 } : false}
-              activeDot={{ r: 6 }}
-            />
-          )
-        } else if (chartType === "area") {
-          return (
-            <Area
-              key={seriesKey}
-              type="monotone"
-              dataKey={seriesKey}
-              name={seriesConfig.label}
-              stroke={seriesConfig.color}
-              fill={seriesConfig.color}
-              fillOpacity={0.2}
-              strokeWidth={2}
-              dot={showDots ? { r: 4, strokeWidth: 2 } : false}
-              activeDot={{ r: 6 }}
-            />
-          )
-        } else if (chartType === "bar") {
-          return (
-            <Bar
-              key={seriesKey}
-              dataKey={seriesKey}
-              name={seriesConfig.label}
-              fill={seriesConfig.color}
-              radius={[4, 4, 0, 0]}
-            />
-          )
-        }
-        return null; // Add a default return
-      })
-    }
-
-    if (chartType === "line") {
-      return (
-        <LineChart {...commonProps}>
-          {showGridLines && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
-          <XAxis
-            dataKey={xAxisField}
-            axisLine={{ stroke: "#e2e8f0" }}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
-            domain={[0, maxValue]}
-            ticks={yAxisTicks}
-            tickFormatter={(value) => value.toString()}
-            label={{
-              value: "Sales ($)",
-              angle: -90,
-              position: "insideLeft",
-              style: { textAnchor: "middle", fill: "#94a3b8", fontSize: 12 },
-            }}
-          />
-          {showTooltip && (
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
-                fontSize: "12px",
-              }}
-              formatter={(value: number, name: string) => [`$${value}`, name]}
-              labelFormatter={(label) => `${xAxisField}: ${label}`}
-            />
-          )}
-          {showLegend && (
-            <Legend
-              verticalAlign="top"
-              height={36}
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: "12px" }}
-            />
-          )}
-          {renderLines()}
-        </LineChart>
-      )
-    } else if (chartType === "area") {
-      return (
-        <AreaChart {...commonProps}>
-          {showGridLines && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
-          <XAxis
-            dataKey={xAxisField}
-            axisLine={{ stroke: "#e2e8f0" }}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
-            domain={[0, maxValue]}
-            ticks={yAxisTicks}
-            tickFormatter={(value) => value.toString()}
-            label={{
-              value: "Sales ($)",
-              angle: -90,
-              position: "insideLeft",
-              style: { textAnchor: "middle", fill: "#94a3b8", fontSize: 12 },
-            }}
-          />
-          {showTooltip && (
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
-                fontSize: "12px",
-              }}
-              formatter={(value: number, name: string) => [`$${value}`, name]}
-              labelFormatter={(label) => `${xAxisField}: ${label}`}
-            />
-          )}
-          {showLegend && (
-            <Legend
-              verticalAlign="top"
-              height={36}
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: "12px" }}
-            />
-          )}
-          {renderLines()}
-        </AreaChart>
-      )
-    } else if (chartType === "bar") {
-      return (
-        <BarChart {...commonProps}>
-          {showGridLines && <CartesianGrid strokeDasharray="3 3" vertical={false} />}
-          <XAxis
-            dataKey={xAxisField}
-            axisLine={{ stroke: "#e2e8f0" }}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
-          />
-          <YAxis
-            axisLine={false}
-            tickLine={false}
-            tick={{ fontSize: 12, fill: "#94a3b8" }}
-            domain={[0, maxValue]}
-            ticks={yAxisTicks}
-            tickFormatter={(value) => value.toString()}
-            label={{
-              value: "Sales ($)",
-              angle: -90,
-              position: "insideLeft",
-              style: { textAnchor: "middle", fill: "#94a3b8", fontSize: 12 },
-            }}
-          />
-          {showTooltip && (
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e2e8f0",
-                borderRadius: "4px",
-                fontSize: "12px",
-              }}
-              formatter={(value: number, name: string) => [`$${value}`, name]}
-              labelFormatter={(label) => `${xAxisField}: ${label}`}
-            />
-          )}
-          {showLegend && (
-            <Legend
-              verticalAlign="top"
-              height={36}
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: "12px" }}
-            />
-          )}
-          {renderLines()}
-        </BarChart>
-      )
-    }
-    
-    // Retorno padrão para garantir que sempre há um ReactNode
-    return (
-      <div className="flex h-full w-full items-center justify-center bg-gray-50">
-        <p className="text-gray-400">Nenhum gráfico selecionado</p>
-      </div>
-    )
+Digite sua pergunta ou experimente digitar "Mostre um exemplo de tabela em markdown" para ver como posso formatar os dados.`;
   }
 
   return (
@@ -631,28 +468,26 @@ Qual aspecto específico você gostaria de explorar?`
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="filter-field">Field</Label>
-                  <Select
-                    onValueChange={(value) => {
+                  <label htmlFor="filter-field">Field</label>
+                  <select
+                    id="filter-field"
+                    onChange={(e) => {
                       const newFilter: FilterConfig = {
-                        field: value,
+                        field: e.target.value,
                         operator: "equals",
                         value: "",
                       }
                       addFilter(newFilter)
                     }}
+                    className="rounded-md border p-2"
                   >
-                    <SelectTrigger id="filter-field">
-                      <SelectValue placeholder="Select field" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableFields.map((field) => (
-                        <SelectItem key={field} value={field}>
-                          {field}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Select field</option>
+                    {availableFields.map((field) => (
+                      <option key={field} value={field}>
+                        {field}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </DialogContent>
@@ -675,20 +510,7 @@ Qual aspecto específico você gostaria de explorar?`
       </div>
 
       {/* Active Filters */}
-      {filters.length > 0 && (
-        <div className="flex flex-wrap gap-2 border-b bg-gray-50 px-4 py-2">
-          {filters.map((filter, index) => (
-            <div key={index} className="flex items-center gap-2 rounded-full bg-white px-3 py-1 text-sm shadow-sm">
-              <span className="font-medium">{filter.field}</span>
-              <span className="text-gray-500">{filter.operator.replace("_", " ")}</span>
-              <span>{filter.value}</span>
-              <button onClick={() => removeFilter(index)} className="ml-1 rounded-full p-0.5 hover:bg-gray-100">
-                <X className="h-3 w-3 text-gray-500" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      <FilterBar filters={filters} removeFilter={removeFilter} />
 
       <div className="flex flex-col md:flex-row">
         {/* Left Panel - Configuration */}
@@ -698,347 +520,38 @@ Qual aspecto específico você gostaria de explorar?`
             configPanelExpanded ? "w-full md:w-80" : "w-16",
           )}
         >
-          {configPanelExpanded ? (
-            /* Expanded Configuration Panel */
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 rounded-none border-b bg-white p-0">
-                <TabsTrigger
-                  value="general"
-                  className={cn(
-                    "rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none",
-                    activeTab === "general" && "border-emerald-500 font-medium text-emerald-600",
-                  )}
-                >
-                  General
-                </TabsTrigger>
-                <TabsTrigger
-                  value="display"
-                  className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
-                >
-                  Display
-                </TabsTrigger>
-                <TabsTrigger
-                  value="x-axis"
-                  className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
-                >
-                  X-Axis
-                </TabsTrigger>
-                <TabsTrigger
-                  value="y-axis"
-                  className="rounded-none border-b-2 border-transparent py-3 data-[state=active]:border-emerald-500 data-[state=active]:bg-white data-[state=active]:shadow-none"
-                >
-                  Y-Axis
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="general" className="p-4">
-                {/* Chart Type */}
-                <div className="mb-6">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">Chart Type</label>
-                  <Select value={chartType} onValueChange={(value: ChartType) => setChartType(value)}>
-                    <SelectTrigger className="h-10 w-full border bg-white">
-                      <div className="flex items-center gap-2">
-                        {chartType === "line" && (
-                          <LucideLineChart className="h-5 w-5 text-gray-500" />
-                        )}
-                        {chartType === "bar" && (
-                          <BarChart2 className="h-5 w-5 text-gray-500" />
-                        )}
-                        {chartType === "area" && (
-                          <LucideAreaChart className="h-5 w-5 text-gray-500" />
-                        )}
-                        <span>{chartType.charAt(0).toUpperCase() + chartType.slice(1)}</span>
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="line">Line</SelectItem>
-                      <SelectItem value="bar">Bar</SelectItem>
-                      <SelectItem value="area">Area</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Display Options */}
-                <div className="mb-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-gray-700">Show Grid Lines</label>
-                    <Switch checked={showGridLines} onCheckedChange={setShowGridLines} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-gray-700">Show Data Points</label>
-                    <Switch checked={showDots} onCheckedChange={setShowDots} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-gray-700">Show Legend</label>
-                    <Switch checked={showLegend} onCheckedChange={setShowLegend} />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-gray-700">Show Tooltip</label>
-                    <Switch checked={showTooltip} onCheckedChange={setShowTooltip} />
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="display" className="p-4">
-                <div className="space-y-4">
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium text-gray-700">Chart Title</label>
-                    <Input defaultValue={title} />
-                  </div>
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium text-gray-700">Y-Axis Label</label>
-                    <Input defaultValue="Sales ($)" />
-                  </div>
-                  <div className="grid gap-2">
-                    <label className="text-sm font-medium text-gray-700">Chart Height</label>
-                    <Input type="number" defaultValue="500" />
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="x-axis" className="p-4">
-                {/* X-Axis */}
-                <div className="mb-6">
-                  <label className="mb-2 block text-sm font-medium text-gray-700">X-Axis Field</label>
-                  <Select value={xAxisField} onValueChange={setXAxisField}>
-                    <SelectTrigger className="h-10 w-full border bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableFields.map((field) => (
-                        <SelectItem key={field} value={field}>
-                          {field}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Group by */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-gray-700">Group by</label>
-                    <Select value={groupBy} onValueChange={setGroupBy}>
-                      <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {availableFields
-                          .filter((field) => field !== xAxisField)
-                          .map((field) => (
-                            <SelectItem key={field} value={field}>
-                              {field}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Sort */}
-                <div className="mb-6">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm text-gray-700">Sort</label>
-                    <Select value={sortDirection} onValueChange={(value: SortDirection) => setSortDirection(value)}>
-                      <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ascending">Ascending</SelectItem>
-                        <SelectItem value="descending">Descending</SelectItem>
-                        <SelectItem value="none">None</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="y-axis" className="p-4">
-                {/* Y-Axis */}
-                <div className="mb-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">Y-Axis</label>
-                    <Dialog open={isAddingSeries} onOpenChange={setIsAddingSeries}>
-                      <DialogTrigger asChild>
-                        <button className="text-xs text-gray-500 hover:text-gray-700">Add Y-Axis</button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Add Series</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid gap-2">
-                            <Label htmlFor="series-field">Field</Label>
-                            <Select
-                              onValueChange={(value) => {
-                                const newSeries: SeriesConfig = {
-                                  key: value,
-                                  label: value.charAt(0).toUpperCase() + value.slice(1),
-                                  color: DEFAULT_COLORS[series.length % DEFAULT_COLORS.length],
-                                  aggregation: "sum",
-                                }
-                                addSeries(newSeries)
-                              }}
-                            >
-                              <SelectTrigger id="series-field">
-                                <SelectValue placeholder="Select field" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableFields
-                                  .filter(
-                                    (field) =>
-                                      field !== xAxisField &&
-                                      typeof data[0][field] === "number" &&
-                                      !series.some((s) => s.key === field),
-                                  )
-                                  .map((field) => (
-                                    <SelectItem key={field} value={field}>
-                                      {field}
-                                    </SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </div>
-
-                {/* Series List */}
-                <div className="space-y-4">
-                  {series.map((seriesConfig, index) => (
-                    <div key={seriesConfig.key} className="rounded-md border p-3">
-                      <div className="mb-2 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 rounded-full" style={{ backgroundColor: seriesConfig.color }} />
-                          <span className="text-sm font-medium">
-                            Series {index + 1}: {seriesConfig.label}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => removeSeries(seriesConfig.key)}
-                          className="rounded-full p-1 hover:bg-gray-100"
-                        >
-                          <X className="h-3 w-3 text-gray-500" />
-                        </button>
-                      </div>
-
-                      <div className="mb-2">
-                        <div className="relative">
-                          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <span className="text-gray-400">#</span>
-                          </div>
-                          <Input className="h-10 pl-10 pr-10" value={seriesConfig.key} readOnly />
-                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                            <ChevronDown className="h-4 w-4 text-gray-400" />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mb-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm text-gray-500">Aggregate</label>
-                          <Select
-                            value={seriesConfig.aggregation}
-                            onValueChange={(value: AggregationType) =>
-                              updateSeries(seriesConfig.key, { aggregation: value })
-                            }
-                          >
-                            <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="sum">Sum</SelectItem>
-                              <SelectItem value="average">Average</SelectItem>
-                              <SelectItem value="min">Min</SelectItem>
-                              <SelectItem value="max">Max</SelectItem>
-                              <SelectItem value="count">Count</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="mb-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-sm text-gray-500">Group by</label>
-                          <Select
-                            value={seriesConfig.groupBy || "category_name"}
-                            onValueChange={(value) => updateSeries(seriesConfig.key, { groupBy: value })}
-                          >
-                            <SelectTrigger className="w-[120px] border-0 bg-transparent p-0 text-sm text-gray-500 shadow-none">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="category_name">category_name</SelectItem>
-                              <SelectItem value="region">region</SelectItem>
-                              <SelectItem value="channel">channel</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Add Series */}
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-gray-500"
-                    onClick={() => setIsAddingSeries(true)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Series
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-          ) : (
-            /* Collapsed Icons Panel */
-            <div className="h-full py-4 flex flex-col items-center">
-              <div className="mb-8"></div> {/* Spacer to align with expanded view */}
-              <button 
-                onClick={() => { setActiveTab("general"); setConfigPanelExpanded(true); }}
-                className={cn(
-                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
-                  activeTab === "general" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
-                )}
-                title="Geral"
-              >
-                <BarChart2 className="h-5 w-5" />
-              </button>
-              <button 
-                onClick={() => { setActiveTab("display"); setConfigPanelExpanded(true); }}
-                className={cn(
-                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
-                  activeTab === "display" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
-                )}
-                title="Exibição"
-              >
-                <LucideLineChart className="h-5 w-5" />
-              </button>
-              <button 
-                onClick={() => { setActiveTab("x-axis"); setConfigPanelExpanded(true); }}
-                className={cn(
-                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
-                  activeTab === "x-axis" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
-                )}
-                title="Eixo-X"
-              >
-                <ChevronDown className="h-5 w-5" />
-              </button>
-              <button 
-                onClick={() => { setActiveTab("y-axis"); setConfigPanelExpanded(true); }}
-                className={cn(
-                  "w-10 h-10 mb-4 rounded-full flex items-center justify-center",
-                  activeTab === "y-axis" ? "bg-emerald-50 text-emerald-600" : "text-gray-500 hover:bg-gray-100"
-                )}
-                title="Eixo-Y"
-              >
-                <LucideAreaChart className="h-5 w-5" />
-              </button>
-            </div>
-          )}
+          <ConfigPanel 
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            chartType={chartType}
+            setChartType={setChartType}
+            xAxisField={xAxisField}
+            setXAxisField={setXAxisField}
+            groupBy={groupBy}
+            setGroupBy={setGroupBy}
+            sortDirection={sortDirection}
+            setSortDirection={setSortDirection}
+            showGridLines={showGridLines}
+            setShowGridLines={setShowGridLines}
+            showDots={showDots}
+            setShowDots={setShowDots}
+            showLegend={showLegend}
+            setShowLegend={setShowLegend}
+            showTooltip={showTooltip}
+            setShowTooltip={setShowTooltip}
+            series={series}
+            setSeries={setSeries}
+            availableFields={availableFields}
+            isAddingSeries={isAddingSeries}
+            setIsAddingSeries={setIsAddingSeries}
+            data={data}
+            title={title}
+            configPanelExpanded={configPanelExpanded}
+            setConfigPanelExpanded={setConfigPanelExpanded}
+            addSeries={addSeries}
+            removeSeries={removeSeries}
+            updateSeries={updateSeries}
+          />
         </div>
 
         {/* Toggle Panel Button */}
@@ -1054,180 +567,44 @@ Qual aspecto específico você gostaria de explorar?`
         {/* Right Panel - Chart */}
         <div className="flex-1 p-4">
           {/* Legend */}
-          <div className="mb-4 flex flex-wrap items-center gap-4">
-            {series.map((seriesConfig) => (
-              <button
-                key={seriesConfig.key}
-                className="flex items-center gap-2"
-                onClick={() => toggleSeries(seriesConfig.key)}
-                aria-pressed={activeSeries.includes(seriesConfig.key)}
-              >
-                <div
-                  className={cn("h-3 w-3 rounded-full", {
-                    "opacity-50": !activeSeries.includes(seriesConfig.key),
-                  })}
-                  style={{ backgroundColor: seriesConfig.color }}
-                />
-                <span
-                  className={cn("text-sm", {
-                    "font-medium": activeSeries.includes(seriesConfig.key),
-                    "text-gray-400": !activeSeries.includes(seriesConfig.key),
-                  })}
-                >
-                  {seriesConfig.label}
-                </span>
-              </button>
-            ))}
-          </div>
+          <ChartLegend 
+            series={series} 
+            activeSeries={activeSeries} 
+            toggleSeries={toggleSeries} 
+          />
 
           {/* Chart */}
           <div className="h-[500px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              {renderChart()}
-            </ResponsiveContainer>
+            <ChartRenderer
+              chartType={chartType}
+              data={sortedData}
+              xAxisField={xAxisField}
+              activeSeries={activeSeries}
+              series={series}
+              showGridLines={showGridLines}
+              showDots={showDots}
+              showLegend={showLegend}
+              showTooltip={showTooltip}
+              yAxisTicks={yAxisTicks}
+              maxValue={maxValue}
+            />
           </div>
         </div>
       </div>
 
       {/* AI Chat Section - Below the main content */}
       {showAiChat && (
-        <div className="border-t">
-          <div className="border-b bg-gray-50 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium text-gray-700">Análise com IA</h3>
-                <p className="text-xs text-gray-500">Faça perguntas sobre seus dados</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 rounded-full p-0"
-                onClick={() => setShowAiChat(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-[1fr_300px]">
-            {/* Chat Messages */}
-            <div ref={chatContainerRef} className="h-[300px] overflow-y-auto border-r p-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn("mb-4 flex", {
-                    "justify-end": message.role === "user",
-                  })}
-                >
-                  {message.role === "assistant" && (
-                    <Avatar className="mr-2 h-8 w-8">
-                      <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                      <AvatarFallback className="bg-emerald-100 text-emerald-700">AI</AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={cn("max-w-[85%] rounded-lg px-4 py-2", {
-                      "bg-white text-gray-700": message.role === "assistant",
-                      "bg-emerald-500 text-white": message.role === "user",
-                    })}
-                  >
-                    <div className="whitespace-pre-line text-sm">{message.content}</div>
-                    <div
-                      className={cn("mt-1 text-right text-xs", {
-                        "text-gray-400": message.role === "assistant",
-                        "text-emerald-200": message.role === "user",
-                      })}
-                    >
-                      {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {isAiThinking && (
-                <div className="mb-4 flex">
-                  <Avatar className="mr-2 h-8 w-8">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                    <AvatarFallback className="bg-emerald-100 text-emerald-700">AI</AvatarFallback>
-                  </Avatar>
-                  <div className="max-w-[85%] rounded-lg bg-white px-4 py-3 text-gray-700">
-                    <div className="flex space-x-1">
-                      <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
-                      <div
-                        className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
-                      <div
-                        className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                        style={{ animationDelay: "0.4s" }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Suggested Questions */}
-            <div className="p-4">
-              <h4 className="mb-3 text-sm font-medium text-gray-700">Perguntas Sugeridas</h4>
-              <div className="space-y-2">
-                {[
-                  "Qual é a tendência geral das vendas?",
-                  "Quais são as categorias com melhor desempenho?",
-                  "Existe algum padrão sazonal nos dados?",
-                  "Pode me dar um resumo dos dados?",
-                  "Compare as categorias de produtos",
-                ].map((question, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="w-full justify-start text-left text-sm"
-                    onClick={() => {
-                      setCurrentMessage(question)
-                      setTimeout(() => {
-                        handleSendMessage()
-                      }, 100)
-                    }}
-                  >
-                    {question}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Chat Input */}
-          <div className="border-t p-4">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                handleSendMessage()
-              }}
-              className="flex items-center gap-2"
-            >
-              <Textarea
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                placeholder="Faça uma pergunta sobre os dados..."
-                className="min-h-[40px] resize-none"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSendMessage()
-                  }
-                }}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="h-10 w-10 shrink-0 rounded-full bg-emerald-500 hover:bg-emerald-600"
-                disabled={!currentMessage.trim() || isAiThinking}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        </div>
+        <AIChat 
+          messages={messages}
+          setMessages={setMessages}
+          isAiThinking={isAiThinking}
+          currentMessage={currentMessage}
+          setCurrentMessage={setCurrentMessage}
+          handleSendMessage={handleSendMessage}
+          setShowAiChat={setShowAiChat}
+          data={data}
+          activeSeries={activeSeries}
+        />
       )}
 
       {/* Footer */}
