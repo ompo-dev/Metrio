@@ -1,0 +1,18 @@
+{
+    "title": "Regional Performance Metrics",
+    "data": [
+      { "month": "Jan 2023", "north": 4500, "south": 3200, "east": 5100, "west": 6800, "central": 4200 },
+      { "month": "Feb 2023", "north": 5200, "south": 3800, "east": 4800, "west": 7200, "central": 5100 },
+      { "month": "Mar 2023", "north": 6100, "south": 4500, "east": 5300, "west": 6500, "central": 5800 },
+      { "month": "Apr 2023", "north": 7800, "south": 5200, "east": 6200, "west": 8100, "central": 6300 },
+      { "month": "May 2023", "north": 8500, "south": 6100, "east": 7400, "west": 9200, "central": 7500 },
+      { "month": "Jun 2023", "north": 7200, "south": 5800, "east": 6800, "west": 8500, "central": 6900 },
+      { "month": "Jul 2023", "north": 6500, "south": 4900, "east": 5900, "west": 7800, "central": 6200 },
+      { "month": "Aug 2023", "north": 7100, "south": 5300, "east": 6500, "west": 8300, "central": 6800 },
+      { "month": "Sep 2023", "north": 8200, "south": 6200, "east": 7300, "west": 9500, "central": 7600 },
+      { "month": "Oct 2023", "north": 9100, "south": 7100, "east": 8200, "west": 10200, "central": 8500 },
+      { "month": "Nov 2023", "north": 8400, "south": 6500, "east": 7600, "west": 9800, "central": 7900 },
+      { "month": "Dec 2023", "north": 9800, "south": 7800, "east": 8900, "west": 11500, "central": 9200 }
+    ]
+  }
+  
