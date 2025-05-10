@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ChevronDown, ChevronLeft, ChevronRight, Filter, MessageSquare, RotateCcw} from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -339,6 +340,30 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
       {/* Footer */}
       <div className="flex items-center justify-between border-t bg-gray-50 px-4 py-2">
         <div className="text-sm text-gray-500">Agent</div>
+      </div>
+    </Card>
+  )
+}
+
+export function ChartSkeleton() {
+  return (
+    <Card className="mx-auto max-w-6xl overflow-hidden p-0">
+      <div className="mb-4 flex items-center justify-between border-b px-4 py-3">
+        <Skeleton className="h-6 w-64" />
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-9 w-32" />
+          <Skeleton className="h-9 w-32" />
+        </div>
+      </div>
+      <div className="flex flex-col md:flex-row">
+        <div className="border-r w-16 md:w-80">
+          <Skeleton className="h-[500px] w-full" />
+        </div>
+        <div className="flex-1 p-4">
+          <Skeleton className="h-8 w-full mb-4" />
+          <Skeleton className="h-[500px] w-full" />
+        </div>
       </div>
     </Card>
   )

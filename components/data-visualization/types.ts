@@ -1,5 +1,5 @@
 export interface DataPoint {
-  [key: string]: string | number
+  [key: string]: string | number | boolean
 }
 
 export type ChartType = "line" | "bar" | "area"
