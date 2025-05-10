@@ -56,46 +56,46 @@ export function AIChat({
 
   return (
     <div className="border-t">
-      <div className="border-b bg-gray-50 px-4 py-3">
+      <div className="border-b bg-gray-50 px-2 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-gray-700">Análise com IA</h3>
-            <p className="text-xs text-gray-500">Faça perguntas sobre seus dados</p>
+            <h3 className="text-xs sm:text-sm font-medium text-gray-700">Análise com IA</h3>
+            <p className="text-[10px] sm:text-xs text-gray-500">Faça perguntas sobre seus dados</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 rounded-full p-0"
+            className="h-6 w-6 sm:h-8 sm:w-8 rounded-full p-0"
             onClick={() => setShowAiChat(false)}
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="grid md:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_250px] lg:grid-cols-[1fr_300px]">
         {/* Chat Messages */}
-        <div ref={chatContainerRef} className="h-[300px] overflow-y-auto border-r p-4">
+        <div ref={chatContainerRef} className="h-[200px] sm:h-[250px] md:h-[300px] overflow-y-auto border-r p-2 sm:p-4">
           {messages.map((message) => (
             <div
               key={message.id}
-              className={cn("mb-4 flex", {
+              className={cn("mb-2 sm:mb-4 flex", {
                 "justify-end": message.role === "user",
               })}
             >
               {message.role === "assistant" && (
-                <Avatar className="mr-2 h-8 w-8">
+                <Avatar className="mr-2 h-6 w-6 sm:h-8 sm:w-8">
                   <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                  <AvatarFallback className="bg-emerald-100 text-emerald-700">AI</AvatarFallback>
+                  <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs sm:text-sm">AI</AvatarFallback>
                 </Avatar>
               )}
               <div
-                className={cn("max-w-[85%] rounded-lg px-4 py-2", {
+                className={cn("max-w-[85%] rounded-lg px-2 sm:px-4 py-1.5 sm:py-2", {
                   "bg-white text-gray-700": message.role === "assistant",
                   "bg-emerald-500 text-white": message.role === "user",
                 })}
               >
-                <div className={cn("text-sm markdown-content", {
+                <div className={cn("text-xs sm:text-sm markdown-content", {
                   "markdown-content-dark": message.role === "user",
                 })}>
                   <ReactMarkdown 
@@ -106,7 +106,7 @@ export function AIChat({
                   </ReactMarkdown>
                 </div>
                 <div
-                  className={cn("mt-1 text-right text-xs", {
+                  className={cn("mt-1 text-right text-[10px] sm:text-xs", {
                     "text-gray-400": message.role === "assistant",
                     "text-emerald-200": message.role === "user",
                   })}
@@ -118,20 +118,20 @@ export function AIChat({
           ))}
 
           {isAiThinking && (
-            <div className="mb-4 flex">
-              <Avatar className="mr-2 h-8 w-8">
+            <div className="mb-2 sm:mb-4 flex">
+              <Avatar className="mr-2 h-6 w-6 sm:h-8 sm:w-8">
                 <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                <AvatarFallback className="bg-emerald-100 text-emerald-700">AI</AvatarFallback>
+                <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs sm:text-sm">AI</AvatarFallback>
               </Avatar>
-              <div className="max-w-[85%] rounded-lg bg-white px-4 py-3 text-gray-700">
+              <div className="max-w-[85%] rounded-lg bg-white px-2 sm:px-4 py-2 sm:py-3 text-gray-700">
                 <div className="flex space-x-1">
-                  <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400"></div>
+                  <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 animate-bounce rounded-full bg-gray-400"></div>
                   <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                    className="h-1.5 w-1.5 sm:h-2 sm:w-2 animate-bounce rounded-full bg-gray-400"
                     style={{ animationDelay: "0.2s" }}
                   ></div>
                   <div
-                    className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                    className="h-1.5 w-1.5 sm:h-2 sm:w-2 animate-bounce rounded-full bg-gray-400"
                     style={{ animationDelay: "0.4s" }}
                   ></div>
                 </div>
@@ -141,14 +141,14 @@ export function AIChat({
         </div>
 
         {/* Suggested Questions */}
-        <div className="p-4">
-          <h4 className="mb-3 text-sm font-medium text-gray-700">Perguntas Sugeridas</h4>
-          <div className="space-y-2">
+        <div className="p-2 sm:p-4">
+          <h4 className="mb-2 sm:mb-3 text-xs sm:text-sm font-medium text-gray-700">Perguntas Sugeridas</h4>
+          <div className="space-y-1 sm:space-y-2">
             {suggestedQuestions.map((question, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className="w-full justify-start text-left text-sm"
+                className="w-full justify-start text-xs sm:text-sm"
                 onClick={() => {
                   setCurrentMessage(question)
                   setTimeout(() => {
@@ -164,7 +164,7 @@ export function AIChat({
       </div>
 
       {/* Chat Input */}
-      <div className="border-t p-4">
+      <div className="border-t p-2 sm:p-4">
         <form
           onSubmit={(e) => {
             e.preventDefault()
@@ -176,7 +176,7 @@ export function AIChat({
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
             placeholder="Faça uma pergunta sobre os dados... (Markdown suportado)"
-            className="min-h-[40px] resize-none font-mono text-sm"
+            className="min-h-[32px] sm:min-h-[40px] resize-none font-mono text-xs sm:text-sm"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault()
@@ -187,10 +187,10 @@ export function AIChat({
           <Button
             type="submit"
             size="icon"
-            className="h-10 w-10 shrink-0 rounded-full bg-emerald-500 hover:bg-emerald-600"
+            className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 rounded-full bg-emerald-500 hover:bg-emerald-600"
             disabled={!currentMessage.trim() || isAiThinking}
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </form>
       </div>

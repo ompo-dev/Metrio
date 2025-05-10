@@ -18,6 +18,9 @@ import {
   PieChart,
   Label,
   Cell,
+  RadialBar,
+  RadialBarChart,
+  PolarRadiusAxis,
 } from "recharts"
 import { ChartType, DataPoint, SeriesConfig } from "./types"
 import { cn } from "@/lib/utils"
@@ -66,9 +69,9 @@ export function ChartRenderer({
     },
   }
 
-  // Calcular o valor total para o gráfico de pizza
+  // Calcular o valor total para o gráfico de pizza e radial
   const totalValue = React.useMemo(() => {
-    if (chartType !== "pie" || !activeSeries.length) return 0;
+    if (!(chartType === "pie" || chartType === "radial") || !activeSeries.length) return 0;
     
     return data.reduce((total, item) => {
       let sum = 0;
@@ -108,6 +111,15 @@ export function ChartRenderer({
     
     return seriesSums;
   }, [chartType, data, activeSeries, series]);
+
+  // Preparar dados para o gráfico radial
+  const radialData = React.useMemo(() => {
+    if (chartType !== "radial" || !data.length) return [];
+    
+    // Para o gráfico radial, precisamos usar o primeiro item dos dados
+    // conforme o exemplo fornecido
+    return [data[0]];
+  }, [chartType, data]);
 
   // Criar um objeto de configuração para o ChartContainer
   const chartConfig = React.useMemo(() => {
@@ -163,6 +175,17 @@ export function ChartRenderer({
             radius={[4, 4, 0, 0]}
           />
         )
+      } else if (chartType === "stacked-bar") {
+        return (
+          <Bar
+            key={seriesKey}
+            dataKey={seriesKey}
+            name={seriesConfig.label}
+            stackId="a"
+            fill={`var(--color-${seriesKey})`}
+            radius={seriesKey === activeSeries[0] ? [0, 0, 4, 4] : (seriesKey === activeSeries[activeSeries.length - 1] ? [4, 4, 0, 0] : [0, 0, 0, 0])}
+          />
+        )
       }
       return null;
     })
@@ -174,6 +197,14 @@ export function ChartRenderer({
       axisLine={{ stroke: "#e2e8f0" }}
       tickLine={false}
       tick={{ fontSize: 12, fill: "#94a3b8" }}
+      tickFormatter={value => {
+        if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          return new Date(value).toLocaleDateString('pt-BR', { 
+            weekday: 'short'
+          });
+        }
+        return value;
+      }}
     />
   )
 
@@ -202,6 +233,26 @@ export function ChartRenderer({
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel />}
+        />
+      );
+    } else if (chartType === "radial") {
+      return (
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent hideLabel />}
+        />
+      );
+    } else if (chartType === "stacked-bar") {
+      return (
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent 
+              labelKey="activities" 
+              indicator="line" 
+            />
+          }
+          defaultIndex={1}
         />
       );
     } else {
@@ -283,6 +334,75 @@ export function ChartRenderer({
     );
   }
 
+  const renderRadialChart = () => {
+    // Verificar se temos dados
+    if (!radialData.length) return null;
+    
+    // Verificar quais séries devem ser exibidas
+    const activeSeriesConfigs = series.filter(s => activeSeries.includes(s.key));
+    
+    // Definir o tamanho de cada fatia - ajustar com base no número de séries
+    const barSize = Math.max(5, Math.min(20, 100 / activeSeriesConfigs.length));
+    
+    return (
+      <RadialBarChart
+        {...commonProps}
+        data={radialData}
+        innerRadius={80}
+        outerRadius={130}
+        endAngle={180}
+        barSize={barSize}
+        startAngle={0}
+        cx="50%"
+        cy="50%"
+      >
+        {renderGrid()}
+        {renderTooltip()}
+        {renderLegend()}
+        <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+          <Label
+            content={({ viewBox }) => {
+              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                return (
+                  <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle">
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) - 16}
+                      className="fill-foreground text-2xl font-bold"
+                    >
+                      {totalValue.toLocaleString()}
+                    </tspan>
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) + 4}
+                      className="fill-muted-foreground"
+                    >
+                      Total
+                    </tspan>
+                  </text>
+                )
+              }
+              return null;
+            }}
+          />
+        </PolarRadiusAxis>
+        
+        {/* Renderizar TODAS as barras radiais ativas */}
+        {activeSeriesConfigs.map((seriesConfig) => (
+          <RadialBar
+            key={seriesConfig.key}
+            dataKey={seriesConfig.key}
+            name={seriesConfig.label}
+            stackId="a"
+            cornerRadius={5}
+            fill={seriesConfig.color}
+            stroke="none"
+          />
+        ))}
+      </RadialBarChart>
+    );
+  }
+
   const renderChartContent = () => {
     if (chartType === "line") {
       return (
@@ -317,8 +437,26 @@ export function ChartRenderer({
           {renderLines()}
         </BarChart>
       )
+    } else if (chartType === "stacked-bar") {
+      return (
+        <BarChart {...commonProps} accessibilityLayer>
+          {renderGrid()}
+          {renderXAxis()}
+          {renderYAxis()}
+          {renderTooltip()}
+          {renderLegend()}
+          {renderLines()}
+        </BarChart>
+      )
     } else if (chartType === "pie") {
       return renderPieChart();
+    } else if (chartType === "radial") {
+      const chart = renderRadialChart();
+      return chart !== null ? chart : (
+        <div className="flex h-full w-full items-center justify-center bg-gray-50">
+          <p className="text-gray-400">Sem dados para o gráfico radial</p>
+        </div>
+      );
     }
     
     // Retorno padrão
@@ -329,9 +467,12 @@ export function ChartRenderer({
     )
   }
   
+  // Verificar se o conteúdo do gráfico está disponível
+  const chartContent = renderChartContent();
+  
   return (
     <ChartContainer config={chartConfig} className="w-full h-full">
-      {renderChartContent()}
+      {chartContent}
     </ChartContainer>
   )
 } 

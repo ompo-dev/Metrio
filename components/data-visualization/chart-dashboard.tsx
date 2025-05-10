@@ -166,14 +166,14 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
   return (
     <Card className={cn("overflow-hidden p-0", className)}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b px-4 py-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b px-4 py-3 gap-2">
         <div className="flex items-center gap-2">
           <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200">
             <RotateCcw className="h-3 w-3 text-gray-500" />
           </div>
           <h2 className="text-base font-medium text-gray-700">{title}</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setShowAiChat(!showAiChat)}
             className={cn(
@@ -242,12 +242,12 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
       {/* Active Filters */}
       <FilterBar filters={filters} removeFilter={removeFilter} />
 
-      <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col lg:flex-row">
         {/* Left Panel - Configuration */}
         <div 
-                className={cn(
+          className={cn(
             "border-r transition-all duration-300 ease-in-out",
-            configPanelExpanded ? "w-full md:w-80" : "w-16",
+            configPanelExpanded ? "w-full lg:w-80" : "w-16",
           )}
         >
           <ConfigPanel 
@@ -282,16 +282,16 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
             removeSeries={removeSeries}
             updateSeries={updateSeries}
           />
-              </div>
+        </div>
 
         {/* Toggle Panel Button */}
         <div className="relative">
-                      <button
+          <button
             onClick={() => setConfigPanelExpanded(!configPanelExpanded)}
             className="absolute -left-3 top-4 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm"
-                      >
+          >
             {configPanelExpanded ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                      </button>
+          </button>
         </div>
 
         {/* Right Panel - Chart */}
@@ -304,7 +304,7 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
           />
 
           {/* Chart */}
-          <div className="h-[500px] w-full">
+          <div className="h-[300px] sm:h-[400px] md:h-[500px] w-full">
             <ChartRenderer
               chartType={chartType}
               data={sortedData}
@@ -322,7 +322,7 @@ export function ChartDashboard({ title, data, className }: ChartDashboardProps) 
         </div>
       </div>
 
-      {/* AI Chat Section - Below the main content */}
+      {/* AI Chat Section */}
       {showAiChat && (
         <AIChat 
           messages={messages}
