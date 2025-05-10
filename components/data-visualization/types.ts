@@ -2,7 +2,7 @@ export interface DataPoint {
   [key: string]: string | number | boolean
 }
 
-export type ChartType = "line" | "bar" | "area"
+export type ChartType = "line" | "bar" | "area" | "pie"
 export type AggregationType = "sum" | "average" | "min" | "max" | "count"
 export type SortDirection = "ascending" | "descending" | "none"
 

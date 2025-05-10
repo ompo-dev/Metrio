@@ -14,9 +14,20 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Pie,
+  PieChart,
+  Label,
+  Cell,
 } from "recharts"
 import { ChartType, DataPoint, SeriesConfig } from "./types"
 import { cn } from "@/lib/utils"
+
+// Importar componentes de tooltip personalizados
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
 interface ChartRendererProps {
   chartType: ChartType
@@ -54,6 +65,60 @@ export function ChartRenderer({
       bottom: 20,
     },
   }
+
+  // Calcular o valor total para o gráfico de pizza
+  const totalValue = React.useMemo(() => {
+    if (chartType !== "pie" || !activeSeries.length) return 0;
+    
+    return data.reduce((total, item) => {
+      let sum = 0;
+      activeSeries.forEach(seriesKey => {
+        if (typeof item[seriesKey] === 'number') {
+          sum += item[seriesKey] as number;
+        }
+      });
+      return total + sum;
+    }, 0);
+  }, [chartType, data, activeSeries]);
+
+  // Preparar dados para o gráfico de pizza
+  const pieData = React.useMemo(() => {
+    if (chartType !== "pie") return [];
+    
+    // Para gráfico de pizza, precisamos reformatar os dados
+    // Vamos somar os valores por série
+    const seriesSums = activeSeries.map(seriesKey => {
+      const seriesConfig = series.find(s => s.key === seriesKey);
+      if (!seriesConfig) return null;
+      
+      const sum = data.reduce((total, item) => {
+        if (typeof item[seriesKey] === 'number') {
+          return total + (item[seriesKey] as number);
+        }
+        return total;
+      }, 0);
+      
+      return {
+        name: seriesConfig.label,
+        value: sum,
+        fill: seriesConfig.color,
+        key: seriesKey
+      };
+    }).filter(Boolean);
+    
+    return seriesSums;
+  }, [chartType, data, activeSeries, series]);
+
+  // Criar um objeto de configuração para o ChartContainer
+  const chartConfig = React.useMemo(() => {
+    return series.reduce((config: any, seriesItem) => {
+      config[seriesItem.key] = {
+        label: seriesItem.label,
+        color: seriesItem.color
+      };
+      return config;
+    }, {});
+  }, [series]);
 
   const renderLines = () => {
     return activeSeries.map((seriesKey) => {
@@ -129,18 +194,30 @@ export function ChartRenderer({
     />
   )
 
-  const renderTooltip = () => showTooltip && (
-    <Tooltip
-      contentStyle={{
-        backgroundColor: "white",
-        border: "1px solid #e2e8f0",
-        borderRadius: "4px",
-        fontSize: "12px",
-      }}
-      formatter={(value: number, name: string) => [`$${value}`, name]}
-      labelFormatter={(label) => `${xAxisField}: ${label}`}
-    />
-  )
+  const renderTooltip = () => {
+    if (!showTooltip) return null;
+
+    if (chartType === "pie") {
+      return (
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent hideLabel />}
+        />
+      );
+    } else {
+      return (
+        <ChartTooltip
+          cursor={false}
+          content={
+            <ChartTooltipContent 
+              labelKey={xAxisField} 
+              indicator="line" 
+            />
+          }
+        />
+      );
+    }
+  }
 
   const renderLegend = () => showLegend && (
     <Legend
@@ -154,7 +231,59 @@ export function ChartRenderer({
 
   const renderGrid = () => showGridLines && <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
-  const renderChart = () => {
+  const renderPieChart = () => {
+    return (
+      <PieChart {...commonProps}>
+        <Pie
+          data={pieData}
+          dataKey="value"
+          nameKey="name"
+          innerRadius={60}
+          outerRadius={80}
+          paddingAngle={5}
+          strokeWidth={5}
+        >
+          {pieData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry?.fill || "#ccc"} />
+          ))}
+          <Label
+            content={({ viewBox }) => {
+              if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                return (
+                  <text
+                    x={viewBox.cx}
+                    y={viewBox.cy}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                  >
+                    <tspan
+                      x={viewBox.cx}
+                      y={viewBox.cy}
+                      className="fill-foreground text-3xl font-bold"
+                    >
+                      {totalValue.toLocaleString()}
+                    </tspan>
+                    <tspan
+                      x={viewBox.cx}
+                      y={(viewBox.cy || 0) + 24}
+                      className="fill-muted-foreground"
+                    >
+                      Total
+                    </tspan>
+                  </text>
+                )
+              }
+              return null;
+            }}
+          />
+        </Pie>
+        {renderTooltip()}
+        {renderLegend()}
+      </PieChart>
+    );
+  }
+
+  const renderChartContent = () => {
     if (chartType === "line") {
       return (
         <LineChart {...commonProps}>
@@ -188,6 +317,8 @@ export function ChartRenderer({
           {renderLines()}
         </BarChart>
       )
+    } else if (chartType === "pie") {
+      return renderPieChart();
     }
     
     // Retorno padrão
@@ -199,8 +330,8 @@ export function ChartRenderer({
   }
   
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      {renderChart()}
-    </ResponsiveContainer>
+    <ChartContainer config={chartConfig} className="w-full h-full">
+      {renderChartContent()}
+    </ChartContainer>
   )
 } 

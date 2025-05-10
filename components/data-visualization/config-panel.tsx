@@ -47,6 +47,13 @@ interface ConfigPanelProps {
   updateSeries: (seriesKey: string, updates: Partial<SeriesConfig>) => void
 }
 
+const chartTypes = [
+  { label: "Linha", value: "line" },
+  { label: "Barra", value: "bar" },
+  { label: "Área", value: "area" },
+  { label: "Pizza", value: "pie" },
+]
+
 export function ConfigPanel({
   activeTab,
   setActiveTab,
@@ -135,9 +142,11 @@ export function ConfigPanel({
               </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="line">Line</SelectItem>
-              <SelectItem value="bar">Bar</SelectItem>
-              <SelectItem value="area">Area</SelectItem>
+              {chartTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
