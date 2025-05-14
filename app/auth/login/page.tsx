@@ -1,5 +1,6 @@
 import { LoginForm } from "@/app/auth/components/login-form";
 import { Logo } from "@/components/logo";
+import { Suspense } from "react";
 
 export default function LoginPage() {
   return (
@@ -12,7 +13,11 @@ export default function LoginPage() {
             Entre na sua conta para acessar o dashboard
           </p>
         </div>
-        <LoginForm />
+        <Suspense
+          fallback={<div className="p-8 text-center">Carregando...</div>}
+        >
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );

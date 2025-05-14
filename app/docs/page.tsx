@@ -28,7 +28,10 @@ export default function ApiDocsPage() {
   useEffect(() => {
     fetch("/api/docs")
       .then((response) => response.json())
-      .then((data) => setSpec(data));
+      .then((data) => setSpec(data))
+      .catch((error) => {
+        console.error("Erro ao carregar documentação da API:", error);
+      });
   }, []);
 
   if (!spec) {
