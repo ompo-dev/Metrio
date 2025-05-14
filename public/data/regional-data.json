@@ -1,0 +1,18 @@
+{
+    "title": "Monthly Sales by Product Category",
+    "data": [
+      { "month": "Oct 2022", "books": 600, "clothing": 1400, "electronics": 200, "tools": 1000, "widgets": 1500 },
+      { "month": "Nov 2022", "books": 2200, "clothing": 3500, "electronics": 1700, "tools": 4500, "widgets": 3600 },
+      { "month": "Dec 2022", "books": 3400, "clothing": 5400, "electronics": 2100, "tools": 5000, "widgets": 6400 },
+      { "month": "Jan 2023", "books": 3500, "clothing": 6100, "electronics": 2200, "tools": 5000, "widgets": 6500 },
+      { "month": "Feb 2023", "books": 4900, "clothing": 8600, "electronics": 2200, "tools": 4000, "widgets": 7600 },
+      { "month": "Mar 2023", "books": 3900, "clothing": 4800, "electronics": 1900, "tools": 5900, "widgets": 5400 },
+      { "month": "Apr 2023", "books": 6300, "clothing": 4700, "electronics": 2600, "tools": 5800, "widgets": 6300 },
+      { "month": "May 2023", "books": 3700, "clothing": 4800, "electronics": 1500, "tools": 2800, "widgets": 5300 },
+      { "month": "Jun 2023", "books": 3200, "clothing": 4700, "electronics": 1000, "tools": 5400, "widgets": 6300 },
+      { "month": "Jul 2023", "books": 2800, "clothing": 3300, "electronics": 1600, "tools": 2400, "widgets": 4200 },
+      { "month": "Aug 2023", "books": 2200, "clothing": 3500, "electronics": 1400, "tools": 5400, "widgets": 1800 },
+      { "month": "Sep 2023", "books": 3200, "clothing": 4800, "electronics": 1500, "tools": 3300, "widgets": 4800 }
+    ]
+  }
+  

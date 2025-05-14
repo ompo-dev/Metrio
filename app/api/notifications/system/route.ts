@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAndSendNotification } from "@/app/api/notifications/route";
 
-// Rota para criar uma notificação quando um membro é removido de uma equipe
+// Rota para criar uma notificação do sistema
 export async function POST(request: Request) {
   try {
     // Verificar a sessão do usuário
@@ -19,43 +19,32 @@ export async function POST(request: Request) {
 
     // Obter dados do corpo da requisição
     const requestData = await request.json();
-    console.log("[DEBUG] Dados recebidos em team-removed:", requestData);
+    console.log("[DEBUG] Dados recebidos em system:", requestData);
     
-    const { userId, teamId, teamName, projectId, projectName } = requestData;
+    const { userId, message, severity, action, actionLink } = requestData;
 
     // Validar dados essenciais
-    if (!userId || !teamName || !projectId) {
+    if (!userId || !message) {
       return NextResponse.json(
         { 
-          error: "Dados incompletos para criar a notificação",
+          error: "Dados incompletos para criar a notificação do sistema",
           received: requestData 
         },
         { status: 400 }
       );
     }
 
-    // Obter informações do remetente (usuário atual)
-    const sender = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, name: true },
-    });
-
     // Criar conteúdo da notificação
     const notificationContent = {
-      teamId: teamId || "",
-      teamName,
-      projectId,
-      projectName: projectName || "Projeto",
-      senderName: sender?.name || "Um usuário",
-      senderInitials: sender?.name
-        ? sender.name.substring(0, 2).toUpperCase()
-        : "NU",
-      action: "removeu você da equipe",
+      message,
+      severity: severity || "info",
+      action: action || undefined,
+      actionLink: actionLink || undefined,
     };
 
-    console.log("[DEBUG] Criando notificação de remoção com:", {
+    console.log("[DEBUG] Criando notificação do sistema com:", {
       userId,
-      type: "TEAM_REMOVED",
+      type: "SYSTEM",
       content: notificationContent
     });
 
@@ -63,7 +52,7 @@ export async function POST(request: Request) {
     try {
       const result = await createAndSendNotification(
         userId,
-        "TEAM_REMOVED",
+        "SYSTEM",
         notificationContent
       );
 
@@ -73,24 +62,24 @@ export async function POST(request: Request) {
           notification: result.notification,
         });
       } else {
-        console.error("[DEBUG] Erro no createAndSendNotification para team-removed:", result.error);
+        console.error("[DEBUG] Erro no createAndSendNotification para system:", result.error);
         return NextResponse.json(
-          { error: `Erro ao criar notificação de remoção: ${result.error}` },
+          { error: `Erro ao criar notificação do sistema: ${result.error}` },
           { status: 500 }
         );
       }
     } catch (notifError) {
-      console.error("[DEBUG] Exceção no createAndSendNotification para team-removed:", notifError);
+      console.error("[DEBUG] Exceção no createAndSendNotification para system:", notifError);
       return NextResponse.json(
-        { error: `Exceção ao criar notificação de remoção: ${notifError}` },
+        { error: `Exceção ao criar notificação do sistema: ${notifError}` },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("[DEBUG] Erro geral ao criar notificação de remoção:", error);
+    console.error("[DEBUG] Erro geral ao criar notificação do sistema:", error);
     return NextResponse.json(
-      { error: `Erro ao criar notificação de remoção: ${error}` },
+      { error: `Erro ao criar notificação do sistema: ${error}` },
       { status: 500 }
     );
   }
-}
+} 

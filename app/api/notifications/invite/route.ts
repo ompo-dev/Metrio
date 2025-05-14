@@ -3,9 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAndSendNotification } from "@/app/api/notifications/route";
-import { teamAddedSchema } from "@/types/notifications";
 
-// Rota para criar uma notificação quando um membro é adicionado a uma equipe
+// Rota para criar uma notificação de convite
 export async function POST(request: Request) {
   try {
     // Verificar a sessão do usuário
@@ -20,17 +19,16 @@ export async function POST(request: Request) {
 
     // Obter dados do corpo da requisição
     const requestData = await request.json();
-    console.log("[DEBUG] Dados recebidos:", requestData);
+    console.log("[DEBUG] Dados recebidos em invite:", requestData);
+    
+    const { userId, inviteId, projectId, projectName } = requestData;
 
-    // Extrair dados diretamente, sem validação Zod que pode estar falhando
-    const { userId, teamId, teamName, projectId, projectName } = requestData;
-
-    // Validação manual básica
-    if (!userId || !teamId || !teamName || !projectId) {
+    // Validar dados essenciais
+    if (!userId || !inviteId || !projectId) {
       return NextResponse.json(
-        {
-          error: "Dados incompletos para criar a notificação",
-          received: requestData
+        { 
+          error: "Dados incompletos para criar a notificação de convite",
+          received: requestData 
         },
         { status: 400 }
       );
@@ -44,8 +42,7 @@ export async function POST(request: Request) {
 
     // Criar conteúdo da notificação
     const notificationContent = {
-      teamId,
-      teamName,
+      inviteId,
       projectId,
       projectName: projectName || "Projeto",
       senderName: sender?.name || "Um usuário",
@@ -54,9 +51,9 @@ export async function POST(request: Request) {
         : "NU",
     };
 
-    console.log("[DEBUG] Criando notificação com:", {
+    console.log("[DEBUG] Criando notificação de convite com:", {
       userId,
-      type: "TEAM_ADDED",
+      type: "INVITE",
       content: notificationContent
     });
 
@@ -64,7 +61,7 @@ export async function POST(request: Request) {
     try {
       const result = await createAndSendNotification(
         userId,
-        "TEAM_ADDED",
+        "INVITE",
         notificationContent
       );
 
@@ -74,24 +71,24 @@ export async function POST(request: Request) {
           notification: result.notification,
         });
       } else {
-        console.error("[DEBUG] Erro no createAndSendNotification:", result.error);
+        console.error("[DEBUG] Erro no createAndSendNotification para invite:", result.error);
         return NextResponse.json(
-          { error: `Erro ao criar notificação: ${result.error}` },
+          { error: `Erro ao criar notificação de convite: ${result.error}` },
           { status: 500 }
         );
       }
     } catch (notifError) {
-      console.error("[DEBUG] Exceção no createAndSendNotification:", notifError);
+      console.error("[DEBUG] Exceção no createAndSendNotification para invite:", notifError);
       return NextResponse.json(
-        { error: `Exceção ao criar notificação: ${notifError}` },
+        { error: `Exceção ao criar notificação de convite: ${notifError}` },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("[DEBUG] Erro geral ao criar notificação:", error);
+    console.error("[DEBUG] Erro geral ao criar notificação de convite:", error);
     return NextResponse.json(
-      { error: `Erro ao criar notificação: ${error}` },
+      { error: `Erro ao criar notificação de convite: ${error}` },
       { status: 500 }
     );
   }
-}
+} 

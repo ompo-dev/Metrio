@@ -235,7 +235,21 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
     }
   };
 
-  // Buscar notificações quando o componente montar ou quando o popover abrir
+  // Buscar notificações quando o componente montar 
+  useEffect(() => {
+    // Carregar notificações imediatamente quando o componente é montado
+    fetchNotifications();
+    
+    // Configurar atualização periódica a cada 60 segundos
+    const intervalId = setInterval(() => {
+      fetchNotifications();
+    }, 15000); // 15 segundos
+    
+    // Limpar intervalo quando o componente for desmontado
+    return () => clearInterval(intervalId);
+  }, []);
+  
+  // Buscar notificações novamente quando o popover abrir para garantir dados frescos
   useEffect(() => {
     if (open) {
       fetchNotifications();
@@ -262,6 +276,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
 
         // Converter com base no tipo
         switch (formatted.type) {
+          case "INVITE":
           case "invite":
             return {
               ...baseNotification,
@@ -271,6 +286,8 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
               senderName: formatted.content?.senderName || "Usuário",
               projectId: formatted.content?.projectId || "",
             } as InviteNotification;
+            
+          case "TEAM_ADDED":
           case "team_added":
             return {
               ...baseNotification,
@@ -281,6 +298,43 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
               senderName: formatted.content?.senderName || "",
               projectId: formatted.content?.projectId || "",
             } as TeamAddedNotification;
+            
+          case "TEAM_REMOVED":
+          case "team_removed":
+            return {
+              ...baseNotification,
+              type: "team_removed",
+              teamId: formatted.content?.teamId || "",
+              teamName: formatted.content?.teamName || "",
+              projectName: formatted.content?.projectName || "",
+              senderName: formatted.content?.senderName || "",
+              projectId: formatted.content?.projectId || "",
+            } as TeamRemovedNotification;
+            
+          case "MENTION":
+          case "mention":
+            return {
+              ...baseNotification,
+              type: "mention",
+              image: "",
+              initials: formatted.content?.senderInitials || "MN",
+              user: formatted.content?.senderName || "Usuário",
+              action: "mencionou você em",
+              target: formatted.content?.sourceName || "documento",
+              needsAction: false,
+            } as MentionNotification;
+            
+          case "SYSTEM":
+          case "system":
+            return {
+              ...baseNotification,
+              type: "update",
+              title: formatted.content?.message || "Notificação do sistema",
+              description: formatted.content?.action 
+                ? `Ação: ${formatted.content.action}`
+                : "Notificação do sistema",
+            } as UpdateNotification;
+            
           case "invite_accepted":
           case "member_added":
           case "project_member_updated":
@@ -297,6 +351,7 @@ export function Notifications({ children }: { children?: React.ReactNode }) {
               action: "aceitou o convite para",
               target: formatted.content?.projectName || "projeto",
             } as DefaultNotification;
+            
           default:
             // Para outros tipos, criar uma notificação genérica
             return {

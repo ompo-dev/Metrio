@@ -3,9 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createAndSendNotification } from "@/app/api/notifications/route";
-import { teamAddedSchema } from "@/types/notifications";
 
-// Rota para criar uma notificação quando um membro é adicionado a uma equipe
+// Rota para criar uma notificação de menção
 export async function POST(request: Request) {
   try {
     // Verificar a sessão do usuário
@@ -20,17 +19,16 @@ export async function POST(request: Request) {
 
     // Obter dados do corpo da requisição
     const requestData = await request.json();
-    console.log("[DEBUG] Dados recebidos:", requestData);
+    console.log("[DEBUG] Dados recebidos em mention:", requestData);
+    
+    const { userId, sourceId, sourceName, sourceType, comment } = requestData;
 
-    // Extrair dados diretamente, sem validação Zod que pode estar falhando
-    const { userId, teamId, teamName, projectId, projectName } = requestData;
-
-    // Validação manual básica
-    if (!userId || !teamId || !teamName || !projectId) {
+    // Validar dados essenciais
+    if (!userId || !sourceId || !sourceName) {
       return NextResponse.json(
-        {
-          error: "Dados incompletos para criar a notificação",
-          received: requestData
+        { 
+          error: "Dados incompletos para criar a notificação de menção",
+          received: requestData 
         },
         { status: 400 }
       );
@@ -44,19 +42,19 @@ export async function POST(request: Request) {
 
     // Criar conteúdo da notificação
     const notificationContent = {
-      teamId,
-      teamName,
-      projectId,
-      projectName: projectName || "Projeto",
+      sourceId,
+      sourceName,
+      sourceType: sourceType || "comment",
+      comment: comment || "Você foi mencionado",
       senderName: sender?.name || "Um usuário",
       senderInitials: sender?.name
         ? sender.name.substring(0, 2).toUpperCase()
         : "NU",
     };
 
-    console.log("[DEBUG] Criando notificação com:", {
+    console.log("[DEBUG] Criando notificação de menção com:", {
       userId,
-      type: "TEAM_ADDED",
+      type: "MENTION",
       content: notificationContent
     });
 
@@ -64,7 +62,7 @@ export async function POST(request: Request) {
     try {
       const result = await createAndSendNotification(
         userId,
-        "TEAM_ADDED",
+        "MENTION",
         notificationContent
       );
 
@@ -74,24 +72,24 @@ export async function POST(request: Request) {
           notification: result.notification,
         });
       } else {
-        console.error("[DEBUG] Erro no createAndSendNotification:", result.error);
+        console.error("[DEBUG] Erro no createAndSendNotification para mention:", result.error);
         return NextResponse.json(
-          { error: `Erro ao criar notificação: ${result.error}` },
+          { error: `Erro ao criar notificação de menção: ${result.error}` },
           { status: 500 }
         );
       }
     } catch (notifError) {
-      console.error("[DEBUG] Exceção no createAndSendNotification:", notifError);
+      console.error("[DEBUG] Exceção no createAndSendNotification para mention:", notifError);
       return NextResponse.json(
-        { error: `Exceção ao criar notificação: ${notifError}` },
+        { error: `Exceção ao criar notificação de menção: ${notifError}` },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("[DEBUG] Erro geral ao criar notificação:", error);
+    console.error("[DEBUG] Erro geral ao criar notificação de menção:", error);
     return NextResponse.json(
-      { error: `Erro ao criar notificação: ${error}` },
+      { error: `Erro ao criar notificação de menção: ${error}` },
       { status: 500 }
     );
   }
-}
+} 
