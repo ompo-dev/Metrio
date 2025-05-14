@@ -1,0 +1,5 @@
+# Prisma Migrate
+# Documentação: https://pris.ly/d/prisma-migrate
+
+migration_name = "20250422000000_add_invites_system"
+checksum = "9f2f6b0d8b9f1f2d3f4a5c6d7f8e9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7" 
