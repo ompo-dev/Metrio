@@ -2,7 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { db } from "@/lib/db";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 // Definir tipos para os níveis de prioridade de papéis
 type RoleType = "owner" | "admin" | "member" | "viewer";
@@ -165,7 +165,9 @@ export async function GET(request: NextRequest) {
           { userId: session.user.id }, // É o dono
           {
             members: {
-              some: { userId: session.user.id }, // É membro
+              some: {
+                userId: session.user.id,
+              },
             },
           },
         ],

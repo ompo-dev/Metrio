@@ -14,7 +14,21 @@ const api = axios.create({
 // Interceptor para requisições
 api.interceptors.request.use(
   (config) => {
-    // Aqui podemos adicionar tokens de autenticação ou outros headers globais
+    // Adicionar token de autenticação se disponível (usando a sessão do NextAuth)
+    if (typeof window !== "undefined") {
+      // Executando no navegador
+      const token =
+        document.cookie.includes("next-auth.session-token") ||
+        document.cookie.includes("__Secure-next-auth.session-token");
+
+      // Se já temos o header Authorization, mantenha-o
+      if (!config.headers.Authorization && token) {
+        // Não precisamos extrair o token exato, pois o cookie será enviado automaticamente
+        // nas requisições para o mesmo domínio
+        config.withCredentials = true;
+      }
+    }
+
     return config;
   },
   (error) => {

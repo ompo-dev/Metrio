@@ -34,7 +34,5 @@ export async function middleware(request: NextRequest) {
 
 // Configura a middleware para rodar em rotas específicas
 export const config = {
-  matcher: [
-    "/((?!api/register|api/auth|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
 };
