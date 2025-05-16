@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "./db";
 import bcrypt from "bcrypt";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 // Tipagem para projeto
 interface Project {
@@ -19,9 +20,11 @@ interface ExtendedUser {
 }
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(db),
   session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
