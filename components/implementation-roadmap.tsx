@@ -1,18 +1,27 @@
-"use client"
-import { CheckCircle2, Circle, Clock } from "lucide-react"
+"use client";
+import { CheckCircle2, Circle, Clock } from "lucide-react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 
 export function ImplementationRoadmap() {
   return (
     <div className="container mx-auto py-10">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Plano de Implementação Estratégico</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">
+          Plano de Implementação Estratégico
+        </h1>
         <p className="text-muted-foreground max-w-3xl mx-auto">
-          Um roadmap faseado para implementação das novas funcionalidades da plataforma Métricas SaaS
+          Um roadmap faseado para implementação das novas funcionalidades da
+          plataforma Metrio
         </p>
       </div>
 
@@ -43,7 +52,10 @@ export function ImplementationRoadmap() {
               description="Implementação dos primeiros recursos de IA e análise preditiva"
               progress={15}
               features={[
-                { name: "Assistente Virtual de Análise (MVP)", status: "in-progress" },
+                {
+                  name: "Assistente Virtual de Análise (MVP)",
+                  status: "in-progress",
+                },
                 { name: "Detecção Básica de Anomalias", status: "planned" },
                 { name: "Resumos Automáticos Semanais", status: "planned" },
               ]}
@@ -53,7 +65,10 @@ export function ImplementationRoadmap() {
               description="Ampliação das possibilidades de conexão com outras plataformas"
               progress={25}
               features={[
-                { name: "5 Novos Conectores Pré-construídos", status: "in-progress" },
+                {
+                  name: "5 Novos Conectores Pré-construídos",
+                  status: "in-progress",
+                },
                 { name: "Webhooks Bidirecionais", status: "planned" },
                 { name: "API Pública Documentada", status: "planned" },
               ]}
@@ -100,7 +115,10 @@ export function ImplementationRoadmap() {
               features={[
                 { name: "App Móvel (iOS/Android)", status: "planned" },
                 { name: "Alertas Móveis Contextuais", status: "planned" },
-                { name: "Dashboards Otimizados para Mobile", status: "planned" },
+                {
+                  name: "Dashboards Otimizados para Mobile",
+                  status: "planned",
+                },
               ]}
             />
           </div>
@@ -114,7 +132,10 @@ export function ImplementationRoadmap() {
               progress={0}
               features={[
                 { name: "Catálogo de Dados", status: "planned" },
-                { name: "Painéis de Conformidade LGPD/GDPR", status: "planned" },
+                {
+                  name: "Painéis de Conformidade LGPD/GDPR",
+                  status: "planned",
+                },
                 { name: "Anonimização Automática", status: "planned" },
               ]}
             />
@@ -133,7 +154,10 @@ export function ImplementationRoadmap() {
               description="Fluxos de trabalho e automações personalizadas"
               progress={0}
               features={[
-                { name: "Fluxos de Trabalho Personalizados", status: "planned" },
+                {
+                  name: "Fluxos de Trabalho Personalizados",
+                  status: "planned",
+                },
                 { name: "Ações Programáveis", status: "planned" },
                 { name: "Integração com Zapier/Make", status: "planned" },
               ]}
@@ -183,18 +207,22 @@ export function ImplementationRoadmap() {
           <div className="bg-background p-4 rounded-lg">
             <h3 className="font-medium mb-2">Impacto no Usuário</h3>
             <p className="text-sm text-muted-foreground">
-              Prioridade para funcionalidades que trazem benefício imediato aos usuários existentes
+              Prioridade para funcionalidades que trazem benefício imediato aos
+              usuários existentes
             </p>
           </div>
           <div className="bg-background p-4 rounded-lg">
             <h3 className="font-medium mb-2">Complexidade Técnica</h3>
             <p className="text-sm text-muted-foreground">
-              Balanceamento entre valor entregue e esforço de desenvolvimento necessário
+              Balanceamento entre valor entregue e esforço de desenvolvimento
+              necessário
             </p>
           </div>
           <div className="bg-background p-4 rounded-lg">
             <h3 className="font-medium mb-2">Diferenciação Competitiva</h3>
-            <p className="text-sm text-muted-foreground">Foco em recursos que destacam a plataforma da concorrência</p>
+            <p className="text-sm text-muted-foreground">
+              Foco em recursos que destacam a plataforma da concorrência
+            </p>
           </div>
           <div className="bg-background p-4 rounded-lg">
             <h3 className="font-medium mb-2">Feedback dos Usuários</h3>
@@ -205,17 +233,17 @@ export function ImplementationRoadmap() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 interface PhaseCardProps {
-  title: string
-  description: string
-  progress: number
+  title: string;
+  description: string;
+  progress: number;
   features: {
-    name: string
-    status: "completed" | "in-progress" | "planned"
-  }[]
+    name: string;
+    status: "completed" | "in-progress" | "planned";
+  }[];
 }
 
 function PhaseCard({ title, description, progress, features }: PhaseCardProps) {
@@ -247,11 +275,17 @@ function PhaseCard({ title, description, progress, features }: PhaseCardProps) {
                 <div className="font-medium">{feature.name}</div>
                 <div className="text-xs text-muted-foreground">
                   {feature.status === "completed" ? (
-                    <Badge variant="outline" className="bg-primary/10 text-primary">
+                    <Badge
+                      variant="outline"
+                      className="bg-primary/10 text-primary"
+                    >
                       Concluído
                     </Badge>
                   ) : feature.status === "in-progress" ? (
-                    <Badge variant="outline" className="bg-amber-500/10 text-amber-500">
+                    <Badge
+                      variant="outline"
+                      className="bg-amber-500/10 text-amber-500"
+                    >
                       Em Progresso
                     </Badge>
                   ) : (
@@ -264,6 +298,5 @@ function PhaseCard({ title, description, progress, features }: PhaseCardProps) {
         </ul>
       </CardContent>
     </Card>
-  )
+  );
 }
-

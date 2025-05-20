@@ -86,7 +86,7 @@ async function enviarWebhook() {
     };
 
     const response = await axios.post(
-      'https://api.metrics-saas.com/${formData.hookName || "seu-hook"}',
+      'https://api.metrio.com/${formData.hookName || "seu-hook"}',
       data,
       {
         headers: {

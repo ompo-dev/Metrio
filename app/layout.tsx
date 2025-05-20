@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Métricas SaaS",
+  title: "Metrio",
   description: "Plataforma de métricas para SaaS",
 };
 

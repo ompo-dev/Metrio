@@ -328,7 +328,7 @@ export function WebhooksList({ onWebhookSelect }: WebhooksListProps) {
       return (
         <div className="flex flex-col">
           <span className="font-mono text-xs truncate max-w-[300px]">
-            {`https://api.metrics-saas.com/webhooks/${id.substring(0, 6)}.../${token.substring(0, 6)}...`}
+            {`https://api.metrio.com/webhooks/${id.substring(0, 6)}.../${token.substring(0, 6)}...`}
           </span>
           <span className="text-xs text-muted-foreground mt-1">Webhook Personalizado (estilo Discord)</span>
         </div>

@@ -313,7 +313,7 @@ async function enviarWebhook(data) {
   console.log("Enviando webhook:", data);
 
   try {
-    const response = await fetch("https://api.metrics-saas.com/seu-webhook", {
+    const response = await fetch("https://api.metrio.com/seu-webhook", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -393,9 +393,9 @@ Se os eventos não estiverem sendo enviados ou recebidos:
 
 Se você continuar enfrentando problemas após seguir estas etapas de diagnóstico, entre em contato com o suporte:
 
-- Email: suporte@metrics-saas.com
-- Documentação: https://docs.metrics-saas.com/webhooks
-- Fórum da comunidade: https://community.metrics-saas.com
+- Email: suporte@metrio.com
+- Documentação: https://docs.metrio.com/webhooks
+- Fórum da comunidade: https://community.metrio.com
 
 ## Eventos Disponíveis
 

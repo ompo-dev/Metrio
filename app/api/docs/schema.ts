@@ -6,9 +6,9 @@ export const getApiDocs = () => {
     definition: {
       openapi: "3.0.0",
       info: {
-        title: "Métricas SaaS API",
+        title: "Metrio API",
         version: "1.0.0",
-        description: "API para a plataforma Métricas SaaS",
+        description: "API para a plataforma Metrio",
       },
       components: {
         securitySchemes: {
